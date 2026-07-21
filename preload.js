@@ -34,6 +34,11 @@ contextBridge.exposeInMainWorld("admin", {
       method: "POST",
       body: { current_password: currentPassword, new_password: newPassword },
     }),
+  changeEmail: (newEmail, currentPassword) =>
+    apiFetch("/api/admin/change-email", {
+      method: "POST",
+      body: { new_email: newEmail, current_password: currentPassword },
+    }),
 
   listEmployees: () => apiFetch("/api/admin/employees"),
   addEmployee: (employee) => apiFetch("/api/admin/employees", { method: "POST", body: employee }),

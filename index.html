@@ -168,6 +168,19 @@
       <div id="employee-modal-content"></div>
     </div>
   </div>
+  <div class="modal-overlay" id="edit-employee-modal">
+    <div class="modal-box" style="width:380px;">
+      <button class="modal-close" onclick="closeEditEmployeeModal()">&times;</button>
+      <h2 style="margin-top:0;">Edit employee</h2>
+      <div id="edit-emp-error" class="error" style="display:none;"></div>
+      <div id="edit-emp-success" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Email</label>
+      <input id="edit-emp-email" type="email" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">New PIN (leave blank to keep current)</label>
+      <input id="edit-emp-pin" placeholder="4-digit PIN" />
+      <button class="btn-primary" onclick="submitEditEmployee()">Save changes</button>
+    </div>
+  </div>
   <div class="modal-overlay" id="password-modal">
     <div class="modal-box" style="width:360px;">
       <button class="modal-close" onclick="closePasswordModal()">&times;</button>
@@ -235,6 +248,20 @@
     </section>
 
     <section id="tab-settings" class="tab">
+      <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Change admin email</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          This is the email you sign into this app with. Changing it requires your current password.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">New email</label>
+        <input id="change-email-new" type="email" placeholder="you@company.com" style="margin-bottom:10px;" />
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Current password</label>
+        <input id="change-email-password" type="password" style="margin-bottom:10px;" />
+        <button class="btn-primary" style="width:auto;" onclick="submitChangeEmail()">Save</button>
+        <div id="change-email-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="change-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
       <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Shop location</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
@@ -413,7 +440,7 @@ async function reverseGeocode(lat, lng) {
     );
     const data = await res.json();
     const a = data.address || {};
-    const city = a.city || a.town || a.village || a.hamlet || "";
+    const city = a.city || a.town || a.village || a.hamlet || a.county || "";
     const state = a.state_code || a.state || "";
     const label = [city, state].filter(Boolean).join(", ");
     geocodeCache[key] = label;
@@ -503,37 +530,9 @@ async function openEmployeeDetail(id, name, active, isClockedIn) {
     (isClockedIn
       ? '<button class="btn-primary" style="width:auto; margin-top:12px;" onclick="requestPing(\'' + id + '\')">Ping Now</button>' +
         '<p id="ping-status-msg" style="font-size:12px; color:#8A8578; margin-top:8px;"></p>'
-      : '<p style="font-size:12px; color:#8A8578; margin-top:12px;">Ping is only available while this employee is clocked in.</p>') +
-    '<div style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--line);">' +
-      '<div style="font-size:11px; color:#8A8578; text-transform:uppercase; margin-bottom:6px;">Reset PIN</div>' +
-      '<div style="display:flex; gap:8px;">' +
-        '<input id="reset-pin-input" placeholder="New 4-digit PIN" style="margin-bottom:0;" />' +
-        '<button class="btn-primary" style="width:auto; white-space:nowrap;" onclick="resetEmployeePin(\'' + id + '\')">Set PIN</button>' +
-      '</div>' +
-      '<p id="reset-pin-msg" style="font-size:12px; margin-top:6px;"></p>' +
-    '</div>';
+      : '<p style="font-size:12px; color:#8A8578; margin-top:12px;">Ping is only available while this employee is clocked in.</p>');
 
   document.getElementById("employee-modal").classList.add("visible");
-}
-
-async function resetEmployeePin(id) {
-  const input = document.getElementById("reset-pin-input");
-  const msg = document.getElementById("reset-pin-msg");
-  const pin = input.value.trim();
-  if (!pin) {
-    msg.textContent = "Enter a new PIN first.";
-    msg.style.color = "var(--rust)";
-    return;
-  }
-  try {
-    await window.admin.updateEmployee(id, { pin: pin });
-    msg.textContent = "PIN updated — let the employee know their new PIN.";
-    msg.style.color = "var(--teal)";
-    input.value = "";
-  } catch (err) {
-    msg.textContent = err.message || "Couldn't update PIN.";
-    msg.style.color = "var(--rust)";
-  }
 }
 
 async function requestPing(employeeId) {
@@ -661,14 +660,85 @@ async function loadEmployees() {
       "<td>" + e.name + "</td>" +
       "<td>" + e.email + "</td>" +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
-      '<td><button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button></td>';
+      '<td>' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openEditEmployeeModal(\'' + e.id + '\', \'' + e.email + '\')">Edit</button>' +
+        '<button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button>' +
+      '</td>';
     body.appendChild(tr);
   });
+}
+
+let editingEmployeeId = null;
+
+function openEditEmployeeModal(id, email) {
+  editingEmployeeId = id;
+  document.getElementById("edit-emp-email").value = email;
+  document.getElementById("edit-emp-pin").value = "";
+  document.getElementById("edit-emp-error").style.display = "none";
+  document.getElementById("edit-emp-success").style.display = "none";
+  document.getElementById("edit-employee-modal").classList.add("visible");
+}
+
+function closeEditEmployeeModal() {
+  document.getElementById("edit-employee-modal").classList.remove("visible");
+  editingEmployeeId = null;
+}
+
+async function submitEditEmployee() {
+  const email = document.getElementById("edit-emp-email").value.trim();
+  const pin = document.getElementById("edit-emp-pin").value.trim();
+  const errEl = document.getElementById("edit-emp-error");
+  const successEl = document.getElementById("edit-emp-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!email) {
+    errEl.textContent = "Email is required.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const patch = { email: email };
+  if (pin) patch.pin = pin;
+
+  try {
+    await window.admin.updateEmployee(editingEmployeeId, patch);
+    successEl.textContent = "Employee updated.";
+    successEl.style.display = "block";
+    loadEmployees();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't update employee.";
+    errEl.style.display = "block";
+  }
 }
 
 async function toggleActive(id, newActive) {
   await window.admin.updateEmployee(id, { active: newActive });
   loadEmployees();
+}
+
+async function submitChangeEmail() {
+  const newEmail = document.getElementById("change-email-new").value.trim();
+  const password = document.getElementById("change-email-password").value;
+  const errEl = document.getElementById("change-email-error");
+  const successEl = document.getElementById("change-email-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!newEmail || !password) {
+    errEl.textContent = "Enter the new email and your current password.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.changeEmail(newEmail, password);
+    successEl.textContent = "Email updated. Use it the next time you sign in.";
+    successEl.style.display = "block";
+    document.getElementById("change-email-password").value = "";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't update email.";
+    errEl.style.display = "block";
+  }
 }
 
 async function loadShopLocation() {
