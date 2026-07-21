@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Site Clock — Admin</title>
+<style>
+  :root {
+    --charcoal: #1F2421;
+    --paper: #F4F2ED;
+    --amber: #F2A93B;
+    --teal: #3D5A50;
+    --rust: #C1502E;
+    --line: #D8D3C4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--charcoal);
+  }
+  #login-screen, #app {
+    display: none;
+  }
+  #login-screen.visible {
+    display: flex;
+  }
+  #app.visible {
+    display: block;
+  }
+  #login-screen {
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+  }
+  .login-box {
+    background: #fff;
+    border: 1.5px solid var(--charcoal);
+    border-radius: 8px;
+    padding: 32px;
+    width: 320px;
+  }
+  .login-box h1 { margin: 0 0 4px; font-size: 22px; }
+  .login-box p { margin: 0 0 20px; color: #8A8578; font-size: 13px; }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  .btn-primary { background: var(--amber); color: var(--charcoal); width: 100%; }
+  .btn-secondary { background: transparent; border: 1.5px solid var(--charcoal); }
+  .error { color: var(--rust); font-size: 12px; margin-bottom: 10px; }
+
+  header {
+    background: var(--charcoal);
+    color: var(--paper);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  header button { background: transparent; color: var(--paper); border: 1px solid var(--paper); }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 12px 24px 0;
+    border-bottom: 1.5px solid var(--line);
+  }
+  nav button {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #8A8578;
+  }
+  nav button.active {
+    color: var(--charcoal);
+    border-bottom-color: var(--amber);
+    font-weight: 600;
+  }
+
+  main { padding: 24px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  th { background: var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:last-child td { border-bottom: none; }
+  td input, td select { margin-bottom: 0; padding: 6px 8px; font-size: 12px; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: end; flex-wrap: wrap; }
+  .toolbar label { font-size: 11px; color: #8A8578; display: block; margin-bottom: 4px; }
+  .toolbar > div { display: flex; flex-direction: column; }
+  .toolbar input { margin-bottom: 0; }
+
+  .card { background: #fff; border: 1.5px solid var(--line); border-radius: 6px; padding: 16px; margin-bottom: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .badge-in-town { background: var(--teal); color: #fff; }
+  .badge-traveling { background: var(--rust); color: #fff; }
+
+  .save-btn { background: var(--teal); color: #fff; padding: 4px 10px; font-size: 11px; }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(31,36,33,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-box h2 { margin: 0 0 4px; }
+  .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    float: right;
+    padding: 0;
+  }
+  .employee-card { cursor: pointer; }
+  .employee-card:hover { border-color: var(--charcoal); }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Site Clock</h1>
+    <p>Employer dashboard</p>
+    <div id="login-error" class="error" style="display:none;"></div>
+    <div id="login-info" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
+    <input id="admin-email-input" type="text" placeholder="Email" />
+    <input id="admin-key-input" type="password" placeholder="Password" />
+    <button class="btn-primary" onclick="doLogin()">Sign in</button>
+    <button class="btn-secondary" style="width:100%; margin-top:8px;" onclick="doForgotPassword()">Forgot password?</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="modal-overlay" id="employee-modal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeEmployeeModal()">&times;</button>
+      <div id="employee-modal-content"></div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="password-modal">
+    <div class="modal-box" style="width:360px;">
+      <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+      <h2 style="margin-top:0;">Change password</h2>
+      <div id="password-modal-error" class="error" style="display:none;"></div>
+      <div id="password-modal-success" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Current password</label>
+      <input id="current-password-input" type="password" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">New password</label>
+      <input id="new-password-input" type="password" placeholder="At least 8 characters" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Confirm new password</label>
+      <input id="confirm-password-input" type="password" />
+      <button class="btn-primary" onclick="submitChangePassword()">Update password</button>
+    </div>
+  </div>
+  <header>
+    <h1>Site Clock — Admin</h1>
+    <div>
+      <button onclick="openPasswordModal()" style="margin-right:8px;">Change password</button>
+      <button onclick="doLogout()">Log out</button>
+    </div>
+  </header>
+  <nav>
+    <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Edit Hours</button>
+    <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
+    <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
+  </nav>
+  <main>
+
+    <section id="tab-overview" class="tab active">
+      <div id="overview-list"></div>
+    </section>
+
+    <section id="tab-reports" class="tab">
+      <div class="toolbar">
+        <div>
+          <label>From</label>
+          <input id="report-start" type="date" onchange="loadReports()" />
+        </div>
+        <div>
+          <label>To</label>
+          <input id="report-end" type="date" onchange="loadReports()" />
+        </div>
+        <button class="btn-secondary" onclick="exportQuickBooksCsv()">Export to QuickBooks (CSV)</button>
+      </div>
+      <div id="reports-body"></div>
+    </section>
+
+    <section id="tab-employees" class="tab">
+      <div class="card">
+        <h3 style="margin-top:0;">Add employee</h3>
+        <div style="display:flex; gap:10px;">
+          <input id="new-emp-name" placeholder="Name" style="margin-bottom:0;" />
+          <input id="new-emp-email" placeholder="Email" style="margin-bottom:0;" />
+          <input id="new-emp-pin" placeholder="4-digit PIN" style="margin-bottom:0; max-width:120px;" />
+          <button class="btn-primary" style="width:auto; white-space:nowrap;" onclick="addEmployee()">Add</button>
+        </div>
+        <div id="add-emp-error" class="error" style="display:none; margin-top:8px;"></div>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead>
+        <tbody id="employees-body"></tbody>
+      </table>
+    </section>
+
+    <section id="tab-settings" class="tab">
+      <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Shop location</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          This is the location employees auto clock-in at when they arrive (and auto clock-out from when they leave). Tip: right-click your shop's spot in Google Maps, click the coordinates that pop up to copy them, then paste the first number below as Latitude and the second as Longitude.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Latitude</label>
+        <input id="shop-lat-input" placeholder="e.g. 39.7392" style="margin-bottom:10px;" />
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Longitude</label>
+        <input id="shop-lng-input" placeholder="e.g. -104.9903" style="margin-bottom:10px;" />
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Radius (meters)</label>
+        <input id="shop-radius-input" placeholder="152" style="margin-bottom:10px;" />
+        <button class="btn-primary" style="width:auto;" onclick="saveShopLocation()">Save</button>
+        <div id="shop-location-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="shop-location-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+async function init() {
+  if (window.admin.hasSession()) {
+    showApp();
+  } else {
+    document.getElementById("login-screen").classList.add("visible");
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById("admin-email-input").value;
+  const key = document.getElementById("admin-key-input").value;
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+  try {
+    await window.admin.login(email, key);
+    showApp();
+  } catch (err) {
+    errEl.textContent = err.message || "Login failed";
+    errEl.style.display = "block";
+  }
+}
+
+function doLogout() {
+  window.admin.logout();
+  document.getElementById("app").classList.remove("visible");
+  document.getElementById("login-screen").classList.add("visible");
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById("admin-email-input").value.trim();
+  const errEl = document.getElementById("login-error");
+  const infoEl = document.getElementById("login-info");
+  errEl.style.display = "none";
+  infoEl.style.display = "none";
+  if (!email) {
+    errEl.textContent = "Enter your email above first, then click \"Forgot password?\" again.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.forgotPassword(email);
+    infoEl.textContent = "If that email has an account, we've sent a reset link to it. Check your email.";
+    infoEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Something went wrong. Try again.";
+    errEl.style.display = "block";
+  }
+}
+
+function openPasswordModal() {
+  document.getElementById("current-password-input").value = "";
+  document.getElementById("new-password-input").value = "";
+  document.getElementById("confirm-password-input").value = "";
+  document.getElementById("password-modal-error").style.display = "none";
+  document.getElementById("password-modal-success").style.display = "none";
+  document.getElementById("password-modal").classList.add("visible");
+}
+
+function closePasswordModal() {
+  document.getElementById("password-modal").classList.remove("visible");
+}
+
+async function submitChangePassword() {
+  const current = document.getElementById("current-password-input").value;
+  const next = document.getElementById("new-password-input").value;
+  const confirm = document.getElementById("confirm-password-input").value;
+  const errEl = document.getElementById("password-modal-error");
+  const successEl = document.getElementById("password-modal-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!current || !next || !confirm) {
+    errEl.textContent = "All fields are required.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (next.length < 8) {
+    errEl.textContent = "New password must be at least 8 characters.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (next !== confirm) {
+    errEl.textContent = "New passwords don't match.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.changePassword(current, next);
+    successEl.textContent = "Password updated.";
+    successEl.style.display = "block";
+    document.getElementById("current-password-input").value = "";
+    document.getElementById("new-password-input").value = "";
+    document.getElementById("confirm-password-input").value = "";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't update password.";
+    errEl.style.display = "block";
+  }
+}
+
+function showApp() {
+  document.getElementById("login-screen").classList.remove("visible");
+  document.getElementById("app").classList.add("visible");
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  document.getElementById("report-start").value = monthStart.toISOString().slice(0, 10);
+  document.getElementById("report-end").value = today.toISOString().slice(0, 10);
+  loadOverview();
+  loadReports();
+  loadEmployees();
+  loadShopLocation();
+  setInterval(loadOverview, 60000);
+}
+
+function showTab(name) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
+}
+
+function fmtDuration(seconds) {
+  if (seconds == null) return "-";
+  const totalMin = Math.round(seconds / 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h === 0 ? m + "m" : h + "h " + m + "m";
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return "-";
+  return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function fmtDurationShort(seconds) {
+  const totalMin = Math.round((seconds || 0) / 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h === 0 ? m + "m" : h + "h " + m + "m";
+}
+
+function fmtSince(iso) {
+  if (!iso) return "";
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 60) return mins + "m ago";
+  return Math.floor(mins / 60) + "h " + (mins % 60) + "m ago";
+}
+
+const geocodeCache = {};
+
+async function reverseGeocode(lat, lng) {
+  const key = lat.toFixed(3) + "," + lng.toFixed(3);
+  if (geocodeCache[key]) return geocodeCache[key];
+  try {
+    const res = await fetch(
+      "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&zoom=10",
+      { headers: { "Accept-Language": "en" } }
+    );
+    const data = await res.json();
+    const a = data.address || {};
+    const city = a.city || a.town || a.village || a.hamlet || "";
+    const state = a.state_code || a.state || "";
+    const label = [city, state].filter(Boolean).join(", ");
+    geocodeCache[key] = label;
+    return label;
+  } catch {
+    return "";
+  }
+}
+
+async function loadOverview() {
+  const data = await window.admin.getOverview();
+  const activeOnly = data.employees.filter(function(e) { return e.active; });
+  const list = document.getElementById("overview-list");
+
+  list.innerHTML = activeOnly.map(function(e) {
+    const isClockedIn = !!e.open_entry_id;
+    const statusBadge = isClockedIn
+      ? '<span class="badge" style="background:#3D5A50; color:#fff;">Clocked In</span>'
+      : '<span class="badge" style="background:#D8D3C4; color:#1F2421;">Off the Clock</span>';
+
+    const currentJob = isClockedIn
+      ? '<div style="font-size:13px; color:#8A8578; margin-top:4px;">' +
+          (e.open_job_name || "") + " - " + (e.open_location_type === "in_town" ? "In town" : "Traveling") +
+          ' <span id="geo-' + e.id + '"></span>' +
+          " - since " + fmtSince(e.open_clock_in) +
+        '</div>'
+      : "";
+
+    return '<div class="card employee-card" style="opacity:1;" onclick="openEmployeeDetail(\'' + e.id + '\', \'' + e.name + '\', ' + e.active + ', ' + isClockedIn + ')">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<strong style="font-size:16px;">' + e.name + '</strong>' +
+          statusBadge +
+        '</div>' +
+        currentJob +
+        '<div style="display:flex; gap:24px; margin-top:10px;">' +
+          '<div>' +
+            '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Regular hours</div>' +
+            '<div style="font-size:20px; font-weight:600;">' + fmtDurationShort(e.regular_seconds) + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Travel hours</div>' +
+            '<div style="font-size:20px; font-weight:600;">' + fmtDurationShort(e.travel_seconds) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }).join("");
+
+  activeOnly.forEach(function(e) {
+    if (e.open_entry_id && e.lat != null && e.lng != null) {
+      reverseGeocode(e.lat, e.lng).then(function(label) {
+        const el = document.getElementById("geo-" + e.id);
+        if (el && label) el.textContent = "(" + label + ")";
+      });
+    }
+  });
+}
+
+async function openEmployeeDetail(id, name, active, isClockedIn) {
+  const rows = await window.admin.listTimeEntries({ employee_id: id });
+
+  const regularSeconds = rows.reduce((s, r) => s + (r.location_type === "in_town" ? Number(r.worked_seconds || 0) : 0), 0);
+  const travelSeconds = rows.reduce((s, r) => s + (r.location_type === "traveling" ? Number(r.worked_seconds || 0) : 0), 0);
+
+  const shiftRows = rows.slice(0, 20).map(function(r) {
+    return '<tr>' +
+      '<td>' + fmtDateTime(r.clock_in) + '</td>' +
+      '<td>' + (r.job_name || "") + '</td>' +
+      '<td><span class="badge ' + (r.location_type === "in_town" ? "badge-in-town" : "badge-traveling") + '">' + (r.location_type === "in_town" ? "In town" : "Traveling") + '</span></td>' +
+      '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
+    '</tr>';
+  }).join("");
+
+  document.getElementById("employee-modal-content").innerHTML =
+    '<h2>' + name + '</h2>' +
+    '<p style="color:#8A8578; margin-top:0;">' + (active ? "Active" : "Inactive") + '</p>' +
+    '<div style="display:flex; gap:24px; margin:16px 0;">' +
+      '<div>' +
+        '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Regular hours</div>' +
+        '<div style="font-size:22px; font-weight:600;">' + fmtDurationShort(regularSeconds) + '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Travel hours</div>' +
+        '<div style="font-size:22px; font-weight:600;">' + fmtDurationShort(travelSeconds) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<table><thead><tr><th>Date</th><th>Job</th><th>Location</th><th>Worked</th></tr></thead><tbody>' + shiftRows + '</tbody></table>' +
+    (isClockedIn
+      ? '<button class="btn-primary" style="width:auto; margin-top:12px;" onclick="requestPing(\'' + id + '\')">Ping Now</button>' +
+        '<p id="ping-status-msg" style="font-size:12px; color:#8A8578; margin-top:8px;"></p>'
+      : '<p style="font-size:12px; color:#8A8578; margin-top:12px;">Ping is only available while this employee is clocked in.</p>') +
+    '<div style="margin-top:16px; padding-top:16px; border-top: 1px solid var(--line);">' +
+      '<div style="font-size:11px; color:#8A8578; text-transform:uppercase; margin-bottom:6px;">Reset PIN</div>' +
+      '<div style="display:flex; gap:8px;">' +
+        '<input id="reset-pin-input" placeholder="New 4-digit PIN" style="margin-bottom:0;" />' +
+        '<button class="btn-primary" style="width:auto; white-space:nowrap;" onclick="resetEmployeePin(\'' + id + '\')">Set PIN</button>' +
+      '</div>' +
+      '<p id="reset-pin-msg" style="font-size:12px; margin-top:6px;"></p>' +
+    '</div>';
+
+  document.getElementById("employee-modal").classList.add("visible");
+}
+
+async function resetEmployeePin(id) {
+  const input = document.getElementById("reset-pin-input");
+  const msg = document.getElementById("reset-pin-msg");
+  const pin = input.value.trim();
+  if (!pin) {
+    msg.textContent = "Enter a new PIN first.";
+    msg.style.color = "var(--rust)";
+    return;
+  }
+  try {
+    await window.admin.updateEmployee(id, { pin: pin });
+    msg.textContent = "PIN updated — let the employee know their new PIN.";
+    msg.style.color = "var(--teal)";
+    input.value = "";
+  } catch (err) {
+    msg.textContent = err.message || "Couldn't update PIN.";
+    msg.style.color = "var(--rust)";
+  }
+}
+
+async function requestPing(employeeId) {
+  const msg = document.getElementById("ping-status-msg");
+  msg.textContent = "Requesting...";
+  try {
+    await window.admin.requestPing(employeeId);
+    msg.textContent = "Requested — the employee's app will send an updated location within about 20 seconds.";
+  } catch (err) {
+    msg.textContent = "Couldn't send request: " + (err.message || "unknown error");
+  }
+}
+
+function closeEmployeeModal() {
+  document.getElementById("employee-modal").classList.remove("visible");
+}
+
+async function loadReports() {
+  const start = document.getElementById("report-start").value;
+  const end = document.getElementById("report-end").value;
+  const rows = await window.admin.listTimeEntries({ start: start, end: end });
+  window.lastReportRows = rows;
+
+  const grouped = {};
+  rows.forEach(function(r) {
+    if (!grouped[r.employee_name]) grouped[r.employee_name] = [];
+    grouped[r.employee_name].push(r);
+  });
+
+  const container = document.getElementById("reports-body");
+  const names = Object.keys(grouped).sort();
+
+  if (names.length === 0) {
+    container.innerHTML = '<p style="color:#8A8578;">No hours in this date range.</p>';
+    return;
+  }
+
+  container.innerHTML = names.map(function(name, idx) {
+    const empRows = grouped[name];
+    const totalSeconds = empRows.reduce((s, r) => s + Number(r.worked_seconds || 0), 0);
+    const safeId = "emp-report-" + idx;
+
+    const rowsHtml = empRows.map(function(r) {
+      return '<tr>' +
+        '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" /></td>' +
+        '<td><select data-field="location_type" data-id="' + r.time_entry_id + '">' +
+          '<option value="in_town"' + (r.location_type === "in_town" ? " selected" : "") + '>In town</option>' +
+          '<option value="traveling"' + (r.location_type === "traveling" ? " selected" : "") + '>Traveling</option>' +
+        '</select></td>' +
+        '<td><input type="datetime-local" value="' + (r.clock_in ? r.clock_in.slice(0,16) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
+        '<td><input type="datetime-local" value="' + (r.clock_out ? r.clock_out.slice(0,16) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
+        '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
+        '<td>' + fmtDuration(r.break_seconds) + '</td>' +
+        '<td><button class="save-btn" onclick="saveRow(\'' + r.time_entry_id + '\')">Save</button></td>' +
+      '</tr>';
+    }).join("");
+
+    return '<div class="card">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleEmployeeReport(\'' + safeId + '\')">' +
+        '<strong style="font-size:16px;">' + name + '</strong>' +
+        '<span style="color:#8A8578; font-size:13px;">' + fmtDuration(totalSeconds) + ' total &nbsp; &#9660;</span>' +
+      '</div>' +
+      '<div id="' + safeId + '" style="display:none; margin-top:12px;">' +
+        '<table><thead><tr><th>Job</th><th>Location</th><th>Clock In</th><th>Clock Out</th><th>Worked</th><th>Break</th><th></th></tr></thead>' +
+        '<tbody>' + rowsHtml + '</tbody></table>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function toggleEmployeeReport(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "none" ? "block" : "none";
+}
+
+function exportQuickBooksCsv() {
+  const rows = window.lastReportRows || [];
+  if (rows.length === 0) {
+    alert("No hours in the current date range to export.");
+    return;
+  }
+
+  const header = "Name,Date,Hours,Pay Type,Job\n";
+  const lines = rows.map(function(r) {
+    const dateStr = r.clock_in ? new Date(r.clock_in).toLocaleDateString("en-US") : "";
+    const hours = ((r.worked_seconds || 0) / 3600).toFixed(2);
+    const payType = r.location_type === "traveling" ? "Travel" : "Regular";
+    const job = (r.job_name || "").replace(/,/g, ";");
+    const name = (r.employee_name || "").replace(/,/g, ";");
+    return name + "," + dateStr + "," + hours + "," + payType + "," + job;
+  });
+
+  const csvContent = header + lines.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "site-clock-hours-" + document.getElementById("report-start").value + "-to-" + document.getElementById("report-end").value + ".csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function saveRow(id) {
+  const inputs = document.querySelectorAll('[data-id="' + id + '"]');
+  const patch = {};
+  inputs.forEach(function(el) {
+    const field = el.dataset.field;
+    let val = el.value;
+    if ((field === "clock_in" || field === "clock_out") && val) {
+      val = new Date(val).toISOString();
+    }
+    patch[field] = val;
+  });
+  await window.admin.updateTimeEntry(id, patch);
+  loadReports();
+}
+
+async function loadEmployees() {
+  const rows = await window.admin.listEmployees();
+  const body = document.getElementById("employees-body");
+  body.innerHTML = "";
+  rows.forEach(function(e) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + e.name + "</td>" +
+      "<td>" + e.email + "</td>" +
+      "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
+      '<td><button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button></td>';
+    body.appendChild(tr);
+  });
+}
+
+async function toggleActive(id, newActive) {
+  await window.admin.updateEmployee(id, { active: newActive });
+  loadEmployees();
+}
+
+async function loadShopLocation() {
+  try {
+    const loc = await window.admin.getShopLocation();
+    document.getElementById("shop-lat-input").value = loc.shop_lat != null ? loc.shop_lat : "";
+    document.getElementById("shop-lng-input").value = loc.shop_lng != null ? loc.shop_lng : "";
+    document.getElementById("shop-radius-input").value = loc.shop_radius_m != null ? loc.shop_radius_m : 152;
+  } catch (err) {
+    // non-fatal — leave the fields blank if this fails
+  }
+}
+
+async function saveShopLocation() {
+  const lat = document.getElementById("shop-lat-input").value.trim();
+  const lng = document.getElementById("shop-lng-input").value.trim();
+  const radius = document.getElementById("shop-radius-input").value.trim();
+  const errEl = document.getElementById("shop-location-error");
+  const successEl = document.getElementById("shop-location-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!lat || !lng) {
+    errEl.textContent = "Latitude and longitude are both required.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.updateShopLocation({
+      shop_lat: Number(lat),
+      shop_lng: Number(lng),
+      shop_radius_m: radius ? Number(radius) : 152,
+    });
+    successEl.textContent = "Shop location saved. Employees will use this the next time they open the app.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save shop location.";
+    errEl.style.display = "block";
+  }
+}
+
+async function addEmployee() {
+  const name = document.getElementById("new-emp-name").value.trim();
+  const email = document.getElementById("new-emp-email").value.trim();
+  const pin = document.getElementById("new-emp-pin").value.trim();
+  const errEl = document.getElementById("add-emp-error");
+  errEl.style.display = "none";
+  if (!name || !email || !pin) {
+    errEl.textContent = "Name, email, and PIN are all required.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.addEmployee({ name: name, email: email, pin: pin });
+    document.getElementById("new-emp-name").value = "";
+    document.getElementById("new-emp-email").value = "";
+    document.getElementById("new-emp-pin").value = "";
+    loadEmployees();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't add employee";
+    errEl.style.display = "block";
+  }
+}
+
+init();
+</script>
+</body>
+</html>
