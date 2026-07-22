@@ -261,6 +261,38 @@
       </div>
 
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Pay schedule</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          How often your pay periods repeat. This controls what "Submit Hours for Payroll" bundles together.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Pay frequency</label>
+        <select id="pay-frequency-select" style="margin-bottom:10px; width:100%; padding:8px; border-radius:4px; border:1.5px solid var(--line);" onchange="togglePayScheduleFields()">
+          <option value="semi_monthly">1st &amp; 15th (semi-monthly)</option>
+          <option value="biweekly">Bi-weekly</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="custom">Custom</option>
+        </select>
+
+        <div id="pay-anchor-field" style="display:none;">
+          <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Start date of a pay period</label>
+          <p style="font-size:11px; color:#8A8578; margin: 0 0 4px;">
+            Pick the first day of any one pay period you already know (e.g. the start of last pay period). Every period is calculated from this date.
+          </p>
+          <input id="pay-anchor-input" type="date" style="margin-bottom:10px;" />
+        </div>
+
+        <div id="pay-custom-days-field" style="display:none;">
+          <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Days per pay period</label>
+          <input id="pay-custom-days-input" type="number" min="1" placeholder="e.g. 10" style="margin-bottom:10px;" />
+        </div>
+
+        <button class="btn-primary" style="width:auto;" onclick="savePaySchedule()">Save</button>
+        <div id="pay-schedule-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="pay-schedule-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Change admin email</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           This is the email you sign into this app with. Changing it requires your current password.
@@ -411,6 +443,7 @@ function showApp() {
   loadEmployees();
   loadShopLocation();
   loadPayrollEmail();
+  loadPaySchedule();
   setInterval(loadOverview, 60000);
 }
 
@@ -792,6 +825,64 @@ async function savePayrollEmail() {
     successEl.style.display = "block";
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save payroll email.";
+    errEl.style.display = "block";
+  }
+}
+
+function togglePayScheduleFields() {
+  const frequency = document.getElementById("pay-frequency-select").value;
+  const needsAnchor = frequency === "biweekly" || frequency === "weekly" || frequency === "custom";
+  document.getElementById("pay-anchor-field").style.display = needsAnchor ? "block" : "none";
+  document.getElementById("pay-custom-days-field").style.display = frequency === "custom" ? "block" : "none";
+}
+
+async function loadPaySchedule() {
+  try {
+    const data = await window.admin.getPaySchedule();
+    document.getElementById("pay-frequency-select").value = data.pay_frequency || "semi_monthly";
+    if (data.pay_period_anchor) {
+      document.getElementById("pay-anchor-input").value = String(data.pay_period_anchor).slice(0, 10);
+    }
+    if (data.pay_period_custom_days) {
+      document.getElementById("pay-custom-days-input").value = data.pay_period_custom_days;
+    }
+    togglePayScheduleFields();
+  } catch (err) {
+    // non-fatal — leave the defaults if this fails
+  }
+}
+
+async function savePaySchedule() {
+  const frequency = document.getElementById("pay-frequency-select").value;
+  const anchor = document.getElementById("pay-anchor-input").value;
+  const customDays = document.getElementById("pay-custom-days-input").value;
+  const errEl = document.getElementById("pay-schedule-error");
+  const successEl = document.getElementById("pay-schedule-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  const needsAnchor = frequency === "biweekly" || frequency === "weekly" || frequency === "custom";
+  if (needsAnchor && !anchor) {
+    errEl.textContent = "Pick the start date of a known pay period.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (frequency === "custom" && (!customDays || Number(customDays) < 1)) {
+    errEl.textContent = "Enter how many days are in each pay period.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  try {
+    await window.admin.updatePaySchedule({
+      pay_frequency: frequency,
+      pay_period_anchor: needsAnchor ? anchor : null,
+      pay_period_custom_days: frequency === "custom" ? Number(customDays) : null,
+    });
+    successEl.textContent = "Pay schedule saved.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save pay schedule.";
     errEl.style.display = "block";
   }
 }

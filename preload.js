@@ -59,4 +59,7 @@ contextBridge.exposeInMainWorld("admin", {
   getPayrollEmail: () => apiFetch("/api/admin/payroll-email"),
   updatePayrollEmail: (payrollEmail) =>
     apiFetch("/api/admin/payroll-email", { method: "PATCH", body: { payroll_email: payrollEmail } }),
+
+  getPaySchedule: () => apiFetch("/api/admin/pay-schedule"),
+  updatePaySchedule: (patch) => apiFetch("/api/admin/pay-schedule", { method: "PATCH", body: patch }),
 });
