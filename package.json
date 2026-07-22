@@ -1,5 +1,5 @@
 {
-  "name": "site-clock-admin",
+  "name": "coll-timeclock-admin",
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
@@ -15,8 +15,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.modularcleanrooms.siteclockadmin",
-    "productName": "Site Clock Admin",
+    "appId": "com.collbusinesssolutions.admin",
+    "productName": "Coll Timeclock Admin",
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
@@ -26,14 +26,14 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "Site-Clock-Admin-Setup.exe"
+      "artifactName": "Coll-Timeclock-Admin-Setup.exe"
     },
     "appx": {
-      "identityName": "REPLACE_WITH_PACKAGE_IDENTITY_NAME",
-      "publisher": "REPLACE_WITH_PUBLISHER_ID",
-      "publisherDisplayName": "REPLACE_WITH_PUBLISHER_DISPLAY_NAME",
-      "applicationId": "SiteClockAdmin",
-      "displayName": "Site Clock Admin",
+      "identityName": "jcollins.CollTimeclock",
+      "publisher": "CN=55D9F888-409D-4342-BEA9-1BAFF153D7C5",
+      "publisherDisplayName": "jcollins",
+      "applicationId": "CollTimeclockAdmin",
+      "displayName": "Coll Timeclock",
       "backgroundColor": "#C1502E"
     }
   }
