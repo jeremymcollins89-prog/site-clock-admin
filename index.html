@@ -249,6 +249,18 @@
 
     <section id="tab-settings" class="tab">
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Payroll email</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Where "Submit Hours for Payroll" sends timesheet emails from your employees. Required before employees can submit hours.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Payroll email</label>
+        <input id="payroll-email-input" type="email" placeholder="payroll@company.com" style="margin-bottom:10px;" />
+        <button class="btn-primary" style="width:auto;" onclick="savePayrollEmail()">Save</button>
+        <div id="payroll-email-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="payroll-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Change admin email</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           This is the email you sign into this app with. Changing it requires your current password.
@@ -273,6 +285,11 @@
         <input id="shop-lng-input" placeholder="e.g. -104.9903" style="margin-bottom:10px;" />
         <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Radius (meters)</label>
         <input id="shop-radius-input" placeholder="152" style="margin-bottom:10px;" />
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Auto clock-out time</label>
+        <p style="font-size:11px; color:#8A8578; margin: 0 0 4px;">
+          Employees still clocked in "In Town" get auto clocked out at this time if they've left the shop. Doesn't apply to "Traveling" shifts.
+        </p>
+        <input id="clockout-time-input" type="time" style="margin-bottom:10px;" />
         <button class="btn-primary" style="width:auto;" onclick="saveShopLocation()">Save</button>
         <div id="shop-location-error" class="error" style="display:none; margin-top:10px;"></div>
         <div id="shop-location-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
@@ -393,6 +410,7 @@ function showApp() {
   loadReports();
   loadEmployees();
   loadShopLocation();
+  loadPayrollEmail();
   setInterval(loadOverview, 60000);
 }
 
@@ -457,9 +475,15 @@ async function loadOverview() {
 
   list.innerHTML = activeOnly.map(function(e) {
     const isClockedIn = !!e.open_entry_id;
+    const shiftHours = isClockedIn && e.open_clock_in ? (Date.now() - new Date(e.open_clock_in).getTime()) / 3600000 : 0;
+    const shiftTooLong = isClockedIn && shiftHours > 10;
+
     const statusBadge = isClockedIn
       ? '<span class="badge" style="background:#3D5A50; color:#fff;">Clocked In</span>'
       : '<span class="badge" style="background:#D8D3C4; color:#1F2421;">Off the Clock</span>';
+    const longShiftBadge = shiftTooLong
+      ? '<span class="badge" style="background:#C1502E; color:#fff; margin-left:6px;">Over 10h — check in?</span>'
+      : '';
 
     const currentJob = isClockedIn
       ? '<div style="font-size:13px; color:#8A8578; margin-top:4px;">' +
@@ -469,10 +493,10 @@ async function loadOverview() {
         '</div>'
       : "";
 
-    return '<div class="card employee-card" style="opacity:1;" onclick="openEmployeeDetail(\'' + e.id + '\', \'' + e.name + '\', ' + e.active + ', ' + isClockedIn + ')">' +
+    return '<div class="card employee-card" style="opacity:1;' + (shiftTooLong ? ' border-color:#C1502E;' : '') + '" onclick="openEmployeeDetail(\'' + e.id + '\', \'' + e.name + '\', ' + e.active + ', ' + isClockedIn + ')">' +
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
           '<strong style="font-size:16px;">' + e.name + '</strong>' +
-          statusBadge +
+          '<span>' + statusBadge + longShiftBadge + '</span>' +
         '</div>' +
         currentJob +
         '<div style="display:flex; gap:24px; margin-top:10px;">' +
@@ -741,12 +765,44 @@ async function submitChangeEmail() {
   }
 }
 
+async function loadPayrollEmail() {
+  try {
+    const data = await window.admin.getPayrollEmail();
+    document.getElementById("payroll-email-input").value = data.payroll_email || "";
+  } catch (err) {
+    // non-fatal — leave the field blank if this fails
+  }
+}
+
+async function savePayrollEmail() {
+  const email = document.getElementById("payroll-email-input").value.trim();
+  const errEl = document.getElementById("payroll-email-error");
+  const successEl = document.getElementById("payroll-email-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!email) {
+    errEl.textContent = "Payroll email is required.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.updatePayrollEmail(email);
+    successEl.textContent = "Payroll email saved.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save payroll email.";
+    errEl.style.display = "block";
+  }
+}
+
 async function loadShopLocation() {
   try {
     const loc = await window.admin.getShopLocation();
     document.getElementById("shop-lat-input").value = loc.shop_lat != null ? loc.shop_lat : "";
     document.getElementById("shop-lng-input").value = loc.shop_lng != null ? loc.shop_lng : "";
     document.getElementById("shop-radius-input").value = loc.shop_radius_m != null ? loc.shop_radius_m : 152;
+    document.getElementById("clockout-time-input").value = loc.auto_clockout_time ? loc.auto_clockout_time.slice(0, 5) : "16:30";
   } catch (err) {
     // non-fatal — leave the fields blank if this fails
   }
@@ -756,6 +812,7 @@ async function saveShopLocation() {
   const lat = document.getElementById("shop-lat-input").value.trim();
   const lng = document.getElementById("shop-lng-input").value.trim();
   const radius = document.getElementById("shop-radius-input").value.trim();
+  const clockoutTime = document.getElementById("clockout-time-input").value.trim();
   const errEl = document.getElementById("shop-location-error");
   const successEl = document.getElementById("shop-location-success");
   errEl.style.display = "none";
@@ -771,6 +828,7 @@ async function saveShopLocation() {
       shop_lat: Number(lat),
       shop_lng: Number(lng),
       shop_radius_m: radius ? Number(radius) : 152,
+      auto_clockout_time: clockoutTime || undefined,
     });
     successEl.textContent = "Shop location saved. Employees will use this the next time they open the app.";
     successEl.style.display = "block";

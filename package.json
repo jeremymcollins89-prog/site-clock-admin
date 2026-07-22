@@ -4,7 +4,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win nsis",
+    "dist:store": "electron-builder --win appx"
   },
   "dependencies": {
     "electron-store": "^8.2.0"
@@ -26,6 +27,14 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "artifactName": "Site-Clock-Admin-Setup.exe"
+    },
+    "appx": {
+      "identityName": "REPLACE_WITH_PACKAGE_IDENTITY_NAME",
+      "publisher": "REPLACE_WITH_PUBLISHER_ID",
+      "publisherDisplayName": "REPLACE_WITH_PUBLISHER_DISPLAY_NAME",
+      "applicationId": "SiteClockAdmin",
+      "displayName": "Site Clock Admin",
+      "backgroundColor": "#C1502E"
     }
   }
 }
