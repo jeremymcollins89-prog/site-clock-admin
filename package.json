@@ -5,10 +5,12 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win nsis",
-    "dist:store": "electron-builder --win appx"
+    "dist:store": "electron-builder --win appx",
+    "release": "electron-builder --win nsis --publish always"
   },
   "dependencies": {
-    "electron-store": "^8.2.0"
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "electron": "^31.0.0",
@@ -35,6 +37,11 @@
       "applicationId": "CollTimeclockAdmin",
       "displayName": "Coll Timeclock",
       "backgroundColor": "#C1502E"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "jeremymcollins89-prog",
+      "repo": "site-clock-admin"
     }
   }
 }

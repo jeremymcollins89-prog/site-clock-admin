@@ -1,7 +1,19 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 const Store = require("electron-store");
+const { autoUpdater } = require("electron-updater");
 new Store(); // registers electron-store's internal IPC handlers in the main process
+
+// Checks GitHub Releases for a newer version, downloads it in the
+// background, and installs it automatically the next time the app is
+// closed and reopened -- no action needed from whoever's using it. Only
+// affects copies installed via the direct .exe download; copies installed
+// through the Microsoft Store update automatically through the Store itself.
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.on("error", (err) => {
+  console.error("Auto-update check failed:", err.message);
+});
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -22,6 +34,7 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+  autoUpdater.checkForUpdatesAndNotify();
 });
 
 app.on("window-all-closed", () => {
