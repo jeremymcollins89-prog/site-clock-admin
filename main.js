@@ -28,10 +28,11 @@ function createWindow() {
   });
   win.loadFile("index.html");
 
-  // Address links (Google Maps directions) open in the system browser
-  // instead of a blocked/blank in-app popup.
+  // Address links (Google Maps directions), phone numbers, and email
+  // addresses all hand off to the system's default handler (browser,
+  // phone app, mail client) instead of a blocked/blank in-app popup.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith("http:") || url.startsWith("https:")) {
+    if (url.startsWith("http:") || url.startsWith("https:") || url.startsWith("tel:") || url.startsWith("mailto:")) {
       shell.openExternal(url);
     }
     return { action: "deny" };

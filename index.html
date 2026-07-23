@@ -1190,6 +1190,10 @@ function mapsUrl(address) {
   return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
 }
 
+function telUrl(phone) {
+  return "tel:" + phone.replace(/[^0-9+]/g, "");
+}
+
 // Combines street/city/state/zip into a single display string, e.g.
 // "123 Main St, Denver, CO 80202" -- skips whichever parts are blank.
 function formatAddressParts(street, city, state, zip) {
@@ -1316,9 +1320,11 @@ function renderCustomersList() {
 
   list.innerHTML = customers.map(function(c) {
     const fullAddress = formatAddress(c);
-    const details = [c.phone, c.email].filter(Boolean).map(function(d) {
-      return '<div style="font-size:12px; color:#8A8578;">' + d + '</div>';
-    }).join("") + (fullAddress
+    const details = (c.phone
+      ? '<div style="font-size:12px;"><a href="' + telUrl(c.phone) + '" style="color:' + JOB_COLORS.rust + ';">' + c.phone + '</a></div>'
+      : "") + (c.email
+      ? '<div style="font-size:12px;"><a href="mailto:' + c.email + '" style="color:' + JOB_COLORS.rust + ';">' + c.email + '</a></div>'
+      : "") + (fullAddress
       ? '<div style="font-size:12px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + fullAddress + ' (directions)</a></div>'
       : "");
     return '<div class="card customer-card">' +
@@ -1624,7 +1630,7 @@ function openDayModal(dateStr) {
         const jobAddress = formatAddressParts(j.customer_street, j.customer_city, j.customer_state, j.customer_zip);
         return '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' +
           '<strong>' + j.customer_name + '</strong>' +
-          (j.customer_phone ? ' &middot; ' + j.customer_phone : "") +
+          (j.customer_phone ? ' &middot; <a href="' + telUrl(j.customer_phone) + '" style="color:' + JOB_COLORS.rust + ';">' + j.customer_phone + '</a>' : "") +
           (jobAddress ? ' &middot; <a href="' + mapsUrl(jobAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + jobAddress + ' (directions)</a>' : "") +
         '</div>';
       })() : '') +
