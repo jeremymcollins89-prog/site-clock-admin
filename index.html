@@ -211,6 +211,16 @@
     text-overflow: ellipsis; white-space: nowrap;
   }
   .cal-job-more { font-size: 10px; color: #8A8578; }
+  .overview-split { display: flex; gap: 24px; align-items: flex-start; }
+  .overview-cal-col { flex: 1 1 55%; min-width: 0; }
+  .overview-emp-col {
+    flex: 1 1 45%; min-width: 300px;
+    max-height: calc(100vh - 260px); overflow-y: auto; padding-right: 4px;
+  }
+  @media (max-width: 900px) {
+    .overview-split { flex-direction: column; }
+    .overview-emp-col { max-height: none; }
+  }
   .type-badge {
     display: inline-block; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px;
@@ -394,7 +404,21 @@
   <main>
 
     <section id="tab-overview" class="tab active">
-      <div id="overview-list"></div>
+      <div class="overview-split">
+        <div class="overview-cal-col">
+          <div class="cal-toolbar">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" onclick="navigateOverviewCal(-1)">&larr;</button>
+              <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:12px;" onclick="goToOverviewToday()">Today</button>
+              <button class="cal-nav-btn" onclick="navigateOverviewCal(1)">&rarr;</button>
+            </div>
+          </div>
+          <div id="overview-calendar"></div>
+        </div>
+        <div class="overview-emp-col">
+          <div id="overview-list"></div>
+        </div>
+      </div>
     </section>
 
     <section id="tab-employees" class="tab">
@@ -665,6 +689,7 @@ function showApp() {
   document.getElementById("report-start").value = monthStart.toISOString().slice(0, 10);
   document.getElementById("report-end").value = today.toISOString().slice(0, 10);
   loadOverview();
+  renderOverviewCalendar();
   loadReportsExportData();
   loadEmployees();
   loadShopLocation();
@@ -1556,6 +1581,7 @@ async function submitJob() {
     }
     closeJobModal();
     await renderScheduleCalendar();
+    await renderOverviewCalendar();
     if (currentDayModalDate) openDayModal(currentDayModalDate);
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save event.";
@@ -1567,6 +1593,7 @@ async function deleteJobConfirm(id) {
   if (!confirm("Delete this event? Assigned employees will no longer see it in their schedule.")) return;
   await window.admin.deleteJob(id);
   await renderScheduleCalendar();
+  await renderOverviewCalendar();
   if (currentDayModalDate) openDayModal(currentDayModalDate);
 }
 
@@ -1603,6 +1630,80 @@ function goToToday() {
 function changeScheduleMonths() {
   scheduleMonths = Number(document.getElementById("schedule-months-select").value);
   renderScheduleCalendar();
+}
+
+// ---------- Overview calendar (compact, single-month, shares the same
+// day/job modals as the Schedule tab's calendar) ----------
+let overviewCalAnchor = (function() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+})();
+
+function navigateOverviewCal(direction) {
+  overviewCalAnchor = new Date(overviewCalAnchor.getFullYear(), overviewCalAnchor.getMonth() + direction, 1);
+  renderOverviewCalendar();
+}
+
+function goToOverviewToday() {
+  const now = new Date();
+  overviewCalAnchor = new Date(now.getFullYear(), now.getMonth(), 1);
+  renderOverviewCalendar();
+}
+
+async function renderOverviewCalendar() {
+  const year = overviewCalAnchor.getFullYear();
+  const month = overviewCalAnchor.getMonth();
+  const rangeStart = dateToStr(overviewCalAnchor);
+  const rangeEnd = dateToStr(new Date(year, month + 1, 0));
+
+  const jobs = await window.admin.listJobs({ start: rangeStart, end: rangeEnd });
+  const jobsByDate = {};
+  jobs.forEach(function(job) {
+    eachDateStrInRange(job.start_date, job.end_date, function(dateStr) {
+      if (!jobsByDate[dateStr]) jobsByDate[dateStr] = [];
+      jobsByDate[dateStr].push(job);
+    });
+  });
+
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = todayStr();
+
+  let html = '<div class="cal-month">';
+  html += '<h4>' + MONTH_LABELS[month] + ' ' + year + '</h4>';
+  html += '<div class="cal-grid">';
+  html += DOW_LABELS.map(function(l) { return '<div class="cal-dow">' + l + '</div>'; }).join("");
+
+  for (let b = 0; b < firstDow; b++) {
+    html += '<div class="cal-day cal-day-empty"></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+    const dayJobs = jobsByDate[dateStr] || [];
+    const isToday = dateStr === today;
+    const pills = dayJobs.slice(0, 3).map(function(j) {
+      const typeLabel = EVENT_TYPE_LABELS[j.event_type] || "Job";
+      const prefix = j.event_type && j.event_type !== "job" ? typeLabel.charAt(0) + ": " : "";
+      const tooltip = typeLabel + " — " + j.title + (j.customer_name ? " (" + j.customer_name + ")" : "");
+      return '<span class="cal-job-pill" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';" ' +
+        'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
+        'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + prefix + j.title + '</span>';
+    }).join("");
+    const more = dayJobs.length > 3 ? '<div class="cal-job-more">+' + (dayJobs.length - 3) + ' more</div>' : '';
+    html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +
+      '<div class="cal-day-num">' + day + '</div>' + pills + more +
+    '</div>';
+  }
+
+  const totalCells = firstDow + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for (let t = 0; t < trailing; t++) {
+    html += '<div class="cal-day cal-day-empty"></div>';
+  }
+
+  html += '</div></div>';
+  document.getElementById("overview-calendar").innerHTML = html;
 }
 
 let currentDayModalDate = null;
