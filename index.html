@@ -254,13 +254,13 @@
 </div>
 
 <div id="app">
-  <div class="modal-overlay" id="employee-modal">
+  <div class="modal-overlay" id="employee-modal" onclick="if(event.target===this) closeEmployeeModal();">
     <div class="modal-box" style="width:1020px; max-width:95vw;">
       <button class="modal-close" onclick="closeEmployeeModal()">&times;</button>
       <div id="employee-modal-content"></div>
     </div>
   </div>
-  <div class="modal-overlay" id="edit-employee-modal">
+  <div class="modal-overlay" id="edit-employee-modal" onclick="if(event.target===this) closeEditEmployeeModal();">
     <div class="modal-box" style="width:380px;">
       <button class="modal-close" onclick="closeEditEmployeeModal()">&times;</button>
       <h2 style="margin-top:0;">Edit employee</h2>
@@ -273,7 +273,7 @@
       <button class="btn-primary" onclick="submitEditEmployee()">Save changes</button>
     </div>
   </div>
-  <div class="modal-overlay" id="crew-modal">
+  <div class="modal-overlay" id="crew-modal" onclick="if(event.target===this) closeCrewModal();">
     <div class="modal-box" style="width:380px;">
       <button class="modal-close" onclick="closeCrewModal()">&times;</button>
       <h2 id="crew-modal-title" style="margin-top:0;">New crew</h2>
@@ -286,7 +286,7 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="job-modal">
+  <div class="modal-overlay" id="job-modal" onclick="if(event.target===this) cancelJobModal();">
     <div class="modal-box" style="width:440px;">
       <button class="modal-close" onclick="cancelJobModal()">&times;</button>
       <h2 id="job-modal-title" style="margin-top:0;">New event</h2>
@@ -325,14 +325,14 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="day-modal">
+  <div class="modal-overlay" id="day-modal" onclick="if(event.target===this) dismissDayModal();">
     <div class="modal-box" style="width:400px;">
       <button class="modal-close" onclick="dismissDayModal()">&times;</button>
       <div id="day-modal-content"></div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="customer-modal">
+  <div class="modal-overlay" id="customer-modal" onclick="if(event.target===this) closeCustomerModal();">
     <div class="modal-box" style="width:440px;">
       <button class="modal-close" onclick="closeCustomerModal()">&times;</button>
       <h2 id="customer-modal-title" style="margin-top:0;">New customer</h2>
@@ -365,14 +365,14 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="customer-history-modal">
+  <div class="modal-overlay" id="customer-history-modal" onclick="if(event.target===this) closeCustomerHistoryModal();">
     <div class="modal-box" style="width:420px;">
       <button class="modal-close" onclick="closeCustomerHistoryModal()">&times;</button>
       <div id="customer-history-content"></div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="password-modal">
+  <div class="modal-overlay" id="password-modal" onclick="if(event.target===this) closePasswordModal();">
     <div class="modal-box" style="width:360px;">
       <button class="modal-close" onclick="closePasswordModal()">&times;</button>
       <h2 style="margin-top:0;">Change password</h2>
