@@ -245,7 +245,7 @@
 
 <div id="app">
   <div class="modal-overlay" id="employee-modal">
-    <div class="modal-box">
+    <div class="modal-box" style="width:720px; max-width:92vw;">
       <button class="modal-close" onclick="closeEmployeeModal()">&times;</button>
       <div id="employee-modal-content"></div>
     </div>
@@ -386,7 +386,6 @@
   </header>
   <nav>
     <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
-    <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Edit Hours</button>
     <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
     <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
     <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
@@ -396,21 +395,6 @@
 
     <section id="tab-overview" class="tab active">
       <div id="overview-list"></div>
-    </section>
-
-    <section id="tab-reports" class="tab">
-      <div class="toolbar">
-        <div>
-          <label>From</label>
-          <input id="report-start" type="date" onchange="loadReports()" />
-        </div>
-        <div>
-          <label>To</label>
-          <input id="report-end" type="date" onchange="loadReports()" />
-        </div>
-        <button class="btn-secondary" onclick="exportQuickBooksCsv()">Export to QuickBooks (CSV)</button>
-      </div>
-      <div id="reports-body"></div>
     </section>
 
     <section id="tab-employees" class="tab">
@@ -424,6 +408,18 @@
         </div>
         <div id="add-emp-error" class="error" style="display:none; margin-top:8px;"></div>
       </div>
+      <div class="toolbar">
+        <div>
+          <label>From</label>
+          <input id="report-start" type="date" onchange="loadReportsExportData()" />
+        </div>
+        <div>
+          <label>To</label>
+          <input id="report-end" type="date" onchange="loadReportsExportData()" />
+        </div>
+        <button class="btn-secondary" onclick="exportQuickBooksCsv()">Export to QuickBooks (CSV)</button>
+      </div>
+      <p style="font-size:12px; color:#8A8578; margin-top:-8px;">Click an employee below to view or edit their hours.</p>
       <table>
         <thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead>
         <tbody id="employees-body"></tbody>
@@ -669,7 +665,7 @@ function showApp() {
   document.getElementById("report-start").value = monthStart.toISOString().slice(0, 10);
   document.getElementById("report-end").value = today.toISOString().slice(0, 10);
   loadOverview();
-  loadReports();
+  loadReportsExportData();
   loadEmployees();
   loadShopLocation();
   loadPayrollEmail();
@@ -800,24 +796,48 @@ async function loadOverview() {
   });
 }
 
+// Tracks which employee's detail modal is open, so the date-range pickers
+// and Save buttons inside it know who to reload/save against.
+let currentEmployeeDetail = null; // { id, name, active, isClockedIn }
+
 async function openEmployeeDetail(id, name, active, isClockedIn) {
-  const rows = await window.admin.listTimeEntries({ employee_id: id });
+  currentEmployeeDetail = { id: id, name: name, active: active, isClockedIn: isClockedIn };
+
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const defaultStart = monthStart.toISOString().slice(0, 10);
+  const defaultEnd = today.toISOString().slice(0, 10);
+
+  document.getElementById("employee-modal").classList.add("visible");
+  await renderEmployeeDetail(defaultStart, defaultEnd);
+}
+
+async function renderEmployeeDetail(start, end) {
+  const ed = currentEmployeeDetail;
+  if (!ed) return;
+  const rows = await window.admin.listTimeEntries({ employee_id: ed.id, start: start, end: end });
 
   const regularSeconds = rows.reduce((s, r) => s + (r.location_type === "in_town" ? Number(r.worked_seconds || 0) : 0), 0);
   const travelSeconds = rows.reduce((s, r) => s + (r.location_type === "traveling" ? Number(r.worked_seconds || 0) : 0), 0);
 
-  const shiftRows = rows.slice(0, 20).map(function(r) {
+  const rowsHtml = rows.map(function(r) {
     return '<tr>' +
-      '<td>' + fmtDateTime(r.clock_in) + '</td>' +
-      '<td>' + (r.job_name || "") + '</td>' +
-      '<td><span class="badge ' + (r.location_type === "in_town" ? "badge-in-town" : "badge-traveling") + '">' + (r.location_type === "in_town" ? "In town" : "Traveling") + '</span></td>' +
+      '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" /></td>' +
+      '<td><select data-field="location_type" data-id="' + r.time_entry_id + '">' +
+        '<option value="in_town"' + (r.location_type === "in_town" ? " selected" : "") + '>In town</option>' +
+        '<option value="traveling"' + (r.location_type === "traveling" ? " selected" : "") + '>Traveling</option>' +
+      '</select></td>' +
+      '<td><input type="datetime-local" value="' + (r.clock_in ? toLocalDatetimeInputValue(r.clock_in) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
+      '<td><input type="datetime-local" value="' + (r.clock_out ? toLocalDatetimeInputValue(r.clock_out) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
       '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
+      '<td>' + fmtDuration(r.break_seconds) + '</td>' +
+      '<td><button class="save-btn" onclick="saveEmployeeDetailRow(\'' + r.time_entry_id + '\')">Save</button></td>' +
     '</tr>';
   }).join("");
 
   document.getElementById("employee-modal-content").innerHTML =
-    '<h2>' + name + '</h2>' +
-    '<p style="color:#8A8578; margin-top:0;">' + (active ? "Active" : "Inactive") + '</p>' +
+    '<h2 style="margin-bottom:0;">' + ed.name + '</h2>' +
+    '<p style="color:#8A8578; margin-top:2px;">' + (ed.active ? "Active" : "Inactive") + '</p>' +
     '<div style="display:flex; gap:24px; margin:16px 0;">' +
       '<div>' +
         '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Regular hours</div>' +
@@ -828,13 +848,45 @@ async function openEmployeeDetail(id, name, active, isClockedIn) {
         '<div style="font-size:22px; font-weight:600;">' + fmtDurationShort(travelSeconds) + '</div>' +
       '</div>' +
     '</div>' +
-    '<table><thead><tr><th>Date</th><th>Job</th><th>Location</th><th>Worked</th></tr></thead><tbody>' + shiftRows + '</tbody></table>' +
-    (isClockedIn
-      ? '<button class="btn-primary" style="width:auto; margin-top:12px;" onclick="requestPing(\'' + id + '\')">Ping Now</button>' +
+    '<div style="display:flex; gap:10px; align-items:end; margin-bottom:12px;">' +
+      '<div>' +
+        '<label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">From</label>' +
+        '<input id="emp-detail-start" type="date" value="' + start + '" onchange="onEmployeeDetailRangeChange()" style="margin-bottom:0;" />' +
+      '</div>' +
+      '<div>' +
+        '<label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">To</label>' +
+        '<input id="emp-detail-end" type="date" value="' + end + '" onchange="onEmployeeDetailRangeChange()" style="margin-bottom:0;" />' +
+      '</div>' +
+    '</div>' +
+    '<table><thead><tr><th>Job</th><th>Location</th><th>Clock In</th><th>Clock Out</th><th>Worked</th><th>Break</th><th></th></tr></thead>' +
+    '<tbody>' + (rowsHtml || '<tr><td colspan="7" style="text-align:center; color:#8A8578; padding:16px;">No hours in this date range.</td></tr>') + '</tbody></table>' +
+    (ed.isClockedIn
+      ? '<button class="btn-primary" style="width:auto; margin-top:12px;" onclick="requestPing(\'' + ed.id + '\')">Ping Now</button>' +
         '<p id="ping-status-msg" style="font-size:12px; color:#8A8578; margin-top:8px;"></p>'
-      : '<p style="font-size:12px; color:#8A8578; margin-top:12px;">Ping is only available while this employee is clocked in.</p>');
+      : '');
+}
 
-  document.getElementById("employee-modal").classList.add("visible");
+function onEmployeeDetailRangeChange() {
+  const start = document.getElementById("emp-detail-start").value;
+  const end = document.getElementById("emp-detail-end").value;
+  renderEmployeeDetail(start, end);
+}
+
+async function saveEmployeeDetailRow(id) {
+  const inputs = document.querySelectorAll('#employee-modal-content [data-id="' + id + '"]');
+  const patch = {};
+  inputs.forEach(function(el) {
+    const field = el.dataset.field;
+    let val = el.value;
+    if ((field === "clock_in" || field === "clock_out") && val) {
+      val = new Date(val).toISOString();
+    }
+    patch[field] = val;
+  });
+  await window.admin.updateTimeEntry(id, patch);
+  const start = document.getElementById("emp-detail-start").value;
+  const end = document.getElementById("emp-detail-end").value;
+  await renderEmployeeDetail(start, end);
 }
 
 async function requestPing(employeeId) {
@@ -850,64 +902,18 @@ async function requestPing(employeeId) {
 
 function closeEmployeeModal() {
   document.getElementById("employee-modal").classList.remove("visible");
+  currentEmployeeDetail = null;
 }
 
-async function loadReports() {
+// Fetches every entry in the selected date range (across all employees) so
+// the QuickBooks CSV export on the Employees tab has data to work with.
+// This no longer renders anything -- per-employee hours are viewed/edited
+// via the employee detail modal (openEmployeeDetail) instead.
+async function loadReportsExportData() {
   const start = document.getElementById("report-start").value;
   const end = document.getElementById("report-end").value;
   const rows = await window.admin.listTimeEntries({ start: start, end: end });
   window.lastReportRows = rows;
-
-  const grouped = {};
-  rows.forEach(function(r) {
-    if (!grouped[r.employee_name]) grouped[r.employee_name] = [];
-    grouped[r.employee_name].push(r);
-  });
-
-  const container = document.getElementById("reports-body");
-  const names = Object.keys(grouped).sort();
-
-  if (names.length === 0) {
-    container.innerHTML = '<p style="color:#8A8578;">No hours in this date range.</p>';
-    return;
-  }
-
-  container.innerHTML = names.map(function(name, idx) {
-    const empRows = grouped[name];
-    const totalSeconds = empRows.reduce((s, r) => s + Number(r.worked_seconds || 0), 0);
-    const safeId = "emp-report-" + idx;
-
-    const rowsHtml = empRows.map(function(r) {
-      return '<tr>' +
-        '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" /></td>' +
-        '<td><select data-field="location_type" data-id="' + r.time_entry_id + '">' +
-          '<option value="in_town"' + (r.location_type === "in_town" ? " selected" : "") + '>In town</option>' +
-          '<option value="traveling"' + (r.location_type === "traveling" ? " selected" : "") + '>Traveling</option>' +
-        '</select></td>' +
-        '<td><input type="datetime-local" value="' + (r.clock_in ? toLocalDatetimeInputValue(r.clock_in) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
-        '<td><input type="datetime-local" value="' + (r.clock_out ? toLocalDatetimeInputValue(r.clock_out) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
-        '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
-        '<td>' + fmtDuration(r.break_seconds) + '</td>' +
-        '<td><button class="save-btn" onclick="saveRow(\'' + r.time_entry_id + '\')">Save</button></td>' +
-      '</tr>';
-    }).join("");
-
-    return '<div class="card">' +
-      '<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleEmployeeReport(\'' + safeId + '\')">' +
-        '<strong style="font-size:16px;">' + name + '</strong>' +
-        '<span style="color:#8A8578; font-size:13px;">' + fmtDuration(totalSeconds) + ' total &nbsp; &#9660;</span>' +
-      '</div>' +
-      '<div id="' + safeId + '" style="display:none; margin-top:12px;">' +
-        '<table><thead><tr><th>Job</th><th>Location</th><th>Clock In</th><th>Clock Out</th><th>Worked</th><th>Break</th><th></th></tr></thead>' +
-        '<tbody>' + rowsHtml + '</tbody></table>' +
-      '</div>' +
-    '</div>';
-  }).join("");
-}
-
-function toggleEmployeeReport(id) {
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
 function exportQuickBooksCsv() {
@@ -937,21 +943,6 @@ function exportQuickBooksCsv() {
   URL.revokeObjectURL(url);
 }
 
-async function saveRow(id) {
-  const inputs = document.querySelectorAll('[data-id="' + id + '"]');
-  const patch = {};
-  inputs.forEach(function(el) {
-    const field = el.dataset.field;
-    let val = el.value;
-    if ((field === "clock_in" || field === "clock_out") && val) {
-      val = new Date(val).toISOString();
-    }
-    patch[field] = val;
-  });
-  await window.admin.updateTimeEntry(id, patch);
-  loadReports();
-}
-
 async function loadEmployees() {
   const rows = await window.admin.listEmployees();
   window.allEmployees = rows;
@@ -959,13 +950,15 @@ async function loadEmployees() {
   body.innerHTML = "";
   rows.forEach(function(e) {
     const tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.onclick = function() { openEmployeeDetail(e.id, e.name, e.active, false); };
     tr.innerHTML =
       "<td>" + e.name + "</td>" +
       "<td>" + e.email + "</td>" +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
       '<td>' +
-        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openEditEmployeeModal(\'' + e.id + '\', \'' + e.email + '\')">Edit</button>' +
-        '<button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button>' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\', \'' + e.email + '\')">Edit</button>' +
+        '<button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="event.stopPropagation(); toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button>' +
       '</td>';
     body.appendChild(tr);
   });
