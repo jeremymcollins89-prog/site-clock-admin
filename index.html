@@ -262,11 +262,11 @@
 
   <div class="modal-overlay" id="job-modal">
     <div class="modal-box" style="width:440px;">
-      <button class="modal-close" onclick="closeJobModal()">&times;</button>
-      <h2 id="job-modal-title" style="margin-top:0;">New job</h2>
+      <button class="modal-close" onclick="cancelJobModal()">&times;</button>
+      <h2 id="job-modal-title" style="margin-top:0;">New event</h2>
       <div id="job-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Job title</label>
-      <input id="job-title-input" placeholder="e.g. Smith residence re-roof" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Event title</label>
+      <input id="job-title-input" placeholder="e.g. Smith residence re-roof, team meeting" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="job-notes-input" placeholder="Any details the crew should know" />
       <div style="display:flex; gap:10px;">
@@ -285,7 +285,14 @@
       <div id="job-crews-list" class="checkbox-list"></div>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
       <div id="job-employees-list" class="checkbox-list"></div>
-      <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save job</button>
+      <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save event</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="day-modal">
+    <div class="modal-box" style="width:400px;">
+      <button class="modal-close" onclick="dismissDayModal()">&times;</button>
+      <div id="day-modal-content"></div>
     </div>
   </div>
 
@@ -362,14 +369,14 @@
           <h3 style="margin:0;">Crews</h3>
           <button class="btn-primary" style="width:auto;" onclick="openCrewModal()">New crew</button>
         </div>
-        <p style="font-size:12px; color:#8A8578;">A crew is a reusable group of employees you can assign to a job all at once.</p>
+        <p style="font-size:12px; color:#8A8578;">A crew is a reusable group of employees you can assign to an event all at once.</p>
         <div id="crews-list"></div>
       </div>
 
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <h3 style="margin:0;">Jobs</h3>
-          <button class="btn-primary" style="width:auto;" onclick="openJobModal()">New job</button>
+          <h3 style="margin:0;">Events</h3>
+          <button class="btn-primary" style="width:auto;" onclick="openJobModal()">New event</button>
         </div>
         <div class="cal-toolbar">
           <div class="cal-nav">
@@ -1237,6 +1244,11 @@ function closeJobModal() {
   editingJobId = null;
 }
 
+function cancelJobModal() {
+  closeJobModal();
+  if (currentDayModalDate) openDayModal(currentDayModalDate);
+}
+
 async function submitJob() {
   const title = document.getElementById("job-title-input").value.trim();
   const notes = document.getElementById("job-notes-input").value.trim();
@@ -1276,17 +1288,19 @@ async function submitJob() {
       await window.admin.addJob(payload);
     }
     closeJobModal();
-    renderScheduleCalendar();
+    await renderScheduleCalendar();
+    if (currentDayModalDate) openDayModal(currentDayModalDate);
   } catch (err) {
-    errEl.textContent = err.message || "Couldn't save job.";
+    errEl.textContent = err.message || "Couldn't save event.";
     errEl.style.display = "block";
   }
 }
 
 async function deleteJobConfirm(id) {
-  if (!confirm("Delete this job? Assigned employees will no longer see it in their schedule.")) return;
+  if (!confirm("Delete this event? Assigned employees will no longer see it in their schedule.")) return;
   await window.admin.deleteJob(id);
-  renderScheduleCalendar();
+  await renderScheduleCalendar();
+  if (currentDayModalDate) openDayModal(currentDayModalDate);
 }
 
 // ---------- Calendar ----------
@@ -1324,6 +1338,58 @@ function changeScheduleMonths() {
   renderScheduleCalendar();
 }
 
+let currentDayModalDate = null;
+
+function formatDayHeading(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const local = new Date(y, m - 1, d);
+  return local.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+function openDayModal(dateStr) {
+  currentDayModalDate = dateStr;
+  const dayJobs = (window.lastJobsByDate && window.lastJobsByDate[dateStr]) || [];
+
+  const rows = dayJobs.map(function(j) {
+    const assigned = j.assigned_employees.map(function(e) { return '<span class="chip">' + e.name + '</span>'; }).join("");
+    return '<div class="card" style="margin-bottom:8px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<div>' +
+          '<span class="job-color-dot" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';"></span>' +
+          '<strong>' + j.title + '</strong>' +
+        '</div>' +
+        '<span>' +
+          '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="closeDayModal(); openJobModal(\'' + j.id + '\');">Edit</button>' +
+          '<button class="save-btn" style="background: #C1502E;" onclick="deleteJobConfirm(\'' + j.id + '\')">Delete</button>' +
+        '</span>' +
+      '</div>' +
+      (j.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' + j.notes + '</div>' : '') +
+      '<div style="margin-top:6px;">' + (assigned || '<span style="color:#8A8578; font-size:12px;">Nobody assigned yet</span>') + '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("day-modal-content").innerHTML =
+    '<h2 style="margin-top:0; font-size:18px;">' + formatDayHeading(dateStr) + '</h2>' +
+    (rows || '<p style="color:#8A8578; font-size:13px;">Nothing scheduled for this day.</p>') +
+    '<button class="btn-primary" style="width:auto;" onclick="closeDayModal(); openJobModal(null, \'' + dateStr + '\');">New event on this day</button>';
+
+  document.getElementById("day-modal").classList.add("visible");
+}
+
+// Hides the day popup without forgetting which date it was showing -- used
+// when jumping from the day view into the New/Edit event modal, so that
+// saving or deleting can bring the day view back up afterward.
+function closeDayModal() {
+  document.getElementById("day-modal").classList.remove("visible");
+}
+
+// Fully dismisses the day popup (X button / clicking away) -- after this,
+// saving an event elsewhere won't try to reopen it.
+function dismissDayModal() {
+  closeDayModal();
+  currentDayModalDate = null;
+}
+
 // Given "YYYY-MM-DD" strings (as returned by the API), step through every
 // date in [startStr, endStr] without ever constructing local-timezone Date
 // objects, so there's no risk of an off-by-one day near midnight.
@@ -1356,6 +1422,7 @@ async function renderScheduleCalendar() {
       jobsByDate[dateStr].push(job);
     });
   });
+  window.lastJobsByDate = jobsByDate;
 
   const today = todayStr();
   const wrap = document.getElementById("schedule-calendar");
@@ -1387,7 +1454,7 @@ async function renderScheduleCalendar() {
           'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + j.title + '</span>';
       }).join("");
       const more = dayJobs.length > 4 ? '<div class="cal-job-more">+' + (dayJobs.length - 4) + ' more</div>' : '';
-      html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openJobModal(null, \'' + dateStr + '\')">' +
+      html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +
         '<div class="cal-day-num">' + day + '</div>' + pills + more +
       '</div>';
     }
