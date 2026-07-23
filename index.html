@@ -698,6 +698,18 @@ function fmtDateTime(iso) {
   return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+// Converts a UTC ISO timestamp from the server into the "YYYY-MM-DDTHH:mm"
+// format a <input type="datetime-local"> needs, using the browser's local
+// timezone -- so the box shows the same wall-clock time that was typed in,
+// instead of the raw UTC value.
+function toLocalDatetimeInputValue(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
+    "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
+
 function fmtDurationShort(seconds) {
   const totalMin = Math.round((seconds || 0) / 60);
   const h = Math.floor(totalMin / 60);
@@ -872,8 +884,8 @@ async function loadReports() {
           '<option value="in_town"' + (r.location_type === "in_town" ? " selected" : "") + '>In town</option>' +
           '<option value="traveling"' + (r.location_type === "traveling" ? " selected" : "") + '>Traveling</option>' +
         '</select></td>' +
-        '<td><input type="datetime-local" value="' + (r.clock_in ? r.clock_in.slice(0,16) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
-        '<td><input type="datetime-local" value="' + (r.clock_out ? r.clock_out.slice(0,16) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
+        '<td><input type="datetime-local" value="' + (r.clock_in ? toLocalDatetimeInputValue(r.clock_in) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
+        '<td><input type="datetime-local" value="' + (r.clock_out ? toLocalDatetimeInputValue(r.clock_out) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
         '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
         '<td>' + fmtDuration(r.break_seconds) + '</td>' +
         '<td><button class="save-btn" onclick="saveRow(\'' + r.time_entry_id + '\')">Save</button></td>' +
