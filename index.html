@@ -1102,7 +1102,7 @@ function openCrewModal(crewId) {
   document.getElementById("crew-modal-error").style.display = "none";
 
   const memberIds = crew ? crew.members.map(function(m) { return m.id; }) : [];
-  const employees = window.allEmployees || [];
+  const employees = (window.allEmployees || []).filter(function(e) { return e.active || memberIds.indexOf(e.id) !== -1; });
   document.getElementById("crew-members-list").innerHTML = employees.map(function(e) {
     const checked = memberIds.indexOf(e.id) !== -1 ? "checked" : "";
     return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
@@ -1180,7 +1180,7 @@ function openJobModal(jobId) {
     return '<label><input type="checkbox" value="' + c.id + '" ' + checked + ' /> ' + c.name + '</label>';
   }).join("") || '<p style="color:#8A8578; font-size:12px;">No crews yet.</p>';
 
-  const employees = window.allEmployees || [];
+  const employees = (window.allEmployees || []).filter(function(e) { return e.active || assignedIds.indexOf(e.id) !== -1; });
   document.getElementById("job-employees-list").innerHTML = employees.map(function(e) {
     const checked = assignedIds.indexOf(e.id) !== -1 ? "checked" : "";
     return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
