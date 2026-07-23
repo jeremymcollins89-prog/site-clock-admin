@@ -75,6 +75,7 @@
 
   nav {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     padding: 12px 24px 0;
     border-bottom: 1.5px solid var(--line);
@@ -210,6 +211,21 @@
     text-overflow: ellipsis; white-space: nowrap;
   }
   .cal-job-more { font-size: 10px; color: #8A8578; }
+  .type-badge {
+    display: inline-block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px;
+    background: var(--line); color: var(--charcoal); margin-left: 6px;
+    vertical-align: middle;
+  }
+  select#job-type-input, select#job-customer-input {
+    width: 100%; padding: 8px 10px; margin-bottom: 10px;
+    border: 1.5px solid var(--line); border-radius: 4px;
+    font-family: inherit; font-size: 13px; background: #fff;
+  }
+  .customer-card {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 10px; margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
@@ -265,8 +281,18 @@
       <button class="modal-close" onclick="cancelJobModal()">&times;</button>
       <h2 id="job-modal-title" style="margin-top:0;">New event</h2>
       <div id="job-modal-error" class="error" style="display:none;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Customer (optional)</label>
+      <select id="job-customer-input" onchange="onJobCustomerChange()">
+        <option value="">— none —</option>
+      </select>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Event title</label>
       <input id="job-title-input" placeholder="e.g. Smith residence re-roof, team meeting" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Type</label>
+      <select id="job-type-input">
+        <option value="job">Job</option>
+        <option value="personal">Personal</option>
+        <option value="other">Other</option>
+      </select>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="job-notes-input" placeholder="Any details the crew should know" />
       <div style="display:flex; gap:10px;">
@@ -293,6 +319,46 @@
     <div class="modal-box" style="width:400px;">
       <button class="modal-close" onclick="dismissDayModal()">&times;</button>
       <div id="day-modal-content"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="customer-modal">
+    <div class="modal-box" style="width:440px;">
+      <button class="modal-close" onclick="closeCustomerModal()">&times;</button>
+      <h2 id="customer-modal-title" style="margin-top:0;">New customer</h2>
+      <div id="customer-modal-error" class="error" style="display:none;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Name</label>
+      <input id="customer-name-input" placeholder="e.g. Smith" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Phone</label>
+      <input id="customer-phone-input" placeholder="(555) 555-5555" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Email</label>
+      <input id="customer-email-input" type="email" placeholder="customer@email.com" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Street address</label>
+      <input id="customer-street-input" placeholder="123 Main St" />
+      <div style="display:flex; gap:10px;">
+        <div style="flex:2;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">City</label>
+          <input id="customer-city-input" placeholder="Denver" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">State</label>
+          <input id="customer-state-input" placeholder="CO" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Zip</label>
+          <input id="customer-zip-input" placeholder="80202" />
+        </div>
+      </div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Notes (optional)</label>
+      <input id="customer-notes-input" placeholder="Any details worth remembering" />
+      <button class="btn-primary" style="width:auto;" onclick="submitCustomer()">Save customer</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="customer-history-modal">
+    <div class="modal-box" style="width:420px;">
+      <button class="modal-close" onclick="closeCustomerHistoryModal()">&times;</button>
+      <div id="customer-history-content"></div>
     </div>
   </div>
 
@@ -323,6 +389,7 @@
     <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Edit Hours</button>
     <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
     <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
+    <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
   </nav>
   <main>
@@ -395,6 +462,18 @@
           </div>
         </div>
         <div id="schedule-calendar"></div>
+      </div>
+    </section>
+
+    <section id="tab-customers" class="tab">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">Customers</h3>
+          <button class="btn-primary" style="width:auto;" onclick="openCustomerModal()">New customer</button>
+        </div>
+        <p style="font-size:12px; color:#8A8578;">Your customer directory. Add customers here, then pick them when creating an event.</p>
+        <input id="customer-search-input" placeholder="Search by name..." style="margin-bottom:10px;" oninput="renderCustomersList()" />
+        <div id="customers-list"></div>
       </div>
     </section>
 
@@ -596,6 +675,7 @@ function showApp() {
   loadPayrollEmail();
   loadPaySchedule();
   loadCrews();
+  loadCustomers();
   renderScheduleCalendar();
   setInterval(loadOverview, 60000);
 }
@@ -1106,6 +1186,20 @@ async function addEmployee() {
   }
 }
 
+function mapsUrl(address) {
+  return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
+}
+
+// Combines street/city/state/zip into a single display string, e.g.
+// "123 Main St, Denver, CO 80202" -- skips whichever parts are blank.
+function formatAddressParts(street, city, state, zip) {
+  const cityStateZip = [city, [state, zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+  return [street, cityStateZip].filter(Boolean).join(", ");
+}
+function formatAddress(c) {
+  return formatAddressParts(c.street, c.city, c.state, c.zip);
+}
+
 const JOB_COLORS = {
   rust: "#C1502E",
   amber: "#F2A93B",
@@ -1118,6 +1212,7 @@ const JOB_COLORS = {
 
 let editingCrewId = null;
 let editingJobId = null;
+const EVENT_TYPE_LABELS = { job: "Job", personal: "Personal", other: "Other" };
 let selectedJobColor = "rust";
 window.allCrews = [];
 
@@ -1195,6 +1290,147 @@ async function deleteCrewConfirm(id) {
   loadCrews();
 }
 
+// ---------- Customers ----------
+let editingCustomerId = null;
+window.allCustomers = [];
+
+async function loadCustomers() {
+  window.allCustomers = await window.admin.listCustomers();
+  renderCustomersList();
+}
+
+function renderCustomersList() {
+  const searchEl = document.getElementById("customer-search-input");
+  const search = searchEl ? searchEl.value.trim().toLowerCase() : "";
+  const list = document.getElementById("customers-list");
+  const customers = (window.allCustomers || []).filter(function(c) {
+    return !search || c.name.toLowerCase().indexOf(search) !== -1;
+  });
+
+  if (customers.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">' +
+      ((window.allCustomers || []).length === 0 ? "No customers yet." : "No customers match that search.") +
+      '</p>';
+    return;
+  }
+
+  list.innerHTML = customers.map(function(c) {
+    const fullAddress = formatAddress(c);
+    const details = [c.phone, c.email].filter(Boolean).map(function(d) {
+      return '<div style="font-size:12px; color:#8A8578;">' + d + '</div>';
+    }).join("") + (fullAddress
+      ? '<div style="font-size:12px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + fullAddress + ' (directions)</a></div>'
+      : "");
+    return '<div class="card customer-card">' +
+      '<div>' +
+        '<strong>' + c.name + '</strong>' +
+        details +
+        (c.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + c.notes + '</div>' : '') +
+      '</div>' +
+      '<span style="white-space:nowrap;">' +
+        '<button class="save-btn" style="background: var(--charcoal); margin-right:6px;" onclick="openCustomerHistoryModal(\'' + c.id + '\')">Events</button>' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCustomerModal(\'' + c.id + '\')">Edit</button>' +
+        '<button class="save-btn" style="background: #C1502E;" onclick="deleteCustomerConfirm(\'' + c.id + '\')">Delete</button>' +
+      '</span>' +
+    '</div>';
+  }).join("");
+}
+
+function openCustomerModal(customerId) {
+  editingCustomerId = customerId || null;
+  const customer = customerId ? (window.allCustomers || []).find(function(c) { return c.id === customerId; }) : null;
+  document.getElementById("customer-modal-title").textContent = customer ? "Edit customer" : "New customer";
+  document.getElementById("customer-modal-error").style.display = "none";
+  document.getElementById("customer-name-input").value = customer ? customer.name : "";
+  document.getElementById("customer-phone-input").value = customer ? (customer.phone || "") : "";
+  document.getElementById("customer-email-input").value = customer ? (customer.email || "") : "";
+  document.getElementById("customer-street-input").value = customer ? (customer.street || "") : "";
+  document.getElementById("customer-city-input").value = customer ? (customer.city || "") : "";
+  document.getElementById("customer-state-input").value = customer ? (customer.state || "") : "";
+  document.getElementById("customer-zip-input").value = customer ? (customer.zip || "") : "";
+  document.getElementById("customer-notes-input").value = customer ? (customer.notes || "") : "";
+  document.getElementById("customer-modal").classList.add("visible");
+}
+
+function closeCustomerModal() {
+  document.getElementById("customer-modal").classList.remove("visible");
+  editingCustomerId = null;
+}
+
+async function submitCustomer() {
+  const name = document.getElementById("customer-name-input").value.trim();
+  const errEl = document.getElementById("customer-modal-error");
+  errEl.style.display = "none";
+
+  if (!name) {
+    errEl.textContent = "Name is required.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const payload = {
+    name: name,
+    phone: document.getElementById("customer-phone-input").value.trim(),
+    email: document.getElementById("customer-email-input").value.trim(),
+    street: document.getElementById("customer-street-input").value.trim(),
+    city: document.getElementById("customer-city-input").value.trim(),
+    state: document.getElementById("customer-state-input").value.trim(),
+    zip: document.getElementById("customer-zip-input").value.trim(),
+    notes: document.getElementById("customer-notes-input").value.trim(),
+  };
+
+  try {
+    if (editingCustomerId) {
+      await window.admin.updateCustomer(editingCustomerId, payload);
+    } else {
+      await window.admin.addCustomer(payload);
+    }
+    closeCustomerModal();
+    await loadCustomers();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save customer.";
+    errEl.style.display = "block";
+  }
+}
+
+async function deleteCustomerConfirm(id) {
+  if (!confirm("Delete this customer? Past events stay on the calendar, they'll just no longer be linked to this customer.")) return;
+  await window.admin.deleteCustomer(id);
+  await loadCustomers();
+}
+
+async function openCustomerHistoryModal(id) {
+  const customer = (window.allCustomers || []).find(function(c) { return c.id === id; });
+  if (!customer) return;
+  const events = await window.admin.getCustomerEvents(id);
+  const rows = events.map(function(ev) {
+    const dateLabel = ev.start_date === ev.end_date
+      ? ev.start_date.slice(0, 10)
+      : ev.start_date.slice(0, 10) + " – " + ev.end_date.slice(0, 10);
+    return '<div class="card" style="margin-bottom:8px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<div>' +
+          '<span class="job-color-dot" style="background:' + (JOB_COLORS[ev.color] || JOB_COLORS.rust) + ';"></span>' +
+          '<strong>' + ev.title + '</strong>' +
+          '<span class="type-badge">' + (EVENT_TYPE_LABELS[ev.event_type] || "Job") + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + dateLabel + '</div>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("customer-history-content").innerHTML =
+    '<h2 style="margin-top:0; font-size:18px;">' + customer.name + '</h2>' +
+    '<p style="font-size:12px; color:#8A8578; margin-top:-8px;">Event history</p>' +
+    (rows || '<p style="color:#8A8578; font-size:13px;">No events linked to this customer yet.</p>');
+
+  document.getElementById("customer-history-modal").classList.add("visible");
+}
+
+function closeCustomerHistoryModal() {
+  document.getElementById("customer-history-modal").classList.remove("visible");
+}
+
 function renderJobColorSwatches() {
   const el = document.getElementById("job-color-swatches");
   el.innerHTML = Object.keys(JOB_COLORS).map(function(name) {
@@ -1215,6 +1451,14 @@ function openJobModal(jobId, prefillDateStr) {
   document.getElementById("job-modal-title").textContent = job ? "Edit job" : "New job";
   document.getElementById("job-modal-error").style.display = "none";
   document.getElementById("job-title-input").value = job ? job.title : "";
+  document.getElementById("job-type-input").value = job ? (job.event_type || "job") : "job";
+
+  const customers = window.allCustomers || [];
+  document.getElementById("job-customer-input").innerHTML =
+    '<option value="">— none —</option>' +
+    customers.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join("");
+  document.getElementById("job-customer-input").value = job && job.customer_id ? job.customer_id : "";
+
   document.getElementById("job-notes-input").value = job ? (job.notes || "") : "";
   document.getElementById("job-start-input").value = job ? job.start_date.slice(0, 10) : defaultDate;
   document.getElementById("job-end-input").value = job ? job.end_date.slice(0, 10) : defaultDate;
@@ -1237,6 +1481,16 @@ function openJobModal(jobId, prefillDateStr) {
   }).join("");
 
   document.getElementById("job-modal").classList.add("visible");
+}
+
+// Filling in a customer conveniently fills the title with their name too --
+// the title stays a normal editable field afterward, so this is just a
+// starting point, not a locked-in link between the two.
+function onJobCustomerChange() {
+  const select = document.getElementById("job-customer-input");
+  if (!select.value) return;
+  const customer = (window.allCustomers || []).find(function(c) { return c.id === select.value; });
+  if (customer) document.getElementById("job-title-input").value = customer.name;
 }
 
 function closeJobModal() {
@@ -1277,6 +1531,8 @@ async function submitJob() {
     start_date: startDate,
     end_date: endDate,
     color: selectedJobColor,
+    event_type: document.getElementById("job-type-input").value,
+    customer_id: document.getElementById("job-customer-input").value || null,
     employee_ids: employeeIds,
     crew_ids: crewIds,
   };
@@ -1357,12 +1613,21 @@ function openDayModal(dateStr) {
         '<div>' +
           '<span class="job-color-dot" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';"></span>' +
           '<strong>' + j.title + '</strong>' +
+          '<span class="type-badge">' + (EVENT_TYPE_LABELS[j.event_type] || "Job") + '</span>' +
         '</div>' +
         '<span>' +
           '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="closeDayModal(); openJobModal(\'' + j.id + '\');">Edit</button>' +
           '<button class="save-btn" style="background: #C1502E;" onclick="deleteJobConfirm(\'' + j.id + '\')">Delete</button>' +
         '</span>' +
       '</div>' +
+      (j.customer_name ? (function() {
+        const jobAddress = formatAddressParts(j.customer_street, j.customer_city, j.customer_state, j.customer_zip);
+        return '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' +
+          '<strong>' + j.customer_name + '</strong>' +
+          (j.customer_phone ? ' &middot; ' + j.customer_phone : "") +
+          (jobAddress ? ' &middot; <a href="' + mapsUrl(jobAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + jobAddress + ' (directions)</a>' : "") +
+        '</div>';
+      })() : '') +
       (j.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' + j.notes + '</div>' : '') +
       '<div style="margin-top:6px;">' + (assigned || '<span style="color:#8A8578; font-size:12px;">Nobody assigned yet</span>') + '</div>' +
     '</div>';
@@ -1449,9 +1714,12 @@ async function renderScheduleCalendar() {
       const dayJobs = jobsByDate[dateStr] || [];
       const isToday = dateStr === today;
       const pills = dayJobs.slice(0, 4).map(function(j) {
+        const typeLabel = EVENT_TYPE_LABELS[j.event_type] || "Job";
+        const prefix = j.event_type && j.event_type !== "job" ? typeLabel.charAt(0) + ": " : "";
+        const tooltip = typeLabel + " — " + j.title + (j.customer_name ? " (" + j.customer_name + ")" : "");
         return '<span class="cal-job-pill" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';" ' +
-          'title="' + j.title.replace(/"/g, '&quot;') + '" ' +
-          'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + j.title + '</span>';
+          'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
+          'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + prefix + j.title + '</span>';
       }).join("");
       const more = dayJobs.length > 4 ? '<div class="cal-job-more">+' + (dayJobs.length - 4) + ' more</div>' : '';
       html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +

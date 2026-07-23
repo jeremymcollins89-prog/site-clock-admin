@@ -75,4 +75,10 @@ contextBridge.exposeInMainWorld("admin", {
   addJob: (job) => apiFetch("/api/admin/jobs", { method: "POST", body: job }),
   updateJob: (id, patch) => apiFetch(`/api/admin/jobs/${id}`, { method: "PATCH", body: patch }),
   deleteJob: (id) => apiFetch(`/api/admin/jobs/${id}`, { method: "DELETE" }),
+
+  listCustomers: () => apiFetch("/api/admin/customers"),
+  addCustomer: (customer) => apiFetch("/api/admin/customers", { method: "POST", body: customer }),
+  updateCustomer: (id, patch) => apiFetch(`/api/admin/customers/${id}`, { method: "PATCH", body: patch }),
+  deleteCustomer: (id) => apiFetch(`/api/admin/customers/${id}`, { method: "DELETE" }),
+  getCustomerEvents: (id) => apiFetch(`/api/admin/customers/${id}/events`),
 });

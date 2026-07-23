@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
 const Store = require("electron-store");
 const { autoUpdater } = require("electron-updater");
@@ -27,6 +27,15 @@ function createWindow() {
     },
   });
   win.loadFile("index.html");
+
+  // Address links (Google Maps directions) open in the system browser
+  // instead of a blocked/blank in-app popup.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("http:") || url.startsWith("https:")) {
+      shell.openExternal(url);
+    }
+    return { action: "deny" };
+  });
 }
 
 app.whenReady().then(() => {
