@@ -144,6 +144,31 @@
   }
   .employee-card { cursor: pointer; }
   .employee-card:hover { border-color: var(--charcoal); }
+
+  .color-swatches { display: flex; gap: 8px; margin-bottom: 10px; }
+  .color-swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+  }
+  .color-swatch.selected { border-color: var(--charcoal); }
+  .job-color-dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .checkbox-list {
+    max-height: 160px; overflow-y: auto;
+    border: 1.5px solid var(--line); border-radius: 4px;
+    padding: 8px; margin-bottom: 10px;
+  }
+  .checkbox-list label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; margin-bottom: 6px; cursor: pointer;
+  }
+  .checkbox-list input { width: auto; margin: 0; }
+  .chip {
+    display: inline-block; padding: 2px 8px; border-radius: 3px;
+    font-size: 11px; background: var(--line); margin: 2px 4px 2px 0;
+  }
 </style>
 </head>
 <body>
@@ -181,6 +206,48 @@
       <button class="btn-primary" onclick="submitEditEmployee()">Save changes</button>
     </div>
   </div>
+  <div class="modal-overlay" id="crew-modal">
+    <div class="modal-box" style="width:380px;">
+      <button class="modal-close" onclick="closeCrewModal()">&times;</button>
+      <h2 id="crew-modal-title" style="margin-top:0;">New crew</h2>
+      <div id="crew-modal-error" class="error" style="display:none;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Crew name</label>
+      <input id="crew-name-input" placeholder="e.g. Roofing crew A" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Members</label>
+      <div id="crew-members-list" class="checkbox-list"></div>
+      <button class="btn-primary" style="width:auto;" onclick="submitCrew()">Save crew</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="job-modal">
+    <div class="modal-box" style="width:440px;">
+      <button class="modal-close" onclick="closeJobModal()">&times;</button>
+      <h2 id="job-modal-title" style="margin-top:0;">New job</h2>
+      <div id="job-modal-error" class="error" style="display:none;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Job title</label>
+      <input id="job-title-input" placeholder="e.g. Smith residence re-roof" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Notes (optional)</label>
+      <input id="job-notes-input" placeholder="Any details the crew should know" />
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Start date</label>
+          <input id="job-start-input" type="date" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">End date</label>
+          <input id="job-end-input" type="date" />
+        </div>
+      </div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Color</label>
+      <div class="color-swatches" id="job-color-swatches"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Assign a crew (optional)</label>
+      <div id="job-crews-list" class="checkbox-list"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
+      <div id="job-employees-list" class="checkbox-list"></div>
+      <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save job</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="password-modal">
     <div class="modal-box" style="width:360px;">
       <button class="modal-close" onclick="closePasswordModal()">&times;</button>
@@ -207,6 +274,7 @@
     <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
     <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Edit Hours</button>
     <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
+    <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
   </nav>
   <main>
@@ -245,6 +313,35 @@
         <thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead>
         <tbody id="employees-body"></tbody>
       </table>
+    </section>
+
+    <section id="tab-schedule" class="tab">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">Crews</h3>
+          <button class="btn-primary" style="width:auto;" onclick="openCrewModal()">New crew</button>
+        </div>
+        <p style="font-size:12px; color:#8A8578;">A crew is a reusable group of employees you can assign to a job all at once.</p>
+        <div id="crews-list"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">Jobs</h3>
+          <button class="btn-primary" style="width:auto;" onclick="openJobModal()">New job</button>
+        </div>
+        <div class="toolbar" style="margin-top:10px;">
+          <div>
+            <label>From</label>
+            <input id="schedule-start" type="date" onchange="loadJobs()" />
+          </div>
+          <div>
+            <label>To</label>
+            <input id="schedule-end" type="date" onchange="loadJobs()" />
+          </div>
+        </div>
+        <div id="jobs-list"></div>
+      </div>
     </section>
 
     <section id="tab-settings" class="tab">
@@ -444,6 +541,13 @@ function showApp() {
   loadShopLocation();
   loadPayrollEmail();
   loadPaySchedule();
+  const scheduleStart = new Date();
+  const scheduleEnd = new Date();
+  scheduleEnd.setDate(scheduleEnd.getDate() + 30);
+  document.getElementById("schedule-start").value = scheduleStart.toISOString().slice(0, 10);
+  document.getElementById("schedule-end").value = scheduleEnd.toISOString().slice(0, 10);
+  loadCrews();
+  loadJobs();
   setInterval(loadOverview, 60000);
 }
 
@@ -709,6 +813,7 @@ async function saveRow(id) {
 
 async function loadEmployees() {
   const rows = await window.admin.listEmployees();
+  window.allEmployees = rows;
   const body = document.getElementById("employees-body");
   body.innerHTML = "";
   rows.forEach(function(e) {
@@ -950,6 +1055,227 @@ async function addEmployee() {
     errEl.textContent = err.message || "Couldn't add employee";
     errEl.style.display = "block";
   }
+}
+
+const JOB_COLORS = {
+  rust: "#C1502E",
+  amber: "#F2A93B",
+  teal: "#3D5A50",
+  blue: "#3B6FA9",
+  purple: "#7B4F9E",
+  rose: "#B8547A",
+  charcoal: "#5C6660",
+};
+
+let editingCrewId = null;
+let editingJobId = null;
+let selectedJobColor = "rust";
+window.allCrews = [];
+
+async function loadCrews() {
+  window.allCrews = await window.admin.listCrews();
+  const list = document.getElementById("crews-list");
+  if (window.allCrews.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No crews yet.</p>';
+    return;
+  }
+  list.innerHTML = window.allCrews.map(function(c) {
+    const members = c.members.map(function(m) { return '<span class="chip">' + m.name + '</span>'; }).join("");
+    return '<div class="card" style="margin-bottom:8px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<strong>' + c.name + '</strong>' +
+        '<span>' +
+          '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCrewModal(\'' + c.id + '\')">Edit</button>' +
+          '<button class="save-btn" style="background: #C1502E;" onclick="deleteCrewConfirm(\'' + c.id + '\')">Delete</button>' +
+        '</span>' +
+      '</div>' +
+      '<div style="margin-top:6px;">' + (members || '<span style="color:#8A8578; font-size:12px;">No members yet</span>') + '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function openCrewModal(crewId) {
+  editingCrewId = crewId || null;
+  const crew = crewId ? window.allCrews.find(function(c) { return c.id === crewId; }) : null;
+  document.getElementById("crew-modal-title").textContent = crew ? "Edit crew" : "New crew";
+  document.getElementById("crew-name-input").value = crew ? crew.name : "";
+  document.getElementById("crew-modal-error").style.display = "none";
+
+  const memberIds = crew ? crew.members.map(function(m) { return m.id; }) : [];
+  const employees = window.allEmployees || [];
+  document.getElementById("crew-members-list").innerHTML = employees.map(function(e) {
+    const checked = memberIds.indexOf(e.id) !== -1 ? "checked" : "";
+    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
+  }).join("") || '<p style="color:#8A8578; font-size:12px;">Add employees first, then build crews.</p>';
+
+  document.getElementById("crew-modal").classList.add("visible");
+}
+
+function closeCrewModal() {
+  document.getElementById("crew-modal").classList.remove("visible");
+  editingCrewId = null;
+}
+
+async function submitCrew() {
+  const name = document.getElementById("crew-name-input").value.trim();
+  const errEl = document.getElementById("crew-modal-error");
+  errEl.style.display = "none";
+  if (!name) {
+    errEl.textContent = "Crew name is required.";
+    errEl.style.display = "block";
+    return;
+  }
+  const employeeIds = Array.from(document.querySelectorAll('#crew-members-list input:checked')).map(function(el) { return el.value; });
+  try {
+    if (editingCrewId) {
+      await window.admin.updateCrew(editingCrewId, { name: name, employee_ids: employeeIds });
+    } else {
+      await window.admin.addCrew({ name: name, employee_ids: employeeIds });
+    }
+    closeCrewModal();
+    loadCrews();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save crew.";
+    errEl.style.display = "block";
+  }
+}
+
+async function deleteCrewConfirm(id) {
+  if (!confirm("Delete this crew? Jobs already assigned to its members won't be affected.")) return;
+  await window.admin.deleteCrew(id);
+  loadCrews();
+}
+
+function renderJobColorSwatches() {
+  const el = document.getElementById("job-color-swatches");
+  el.innerHTML = Object.keys(JOB_COLORS).map(function(name) {
+    const selected = name === selectedJobColor ? " selected" : "";
+    return '<div class="color-swatch' + selected + '" data-color="' + name + '" style="background:' + JOB_COLORS[name] + ';" onclick="selectJobColor(\'' + name + '\')"></div>';
+  }).join("");
+}
+
+function selectJobColor(name) {
+  selectedJobColor = name;
+  renderJobColorSwatches();
+}
+
+function openJobModal(jobId) {
+  editingJobId = jobId || null;
+  const job = jobId ? (window.lastJobRows || []).find(function(j) { return j.id === jobId; }) : null;
+  document.getElementById("job-modal-title").textContent = job ? "Edit job" : "New job";
+  document.getElementById("job-modal-error").style.display = "none";
+  document.getElementById("job-title-input").value = job ? job.title : "";
+  document.getElementById("job-notes-input").value = job ? (job.notes || "") : "";
+  document.getElementById("job-start-input").value = job ? job.start_date.slice(0, 10) : document.getElementById("schedule-start").value;
+  document.getElementById("job-end-input").value = job ? job.end_date.slice(0, 10) : document.getElementById("schedule-start").value;
+  selectedJobColor = job ? job.color : "rust";
+  renderJobColorSwatches();
+
+  const assignedIds = job ? job.assigned_employees.map(function(e) { return e.id; }) : [];
+  const assignedCrewIds = job ? job.assigned_employees.map(function(e) { return e.crew_id; }).filter(Boolean) : [];
+
+  const crews = window.allCrews || [];
+  document.getElementById("job-crews-list").innerHTML = crews.map(function(c) {
+    const checked = assignedCrewIds.indexOf(c.id) !== -1 ? "checked" : "";
+    return '<label><input type="checkbox" value="' + c.id + '" ' + checked + ' /> ' + c.name + '</label>';
+  }).join("") || '<p style="color:#8A8578; font-size:12px;">No crews yet.</p>';
+
+  const employees = window.allEmployees || [];
+  document.getElementById("job-employees-list").innerHTML = employees.map(function(e) {
+    const checked = assignedIds.indexOf(e.id) !== -1 ? "checked" : "";
+    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
+  }).join("");
+
+  document.getElementById("job-modal").classList.add("visible");
+}
+
+function closeJobModal() {
+  document.getElementById("job-modal").classList.remove("visible");
+  editingJobId = null;
+}
+
+async function submitJob() {
+  const title = document.getElementById("job-title-input").value.trim();
+  const notes = document.getElementById("job-notes-input").value.trim();
+  const startDate = document.getElementById("job-start-input").value;
+  const endDate = document.getElementById("job-end-input").value;
+  const errEl = document.getElementById("job-modal-error");
+  errEl.style.display = "none";
+
+  if (!title || !startDate || !endDate) {
+    errEl.textContent = "Title, start date, and end date are required.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (endDate < startDate) {
+    errEl.textContent = "End date can't be before the start date.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const employeeIds = Array.from(document.querySelectorAll('#job-employees-list input:checked')).map(function(el) { return el.value; });
+  const crewIds = Array.from(document.querySelectorAll('#job-crews-list input:checked')).map(function(el) { return el.value; });
+
+  const payload = {
+    title: title,
+    notes: notes,
+    start_date: startDate,
+    end_date: endDate,
+    color: selectedJobColor,
+    employee_ids: employeeIds,
+    crew_ids: crewIds,
+  };
+
+  try {
+    if (editingJobId) {
+      await window.admin.updateJob(editingJobId, payload);
+    } else {
+      await window.admin.addJob(payload);
+    }
+    closeJobModal();
+    loadJobs();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save job.";
+    errEl.style.display = "block";
+  }
+}
+
+async function deleteJobConfirm(id) {
+  if (!confirm("Delete this job? Assigned employees will no longer see it in their schedule.")) return;
+  await window.admin.deleteJob(id);
+  loadJobs();
+}
+
+async function loadJobs() {
+  const start = document.getElementById("schedule-start").value;
+  const end = document.getElementById("schedule-end").value;
+  window.lastJobRows = await window.admin.listJobs({ start: start, end: end });
+  const list = document.getElementById("jobs-list");
+  if (window.lastJobRows.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No jobs scheduled in this range.</p>';
+    return;
+  }
+  list.innerHTML = window.lastJobRows.map(function(j) {
+    const dateLabel = j.start_date === j.end_date
+      ? new Date(j.start_date).toLocaleDateString([], { month: "short", day: "numeric" })
+      : new Date(j.start_date).toLocaleDateString([], { month: "short", day: "numeric" }) + " – " + new Date(j.end_date).toLocaleDateString([], { month: "short", day: "numeric" });
+    const assigned = j.assigned_employees.map(function(e) { return '<span class="chip">' + e.name + '</span>'; }).join("");
+    return '<div class="card" style="margin-bottom:8px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<div>' +
+          '<span class="job-color-dot" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';"></span>' +
+          '<strong>' + j.title + '</strong>' +
+          '<span style="color:#8A8578; font-size:12px; margin-left:8px;">' + dateLabel + '</span>' +
+        '</div>' +
+        '<span>' +
+          '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openJobModal(\'' + j.id + '\')">Edit</button>' +
+          '<button class="save-btn" style="background: #C1502E;" onclick="deleteJobConfirm(\'' + j.id + '\')">Delete</button>' +
+        '</span>' +
+      '</div>' +
+      (j.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' + j.notes + '</div>' : '') +
+      '<div style="margin-top:6px;">' + (assigned || '<span style="color:#8A8578; font-size:12px;">Nobody assigned yet</span>') + '</div>' +
+    '</div>';
+  }).join("");
 }
 
 init();

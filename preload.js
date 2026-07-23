@@ -62,4 +62,17 @@ contextBridge.exposeInMainWorld("admin", {
 
   getPaySchedule: () => apiFetch("/api/admin/pay-schedule"),
   updatePaySchedule: (patch) => apiFetch("/api/admin/pay-schedule", { method: "PATCH", body: patch }),
+
+  listCrews: () => apiFetch("/api/admin/crews"),
+  addCrew: (crew) => apiFetch("/api/admin/crews", { method: "POST", body: crew }),
+  updateCrew: (id, patch) => apiFetch(`/api/admin/crews/${id}`, { method: "PATCH", body: patch }),
+  deleteCrew: (id) => apiFetch(`/api/admin/crews/${id}`, { method: "DELETE" }),
+
+  listJobs: (params) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/admin/jobs${qs ? `?${qs}` : ""}`);
+  },
+  addJob: (job) => apiFetch("/api/admin/jobs", { method: "POST", body: job }),
+  updateJob: (id, patch) => apiFetch(`/api/admin/jobs/${id}`, { method: "PATCH", body: patch }),
+  deleteJob: (id) => apiFetch(`/api/admin/jobs/${id}`, { method: "DELETE" }),
 });
