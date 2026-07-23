@@ -17,8 +17,8 @@ autoUpdater.on("error", (err) => {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1100,
-    height: 750,
+    width: 1300,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
