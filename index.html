@@ -493,8 +493,9 @@
         <div class="invoice-totals-row grand"><span>Total due</span><span id="invoice-total-display">$0.00</span></div>
       </div>
 
-      <div id="invoice-modal-actions" style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn-primary" id="invoice-save-btn" style="width:auto;" onclick="submitInvoice()">Save draft</button>
+      <p id="invoice-save-hint" style="font-size:11px; color:#8A8578; margin:2px 0 0;">Saving emails this invoice to the customer right away, unless they don't have an email on file.</p>
+      <div id="invoice-modal-actions" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-primary" id="invoice-save-btn" style="width:auto;" onclick="submitInvoice()">Save &amp; send to customer</button>
         <button class="save-btn" id="invoice-send-btn" style="display:none;" onclick="sendInvoiceConfirm()">Send to customer</button>
         <button class="save-btn" id="invoice-markpaid-btn" style="display:none; background: var(--charcoal);" onclick="openMarkPaidModal()">Mark paid</button>
         <button class="save-btn" id="invoice-void-btn" style="display:none; background: #C1502E;" onclick="voidInvoiceConfirm()">Void</button>
@@ -1705,6 +1706,9 @@ function renderInvoicesList() {
       actions.push('<button class="save-btn" style="background:#C1502E;" onclick="deleteInvoiceConfirm(\'' + inv.id + '\')">Delete</button>');
     } else {
       actions.push('<button class="save-btn" onclick="openInvoiceModal(\'' + inv.id + '\')">View</button>');
+      if (inv.status === "sent") {
+        actions.push('<button class="save-btn" style="background: var(--charcoal); margin-left:6px;" onclick="openMarkPaidModal(\'' + inv.id + '\')">Mark paid</button>');
+      }
     }
     return '<div class="card invoice-card">' +
       '<div>' +
@@ -1829,6 +1833,7 @@ async function openInvoiceModal(invoiceId) {
   document.querySelectorAll("#invoice-line-items-list .line-item-remove").forEach(function(el) { el.style.display = isDraft ? "" : "none"; });
 
   document.getElementById("invoice-save-btn").style.display = isDraft ? "" : "none";
+  document.getElementById("invoice-save-hint").style.display = isDraft ? "" : "none";
   document.getElementById("invoice-send-btn").style.display = invoice && invoice.status !== "void" ? "" : "none";
   document.getElementById("invoice-send-btn").textContent = invoice && invoice.status !== "draft" ? "Resend to customer" : "Send to customer";
   document.getElementById("invoice-markpaid-btn").style.display = invoice && invoice.status === "sent" ? "" : "none";
@@ -1870,13 +1875,17 @@ async function submitInvoice() {
   };
 
   try {
+    let result;
     if (editingInvoiceId) {
-      await window.admin.updateInvoice(editingInvoiceId, payload);
+      result = await window.admin.updateInvoice(editingInvoiceId, payload);
     } else {
-      await window.admin.addInvoice(payload);
+      result = await window.admin.addInvoice(payload);
     }
     closeInvoiceModal();
     await loadInvoices();
+    if (result.send_warning) {
+      alert("Invoice saved as a draft, but wasn't emailed: " + result.send_warning);
+    }
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save invoice.";
     errEl.style.display = "block";
@@ -1907,8 +1916,8 @@ async function sendInvoiceConfirm() {
   }
 }
 
-function openMarkPaidModal() {
-  markPaidInvoiceId = editingInvoiceId;
+function openMarkPaidModal(id) {
+  markPaidInvoiceId = id || editingInvoiceId;
   document.getElementById("mark-paid-error").style.display = "none";
   document.getElementById("mark-paid-modal").classList.add("visible");
 }
