@@ -123,6 +123,8 @@ contextBridge.exposeInMainWorld("admin", {
     return true;
   },
 
+  getReportSummary: (start, end) => apiFetch(`/api/admin/reports/summary?start=${start}&end=${end}`),
+
   listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
