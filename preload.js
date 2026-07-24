@@ -81,4 +81,14 @@ contextBridge.exposeInMainWorld("admin", {
   updateCustomer: (id, patch) => apiFetch(`/api/admin/customers/${id}`, { method: "PATCH", body: patch }),
   deleteCustomer: (id) => apiFetch(`/api/admin/customers/${id}`, { method: "DELETE" }),
   getCustomerEvents: (id) => apiFetch(`/api/admin/customers/${id}/events`),
+
+  listInvoices: () => apiFetch("/api/admin/invoices"),
+  getInvoice: (id) => apiFetch(`/api/admin/invoices/${id}`),
+  addInvoice: (invoice) => apiFetch("/api/admin/invoices", { method: "POST", body: invoice }),
+  updateInvoice: (id, patch) => apiFetch(`/api/admin/invoices/${id}`, { method: "PATCH", body: patch }),
+  deleteInvoice: (id) => apiFetch(`/api/admin/invoices/${id}`, { method: "DELETE" }),
+  sendInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/send`, { method: "POST" }),
+  markInvoicePaid: (id, paymentMethod) =>
+    apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod } }),
+  voidInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/void`, { method: "PATCH" }),
 });
