@@ -758,6 +758,18 @@
       </div>
 
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Business timezone</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Where this business is located. Used to send automated emails (like invoice reminders) at a sensible local hour instead of a fixed one.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Timezone</label>
+        <select id="company-timezone-select" style="margin-bottom:10px;"></select>
+        <button class="btn-primary" style="width:auto;" onclick="saveCompanyTimezone()">Save</button>
+        <div id="company-timezone-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="company-timezone-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Shop location</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           This is the location employees auto clock-in at when they arrive (and auto clock-out from when they leave). Tip: right-click your shop's spot in Google Maps, click the coordinates that pop up to copy them, then paste the first number below as Latitude and the second as Longitude.
@@ -901,6 +913,7 @@ function showApp() {
   loadInvoices();
   loadCatalogItems();
   loadCompanyLogo();
+  loadCompanyTimezone();
   renderScheduleCalendar();
   setInterval(loadOverview, 60000);
 }
@@ -1423,6 +1436,61 @@ async function savePaySchedule() {
     successEl.style.display = "block";
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save pay schedule.";
+    errEl.style.display = "block";
+  }
+}
+
+// ---------- Business timezone ----------
+// A hand-maintained fallback for browsers/Electron builds too old to
+// support Intl.supportedValuesOf -- covers the common US zones so the
+// dropdown is never empty.
+const FALLBACK_TIMEZONES = [
+  "America/New_York", "America/Chicago", "America/Denver", "America/Phoenix",
+  "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu",
+  "America/Puerto_Rico", "UTC",
+];
+
+function allSupportedTimezones() {
+  try {
+    if (typeof Intl.supportedValuesOf === "function") {
+      return Intl.supportedValuesOf("timeZone");
+    }
+  } catch (err) {
+    // fall through to the hardcoded list
+  }
+  return FALLBACK_TIMEZONES;
+}
+
+function populateTimezoneSelect(selected) {
+  const select = document.getElementById("company-timezone-select");
+  const zones = allSupportedTimezones();
+  select.innerHTML = zones.map(function(tz) {
+    return '<option value="' + tz + '">' + tz.replace(/_/g, " ") + '</option>';
+  }).join("");
+  if (selected) select.value = selected;
+}
+
+async function loadCompanyTimezone() {
+  try {
+    const data = await window.admin.getTimezone();
+    populateTimezoneSelect(data.timezone);
+  } catch (err) {
+    populateTimezoneSelect(null);
+  }
+}
+
+async function saveCompanyTimezone() {
+  const timezone = document.getElementById("company-timezone-select").value;
+  const errEl = document.getElementById("company-timezone-error");
+  const successEl = document.getElementById("company-timezone-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+  try {
+    await window.admin.updateTimezone(timezone);
+    successEl.textContent = "Timezone saved.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save timezone.";
     errEl.style.display = "block";
   }
 }
