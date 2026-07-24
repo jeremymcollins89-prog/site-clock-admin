@@ -91,4 +91,9 @@ contextBridge.exposeInMainWorld("admin", {
   markInvoicePaid: (id, paymentMethod) =>
     apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod } }),
   voidInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/void`, { method: "PATCH" }),
+
+  listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
+  addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
+  updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
+  deleteCatalogItem: (id) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "DELETE" }),
 });
