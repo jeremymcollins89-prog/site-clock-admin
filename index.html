@@ -564,7 +564,6 @@
     <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
     <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
     <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Invoices</button>
-    <button class="tab-btn" data-tab="history" onclick="showTab('history')">History</button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
   </nav>
   <main>
@@ -683,25 +682,6 @@
           Card payments aren't processed in this app yet -- Mark Paid just records how payment came in.
         </p>
         <div id="invoices-list"></div>
-      </div>
-    </section>
-
-    <section id="tab-history" class="tab">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin:0;">History</h3>
-          <button class="btn-secondary" style="width:auto;" onclick="loadHistory()">Refresh</button>
-        </div>
-        <p style="font-size:12px; color:#8A8578;">Every appointment and invoice for this company, newest first.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-          <input id="history-search-input" placeholder="Search by customer..." style="flex:1; min-width:180px;" oninput="renderHistoryList()" />
-          <select id="history-type-filter" style="width:auto;" onchange="renderHistoryList()">
-            <option value="all">All</option>
-            <option value="appointment">Appointments</option>
-            <option value="invoice">Invoices</option>
-          </select>
-        </div>
-        <div id="history-list"></div>
       </div>
     </section>
 
@@ -935,7 +915,6 @@ function showApp() {
   loadCatalogItems();
   loadCompanyLogo();
   loadCompanyTimezone();
-  loadHistory();
   renderScheduleCalendar();
   setInterval(loadOverview, 60000);
 }
@@ -1730,7 +1709,7 @@ function renderCustomersList() {
         (c.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + c.notes + '</div>' : '') +
       '</div>' +
       '<span style="white-space:nowrap;">' +
-        '<button class="save-btn" style="background: var(--charcoal); margin-right:6px;" onclick="openCustomerHistoryModal(\'' + c.id + '\')">Events</button>' +
+        '<button class="save-btn" style="background: var(--charcoal); margin-right:6px;" onclick="openCustomerHistoryModal(\'' + c.id + '\')">History</button>' +
         '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCustomerModal(\'' + c.id + '\')">Edit</button>' +
         '<button class="save-btn" style="background: #C1502E;" onclick="deleteCustomerConfirm(\'' + c.id + '\')">Delete</button>' +
       '</span>' +
@@ -1805,17 +1784,43 @@ async function openCustomerHistoryModal(id) {
   const customer = (window.allCustomers || []).find(function(c) { return c.id === id; });
   if (!customer) return;
   const events = await window.admin.getCustomerEvents(id);
-  const rows = events.map(function(ev) {
-    const dateLabel = ev.start_date === ev.end_date
-      ? ev.start_date.slice(0, 10)
-      : ev.start_date.slice(0, 10) + " – " + ev.end_date.slice(0, 10);
-    return '<div class="card" style="margin-bottom:8px;">' +
+  const invoices = (window.allInvoices || []).filter(function(inv) { return inv.customer_id === id; });
+
+  const items = [
+    ...events.map(function(ev) {
+      return { kind: "appointment", date: ev.start_date, data: ev };
+    }),
+    ...invoices.map(function(inv) {
+      return { kind: "invoice", date: inv.issue_date || inv.created_at, data: inv };
+    }),
+  ];
+  items.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+
+  const rows = items.map(function(item) {
+    if (item.kind === "appointment") {
+      const ev = item.data;
+      const dateLabel = ev.start_date === ev.end_date
+        ? ev.start_date.slice(0, 10)
+        : ev.start_date.slice(0, 10) + " – " + ev.end_date.slice(0, 10);
+      return '<div class="card" style="margin-bottom:8px; cursor:pointer;" onclick="closeCustomerHistoryModal(); openJobModal(\'' + ev.id + '\');">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<div>' +
+            '<span class="job-color-dot" style="background:' + (JOB_COLORS[ev.color] || JOB_COLORS.rust) + ';"></span>' +
+            '<strong>' + ev.title + '</strong>' +
+            '<span class="type-badge">' + (EVENT_TYPE_LABELS[ev.event_type] || "Job") + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + dateLabel + '</div>' +
+      '</div>';
+    }
+    const inv = item.data;
+    const dateLabel = (inv.issue_date || "").slice(0, 10);
+    return '<div class="card" style="margin-bottom:8px; cursor:pointer;" onclick="closeCustomerHistoryModal(); openInvoiceModal(\'' + inv.id + '\');">' +
       '<div style="display:flex; justify-content:space-between; align-items:center;">' +
         '<div>' +
-          '<span class="job-color-dot" style="background:' + (JOB_COLORS[ev.color] || JOB_COLORS.rust) + ';"></span>' +
-          '<strong>' + ev.title + '</strong>' +
-          '<span class="type-badge">' + (EVENT_TYPE_LABELS[ev.event_type] || "Job") + '</span>' +
+          '<strong>Invoice #' + inv.invoice_number + '</strong> ' + invoiceStatusBadge(inv) +
         '</div>' +
+        '<div class="stat-value" style="font-size:15px;">' + fmtMoney(inv.total) + '</div>' +
       '</div>' +
       '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + dateLabel + '</div>' +
     '</div>';
@@ -1823,8 +1828,8 @@ async function openCustomerHistoryModal(id) {
 
   document.getElementById("customer-history-content").innerHTML =
     '<h2 style="margin-top:0; font-size:18px;">' + customer.name + '</h2>' +
-    '<p style="font-size:12px; color:#8A8578; margin-top:-8px;">Event history</p>' +
-    (rows || '<p style="color:#8A8578; font-size:13px;">No events linked to this customer yet.</p>');
+    '<p style="font-size:12px; color:#8A8578; margin-top:-8px;">Appointments and invoices</p>' +
+    (rows || '<p style="color:#8A8578; font-size:13px;">Nothing on file for this customer yet.</p>');
 
   document.getElementById("customer-history-modal").classList.add("visible");
 }
@@ -2089,64 +2094,6 @@ async function viewInvoicePdf(id) {
   } catch (err) {
     alert(err.message || "Couldn't open invoice PDF.");
   }
-}
-
-// History: a combined, newest-first feed of every appointment and invoice,
-// pulled from the same endpoint and just filtered/searched client-side --
-// small enough datasets that a round trip to the server for every keystroke
-// isn't worth it.
-async function loadHistory() {
-  try {
-    window.allHistory = await window.admin.getHistory();
-  } catch (err) {
-    window.allHistory = [];
-  }
-  renderHistoryList();
-}
-
-function renderHistoryList() {
-  const list = document.getElementById("history-list");
-  const all = window.allHistory || [];
-  const search = document.getElementById("history-search-input").value.trim().toLowerCase();
-  const typeFilter = document.getElementById("history-type-filter").value;
-
-  const filtered = all.filter(function(item) {
-    if (typeFilter !== "all" && item.type !== typeFilter) return false;
-    if (search && !(item.customer_name || "").toLowerCase().includes(search)) return false;
-    return true;
-  });
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">Nothing to show yet.</p>';
-    return;
-  }
-
-  list.innerHTML = filtered.map(function(item) {
-    const dateStr = item.date ? String(item.date).slice(0, 10) : "";
-    if (item.type === "appointment") {
-      const typeLabel = EVENT_TYPE_LABELS[item.event_type] || "Job";
-      return '<div class="card invoice-card" style="cursor:pointer;" onclick="openJobModal(\'' + item.id + '\')">' +
-        '<div>' +
-          '<span class="type-badge">' + typeLabel + '</span>' +
-          '<strong style="margin-left:6px;">' + item.title + '</strong>' +
-          '<div style="font-size:13px; margin-top:4px;">' + item.customer_name + '</div>' +
-        '</div>' +
-        '<div style="text-align:right;">' +
-          '<div style="font-size:12px; color:#8A8578;">' + dateStr + '</div>' +
-        '</div>' +
-      '</div>';
-    }
-    return '<div class="card invoice-card" style="cursor:pointer;" onclick="openInvoiceModal(\'' + item.id + '\')">' +
-      '<div>' +
-        '<strong>Invoice #' + item.invoice_number + '</strong> ' + invoiceStatusBadge(item) +
-        '<div style="font-size:13px; margin-top:4px;">' + item.customer_name + '</div>' +
-      '</div>' +
-      '<div style="text-align:right;">' +
-        '<div class="stat-value" style="font-size:16px;">' + fmtMoney(item.total) + '</div>' +
-        '<div style="font-size:12px; color:#8A8578; margin-top:2px;">' + dateStr + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join("");
 }
 
 async function sendInvoiceConfirm() {
