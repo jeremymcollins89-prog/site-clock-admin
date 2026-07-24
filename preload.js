@@ -1,5 +1,8 @@
-const { contextBridge } = require("electron");
+const { contextBridge, shell } = require("electron");
 const Store = require("electron-store");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const store = new Store({ name: "admin-auth" });
 
 const API_BASE_URL = process.env.API_BASE_URL || "https://site-clock-backend-production.up.railway.app";
@@ -94,6 +97,31 @@ contextBridge.exposeInMainWorld("admin", {
   markInvoicePaid: (id, paymentMethod) =>
     apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod } }),
   voidInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/void`, { method: "PATCH" }),
+  // Downloads the invoice PDF to a temp file and opens it in the user's
+  // default PDF viewer (Adobe, Edge, whatever they have) -- more reliable
+  // across Electron versions than trying to render a PDF inside the app
+  // itself.
+  viewInvoicePdf: async (id) => {
+    const token = store.get("token");
+    const res = await fetch(`${API_BASE_URL}/api/admin/invoices/${id}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let message = "Couldn't load invoice PDF";
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch (parseErr) {
+        // response wasn't JSON -- keep the generic message
+      }
+      throw new Error(message);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const tempPath = path.join(os.tmpdir(), `invoice-${id}.pdf`);
+    fs.writeFileSync(tempPath, Buffer.from(arrayBuffer));
+    await shell.openPath(tempPath);
+    return true;
+  },
 
   listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
