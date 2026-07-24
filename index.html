@@ -686,6 +686,20 @@
 
     <section id="tab-settings" class="tab">
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Company logo</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Shown at the top of every invoice PDF. PNG, JPEG, or WebP, up to 3MB.
+        </p>
+        <div id="company-logo-preview-wrap" style="display:none; margin-bottom:10px;">
+          <img id="company-logo-preview" style="max-width:180px; max-height:80px; display:block; border:1px solid var(--line); border-radius:10px; padding:6px; background:#fff;" />
+        </div>
+        <input id="company-logo-input" type="file" accept="image/png,image/jpeg,image/webp" style="margin-bottom:10px;" onchange="handleLogoFileSelected(event)" />
+        <button class="btn-secondary" id="remove-logo-btn" style="width:auto; display:none;" onclick="removeCompanyLogo()">Remove logo</button>
+        <div id="company-logo-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="company-logo-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Payroll email</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Where "Submit Hours for Payroll" sends timesheet emails from your employees. Required before employees can submit hours.
@@ -886,6 +900,7 @@ function showApp() {
   loadCustomers();
   loadInvoices();
   loadCatalogItems();
+  loadCompanyLogo();
   renderScheduleCalendar();
   setInterval(loadOverview, 60000);
 }
@@ -1249,6 +1264,76 @@ async function submitChangeEmail() {
     document.getElementById("change-email-password").value = "";
   } catch (err) {
     errEl.textContent = err.message || "Couldn't update email.";
+    errEl.style.display = "block";
+  }
+}
+
+// ---------- Company logo ----------
+async function loadCompanyLogo() {
+  try {
+    const data = await window.admin.getCompanyLogo();
+    renderCompanyLogoPreview(data.logo);
+  } catch (err) {
+    // non-fatal — leave the preview empty if this fails
+  }
+}
+
+function renderCompanyLogoPreview(dataUrl) {
+  const wrap = document.getElementById("company-logo-preview-wrap");
+  const img = document.getElementById("company-logo-preview");
+  const removeBtn = document.getElementById("remove-logo-btn");
+  if (dataUrl) {
+    img.src = dataUrl;
+    wrap.style.display = "block";
+    removeBtn.style.display = "";
+  } else {
+    wrap.style.display = "none";
+    removeBtn.style.display = "none";
+  }
+}
+
+function handleLogoFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  const errEl = document.getElementById("company-logo-error");
+  const successEl = document.getElementById("company-logo-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+  if (!file) return;
+
+  if (file.size > 3 * 1024 * 1024) {
+    errEl.textContent = "Logo must be 3MB or smaller.";
+    errEl.style.display = "block";
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async function() {
+    const dataUrl = reader.result;
+    const base64 = dataUrl.split(",")[1];
+    try {
+      await window.admin.updateCompanyLogo(base64, file.type);
+      renderCompanyLogoPreview(dataUrl);
+      successEl.textContent = "Logo saved.";
+      successEl.style.display = "block";
+    } catch (err) {
+      errEl.textContent = err.message || "Couldn't save logo.";
+      errEl.style.display = "block";
+    }
+    event.target.value = "";
+  };
+  reader.readAsDataURL(file);
+}
+
+async function removeCompanyLogo() {
+  if (!confirm("Remove the company logo from invoices?")) return;
+  const errEl = document.getElementById("company-logo-error");
+  errEl.style.display = "none";
+  try {
+    await window.admin.deleteCompanyLogo();
+    renderCompanyLogoPreview(null);
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't remove logo.";
     errEl.style.display = "block";
   }
 }

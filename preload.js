@@ -96,4 +96,9 @@ contextBridge.exposeInMainWorld("admin", {
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
   deleteCatalogItem: (id) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "DELETE" }),
+
+  getCompanyLogo: () => apiFetch("/api/admin/company-logo"),
+  updateCompanyLogo: (logoBase64, mimeType) =>
+    apiFetch("/api/admin/company-logo", { method: "PUT", body: { logo_base64: logoBase64, mime_type: mimeType } }),
+  deleteCompanyLogo: () => apiFetch("/api/admin/company-logo", { method: "DELETE" }),
 });
