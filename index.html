@@ -747,16 +747,20 @@
 
     <section id="tab-schedule" class="tab">
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleCrewsSection()">
-          <h3 style="margin:0; display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleCrewsSection()">
             <span id="crews-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
             Crews <span id="crews-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
           </h3>
-          <button class="btn-primary" style="width:auto;" onclick="event.stopPropagation(); openCrewModal()">New crew</button>
+          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+            <input id="crew-search-input" type="text" placeholder="Search crews by name or member..." autocomplete="off"
+              oninput="onCrewSearchInput()" onfocus="onCrewSearchInput()" style="width:100%;" />
+            <div id="crew-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+          </div>
+          <button class="btn-primary" style="width:auto;" onclick="openCrewModal()">New crew</button>
         </div>
         <div id="crews-section-body" style="display:none; margin-top:10px;">
           <p style="font-size:12px; color:#8A8578;">A crew is a reusable group of employees you can assign to an event all at once.</p>
-          <input id="crew-search-input" type="text" placeholder="Search crews by name or member..." oninput="renderCrewsList()" style="margin-bottom:10px;" />
           <div id="crews-list"></div>
         </div>
       </div>
@@ -2017,6 +2021,60 @@ async function loadCrews() {
   if (badge) badge.textContent = window.allCrews.length ? "(" + window.allCrews.length + ")" : "";
   renderCrewsList();
 }
+
+// Typing (or just clicking into) the search box drops down a quick list of
+// matching crews right there in the header -- no need to expand the full
+// section first just to find one crew. It also re-filters the full list
+// below if that's already expanded, so the one search box drives both.
+function onCrewSearchInput() {
+  renderCrewSearchDropdown();
+  renderCrewsList();
+}
+
+function renderCrewSearchDropdown() {
+  const dropdown = document.getElementById("crew-search-dropdown");
+  const searchInput = document.getElementById("crew-search-input");
+  if (!dropdown || !searchInput) return;
+  const term = searchInput.value.trim().toLowerCase();
+  const allCrews = window.allCrews || [];
+  const matches = !term ? allCrews : allCrews.filter(function(c) {
+    if (c.name.toLowerCase().indexOf(term) !== -1) return true;
+    return c.members.some(function(m) { return m.name.toLowerCase().indexOf(term) !== -1; });
+  });
+
+  if (allCrews.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No crews yet.</div>';
+  } else if (matches.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No crews match "' + term + '".</div>';
+  } else {
+    dropdown.innerHTML = matches.map(function(c) {
+      const memberNames = c.members.map(function(m) { return m.name; }).join(", ") || "No members yet";
+      return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
+        'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
+        'onclick="selectCrewSearchResult(\'' + c.id + '\')">' +
+        '<div style="font-weight:600; font-size:13px;">' + c.name + '</div>' +
+        '<div style="font-size:11px; color:#8A8578;">' + memberNames + '</div>' +
+      '</div>';
+    }).join("");
+  }
+  dropdown.style.display = "block";
+}
+
+function selectCrewSearchResult(crewId) {
+  document.getElementById("crew-search-dropdown").style.display = "none";
+  document.getElementById("crew-search-input").value = "";
+  renderCrewsList();
+  openCrewModal(crewId);
+}
+
+document.addEventListener("click", function(e) {
+  const dropdown = document.getElementById("crew-search-dropdown");
+  const input = document.getElementById("crew-search-input");
+  if (!dropdown || !input || dropdown.style.display === "none") return;
+  if (e.target !== input && !dropdown.contains(e.target)) {
+    dropdown.style.display = "none";
+  }
+});
 
 function renderCrewsList() {
   const list = document.getElementById("crews-list");
