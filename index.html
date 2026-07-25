@@ -305,6 +305,38 @@
     .overview-split { flex-direction: column; }
     .overview-emp-col { max-height: none; }
   }
+  .chat-split { display: flex; gap: 0; align-items: stretch; height: calc(100vh - 210px); }
+  .chat-threads-col {
+    flex: 0 0 280px; overflow-y: auto; border-right: 1.5px solid var(--line); padding-right: 10px;
+  }
+  .chat-thread-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 12px; cursor: pointer;
+  }
+  .chat-thread-row:hover { background: #F1EDE3; }
+  .chat-thread-row.active { background: var(--charcoal); color: #fff; }
+  .chat-thread-row.active .chat-thread-preview { color: rgba(255,255,255,0.7); }
+  .chat-thread-name { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .chat-thread-preview { font-size: 11.5px; color: #8A8578; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-on-clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #1E8E5A; flex-shrink: 0; }
+  .chat-unread-pill {
+    background: var(--rust); color: #fff; font-size: 10px; font-weight: 800;
+    border-radius: 20px; padding: 1px 7px; margin-left: auto; flex-shrink: 0;
+  }
+  .chat-thread-col { flex: 1; display: flex; flex-direction: column; padding-left: 20px; min-width: 0; }
+  .chat-thread-header { font-size: 15px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
+  .chat-thread-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+  .chat-bubble {
+    max-width: 70%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
+  }
+  .chat-bubble-admin { align-self: flex-end; background: linear-gradient(135deg, #F9C978, var(--amber)); color: var(--charcoal); border-bottom-right-radius: 4px; }
+  .chat-bubble-employee { align-self: flex-start; background: #F1EDE3; color: var(--charcoal); border-bottom-left-radius: 4px; }
+  .chat-bubble-time { font-size: 10px; color: #8A8578; margin-top: 2px; }
+  .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; }
+  .chat-thread-composer input { flex: 1; margin-bottom: 0; }
+  .chat-nav-badge {
+    display: inline-block; background: var(--rust); color: #fff; font-size: 10px; font-weight: 800;
+    border-radius: 20px; padding: 1px 6px; margin-left: 6px; vertical-align: middle;
+  }
   .type-badge {
     display: inline-block; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.04em; padding: 2px 7px; border-radius: 6px;
@@ -620,6 +652,7 @@
     <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
     <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Invoices</button>
     <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Reports</button>
+    <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">Chat<span id="chat-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
   </nav>
   <main>
@@ -754,6 +787,27 @@
           <button class="range-btn" data-range="yoy" onclick="selectReportRange('yoy')">This Year vs Last Year</button>
         </div>
         <div id="reports-content"></div>
+      </div>
+    </section>
+
+    <section id="tab-chat" class="tab">
+      <div class="chat-split">
+        <div class="chat-threads-col" id="chat-threads-list">
+          <p style="color:#8A8578; font-size:12px;">No chats yet.</p>
+        </div>
+        <div class="chat-thread-col">
+          <div id="chat-thread-header" class="chat-thread-header" style="color:#8A8578; font-weight:400;">
+            Select someone on the clock to start a conversation.
+          </div>
+          <div id="chat-thread-messages" class="chat-thread-messages"></div>
+          <div id="chat-thread-composer" class="chat-thread-composer" style="display:none;">
+            <input id="chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendChatMessage();}" />
+            <button class="btn-primary" style="width:auto;" onclick="sendChatMessage()">Send</button>
+          </div>
+          <div id="chat-thread-offline-note" style="display:none; font-size:12px; color:#8A8578; margin-top:12px;">
+            This employee isn't clocked in right now, so new messages can't be sent -- you can still see the conversation history above.
+          </div>
+        </div>
       </div>
     </section>
 
@@ -989,7 +1043,12 @@ function showApp() {
   loadCompanyTimezone();
   loadReportSummary();
   renderScheduleCalendar();
+  loadChatThreads();
   setInterval(loadOverview, 60000);
+  setInterval(loadChatThreads, 15000);
+  if (window.Notification && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
 }
 
 function showTab(name) {
@@ -2886,6 +2945,130 @@ async function renderScheduleCalendar() {
 
   html += '</div>';
   wrap.innerHTML = html;
+}
+
+// ---------- Chat ----------
+// One thread per employee. The thread list doubles as the lightweight poll
+// target both for the tab's unread badge and for detecting brand-new
+// employee messages (to pop a native OS notification) -- no separate
+// "unread count" endpoint needed on this side.
+function escapeHtml(str) {
+  return String(str == null ? "" : str).replace(/[&<>"']/g, function(c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+let chatThreads = [];
+let openChatEmployeeId = null;
+let lastKnownUnreadByEmployee = {};
+let chatNotifiedFirstLoad = false;
+
+async function loadChatThreads() {
+  try {
+    chatThreads = await window.admin.listChatThreads();
+  } catch (err) {
+    console.error("Couldn't load chat threads:", err.message);
+    return;
+  }
+  renderChatThreads();
+  detectNewChatMessages();
+}
+
+function renderChatThreads() {
+  const totalUnread = chatThreads.reduce(function(sum, t) { return sum + t.unread_count; }, 0);
+  const badge = document.getElementById("chat-nav-badge");
+  if (totalUnread > 0) {
+    badge.textContent = totalUnread;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+
+  const list = document.getElementById("chat-threads-list");
+  if (chatThreads.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:12px;">No chats yet -- conversations show up here once someone is on the clock.</p>';
+    return;
+  }
+  list.innerHTML = chatThreads.map(function(t) {
+    const preview = t.last_message_body
+      ? (t.last_message_sender === "admin" ? "You: " : "") + t.last_message_body
+      : (t.on_clock ? "On the clock -- say hi" : "No messages yet");
+    return '<div class="chat-thread-row' + (t.id === openChatEmployeeId ? ' active' : '') + '" onclick="openChatThread(\'' + t.id + '\')">' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="chat-thread-name">' + (t.on_clock ? '<span class="chat-on-clock-dot"></span>' : '') + escapeHtml(t.name) + '</div>' +
+        '<div class="chat-thread-preview">' + escapeHtml(preview) + '</div>' +
+      '</div>' +
+      (t.unread_count > 0 ? '<span class="chat-unread-pill">' + t.unread_count + '</span>' : '') +
+    '</div>';
+  }).join("");
+}
+
+// Fires a native desktop notification for any thread whose unread count
+// went up since the last poll -- skipped on the very first load after
+// opening the app, so you don't get a pile of notifications for messages
+// that arrived while the app was closed (those are just shown normally).
+function detectNewChatMessages() {
+  const isFirstLoad = !chatNotifiedFirstLoad;
+  chatThreads.forEach(function(t) {
+    const before = lastKnownUnreadByEmployee[t.id] || 0;
+    if (!isFirstLoad && t.unread_count > before && t.id !== openChatEmployeeId) {
+      try {
+        new Notification("Message from " + t.name, { body: t.last_message_body || "New message" });
+      } catch (err) {
+        // Notification API unavailable/denied -- badge still shows the count.
+      }
+    }
+    lastKnownUnreadByEmployee[t.id] = t.unread_count;
+  });
+  chatNotifiedFirstLoad = true;
+}
+
+async function openChatThread(employeeId) {
+  openChatEmployeeId = employeeId;
+  renderChatThreads();
+  const thread = chatThreads.find(function(t) { return t.id === employeeId; });
+  document.getElementById("chat-thread-header").style.cssText = "";
+  document.getElementById("chat-thread-header").textContent = thread ? thread.name : "";
+
+  let messages = [];
+  try {
+    messages = await window.admin.getChatMessages(employeeId);
+  } catch (err) {
+    console.error("Couldn't load messages:", err.message);
+  }
+  document.getElementById("chat-thread-messages").innerHTML = messages.map(function(m) {
+    return '<div class="chat-bubble chat-bubble-' + m.sender + '">' +
+      escapeHtml(m.body) +
+      '<div class="chat-bubble-time">' + fmtDateTime(m.created_at) + '</div>' +
+    '</div>';
+  }).join("") || '<p style="color:#8A8578; font-size:12px;">No messages yet.</p>';
+  document.getElementById("chat-thread-messages").scrollTop = document.getElementById("chat-thread-messages").scrollHeight;
+
+  const onClock = thread ? thread.on_clock : false;
+  document.getElementById("chat-thread-composer").style.display = onClock ? "flex" : "none";
+  document.getElementById("chat-thread-offline-note").style.display = onClock ? "none" : "block";
+
+  // Opening the thread just marked its messages read server-side -- reflect
+  // that in the local badge counts right away instead of waiting for the
+  // next poll.
+  if (thread) thread.unread_count = 0;
+  lastKnownUnreadByEmployee[employeeId] = 0;
+  renderChatThreads();
+}
+
+async function sendChatMessage() {
+  if (!openChatEmployeeId) return;
+  const input = document.getElementById("chat-message-input");
+  const body = input.value.trim();
+  if (!body) return;
+  input.value = "";
+  try {
+    await window.admin.sendChatMessage(openChatEmployeeId, body);
+    await openChatThread(openChatEmployeeId);
+    await loadChatThreads();
+  } catch (err) {
+    alert(err.message || "Couldn't send message.");
+  }
 }
 
 init();
