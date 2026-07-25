@@ -149,4 +149,5 @@ contextBridge.exposeInMainWorld("admin", {
   onUpdateEvent: (callback) => ipcRenderer.on("update-event", (event, payload) => callback(payload)),
   installUpdate: () => ipcRenderer.send("install-update"),
   checkForUpdates: () => ipcRenderer.send("check-for-updates"),
+  openUpdateLog: () => ipcRenderer.send("open-update-log"),
 });

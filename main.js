@@ -2,7 +2,18 @@ const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
 const Store = require("electron-store");
 const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
 new Store(); // registers electron-store's internal IPC handlers in the main process
+
+// electron-updater's own internal steps (download URLs, signature/hash
+// checks, install attempts) all get written here. The click-to-install flow
+// can fail for reasons that never reach our own event handlers below (e.g.
+// Windows blocking the silent installer) -- this file is the only place
+// that failure actually shows up. Fixed filename/location so it's easy to
+// point someone at without them having to go hunting for it.
+log.transports.file.resolvePathFn = () => path.join(app.getPath("userData"), "update-log.txt");
+log.transports.file.level = "info";
+autoUpdater.logger = log;
 
 // Only one copy of the app can run at a time. This matters for updates: if
 // someone has two copies open (e.g. clicked the desktop icon twice) and an
@@ -54,13 +65,29 @@ if (!gotSingleInstanceLock) {
   });
 
   ipcMain.on("install-update", () => {
-    // isSilent=true, isForceRunAfter=true: apply the update with no visible
-    // installer window, then relaunch automatically.
-    autoUpdater.quitAndInstall(true, true);
+    log.info("Restart & update clicked -- calling quitAndInstall");
+    try {
+      // isSilent=true, isForceRunAfter=true: apply the update with no visible
+      // installer window, then relaunch automatically.
+      autoUpdater.quitAndInstall(true, true);
+    } catch (err) {
+      // quitAndInstall throwing synchronously is rare, but if it happens the
+      // app would otherwise just silently sit there with no explanation --
+      // surface it the same way any other update error shows up.
+      log.error("quitAndInstall threw:", err);
+      sendUpdateEvent({ type: "error", message: err.message });
+    }
   });
 
   ipcMain.on("check-for-updates", () => {
     autoUpdater.checkForUpdates();
+  });
+
+  // Opens the update log in Notepad (or whatever the system's default .txt
+  // viewer is) so a non-technical user can just click a button in Settings
+  // instead of having to go find the file themselves.
+  ipcMain.on("open-update-log", () => {
+    shell.openPath(log.transports.file.getFile().path);
   });
 
   function createWindow() {
@@ -88,6 +115,7 @@ if (!gotSingleInstanceLock) {
   }
 
   app.whenReady().then(() => {
+    log.info(`App ready -- version ${app.getVersion()}, log file: ${log.transports.file.getFile().path}`);
     createWindow();
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
