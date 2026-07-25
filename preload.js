@@ -141,8 +141,12 @@ contextBridge.exposeInMainWorld("admin", {
     apiFetch("/api/admin/company-logo", { method: "PUT", body: { logo_base64: logoBase64, mime_type: mimeType } }),
   deleteCompanyLogo: () => apiFetch("/api/admin/company-logo", { method: "DELETE" }),
 
-  // Fires when a downloaded update is ready to install. The renderer shows
-  // a banner; installUpdate() is only called if the person clicks it.
-  onUpdateReady: (callback) => ipcRenderer.on("update-ready", () => callback()),
+  // Fires at every step of checking for / downloading an update -- lets the
+  // renderer show real progress (a percent bar while downloading, plain
+  // text if something goes wrong) instead of updates being an invisible
+  // black box. installUpdate() is only called if the person clicks the
+  // "Restart & update" button once a download finishes.
+  onUpdateEvent: (callback) => ipcRenderer.on("update-event", (event, payload) => callback(payload)),
   installUpdate: () => ipcRenderer.send("install-update"),
+  checkForUpdates: () => ipcRenderer.send("check-for-updates"),
 });

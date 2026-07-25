@@ -35,17 +35,32 @@ if (!gotSingleInstanceLock) {
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = false;
 
+  // Every step of the check/download process gets sent to the renderer so
+  // index.html can show real progress (a percent bar while downloading,
+  // clear text if something goes wrong) instead of updates happening as an
+  // invisible black box that's impossible to tell apart from "not working."
+  function sendUpdateEvent(payload) {
+    if (mainWindow) mainWindow.webContents.send("update-event", payload);
+  }
+
+  autoUpdater.on("checking-for-update", () => sendUpdateEvent({ type: "checking" }));
+  autoUpdater.on("update-available", (info) => sendUpdateEvent({ type: "available", version: info.version }));
+  autoUpdater.on("update-not-available", () => sendUpdateEvent({ type: "not-available" }));
+  autoUpdater.on("download-progress", (p) => sendUpdateEvent({ type: "progress", percent: p.percent }));
+  autoUpdater.on("update-downloaded", (info) => sendUpdateEvent({ type: "downloaded", version: info.version }));
   autoUpdater.on("error", (err) => {
     console.error("Auto-update check failed:", err.message);
-  });
-  autoUpdater.on("update-downloaded", () => {
-    if (mainWindow) mainWindow.webContents.send("update-ready");
+    sendUpdateEvent({ type: "error", message: err.message });
   });
 
   ipcMain.on("install-update", () => {
     // isSilent=true, isForceRunAfter=true: apply the update with no visible
     // installer window, then relaunch automatically.
     autoUpdater.quitAndInstall(true, true);
+  });
+
+  ipcMain.on("check-for-updates", () => {
+    autoUpdater.checkForUpdates();
   });
 
   function createWindow() {

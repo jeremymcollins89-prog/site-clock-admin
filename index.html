@@ -674,9 +674,14 @@
       <button onclick="doLogout()">Log out</button>
     </div>
   </header>
-  <div id="update-banner" style="display:none; align-items:center; justify-content:space-between; gap:12px; background: var(--teal-deep); color:#fff; padding:8px 20px; font-size:13px;">
-    <span>A new version of Coll Timeclock is ready to install.</span>
-    <button onclick="window.admin.installUpdate()" style="background:#fff; color:var(--teal-deep); border:none; border-radius:8px; padding:6px 14px; font-weight:700; font-size:12.5px; cursor:pointer;">Restart &amp; update</button>
+  <div id="update-banner" style="display:none; flex-direction:column; gap:6px; background: var(--teal-deep); color:#fff; padding:8px 20px; font-size:13px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <span id="update-banner-text">Checking for updates&hellip;</span>
+      <button id="update-banner-btn" onclick="window.admin.installUpdate()" style="display:none; background:#fff; color:var(--teal-deep); border:none; border-radius:8px; padding:6px 14px; font-weight:700; font-size:12.5px; cursor:pointer; flex-shrink:0;">Restart &amp; update</button>
+    </div>
+    <div id="update-progress-track" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.3); border-radius:3px; overflow:hidden;">
+      <div id="update-progress-bar" style="width:0%; height:100%; background:#fff; border-radius:3px; transition: width 0.2s ease;"></div>
+    </div>
   </div>
   <nav>
     <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
@@ -854,6 +859,15 @@
 
     <section id="tab-settings" class="tab">
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">App updates</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Coll Timeclock checks for updates automatically. Use this if you want to check right now.
+        </p>
+        <button class="btn-secondary" style="width:auto;" onclick="manualCheckForUpdates()">Check for updates</button>
+        <div id="update-settings-status" style="font-size:12px; color:#8A8578; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Company logo</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Shown at the top of every invoice PDF. PNG, JPEG, or WebP, up to 3MB.
@@ -969,12 +983,71 @@ async function init() {
   } else {
     document.getElementById("login-screen").classList.add("visible");
   }
-  if (window.admin.onUpdateReady) {
-    window.admin.onUpdateReady(function() {
-      const banner = document.getElementById("update-banner");
-      if (banner) banner.style.display = "flex";
-    });
+  if (window.admin.onUpdateEvent) {
+    window.admin.onUpdateEvent(handleUpdateEvent);
   }
+}
+
+// Renders the state of every auto-update step -- checking, downloading (with
+// a live percent bar), ready to install, up to date, or errored -- both in
+// the top banner and (if present) the Settings-tab status line, so there's
+// never a silent stretch where nothing on screen indicates what's happening.
+function handleUpdateEvent(payload) {
+  const banner = document.getElementById("update-banner");
+  const bannerText = document.getElementById("update-banner-text");
+  const bannerBtn = document.getElementById("update-banner-btn");
+  const track = document.getElementById("update-progress-track");
+  const bar = document.getElementById("update-progress-bar");
+  const settingsStatus = document.getElementById("update-settings-status");
+
+  let text = "";
+  let showBanner = true;
+  let showBtn = false;
+  let showTrack = false;
+
+  if (payload.type === "checking") {
+    text = "Checking for updates…";
+  } else if (payload.type === "available") {
+    text = "Downloading update " + payload.version + "…";
+    showTrack = true;
+  } else if (payload.type === "progress") {
+    text = "Downloading update… " + Math.round(payload.percent) + "%";
+    showTrack = true;
+    if (bar) bar.style.width = Math.round(payload.percent) + "%";
+  } else if (payload.type === "downloaded") {
+    text = "Update " + payload.version + " ready to install.";
+    showBtn = true;
+  } else if (payload.type === "not-available") {
+    text = "You're on the latest version.";
+  } else if (payload.type === "error") {
+    text = "Update check failed: " + payload.message;
+  }
+
+  if (banner) {
+    banner.style.display = showBanner ? "flex" : "none";
+    if (bannerText) bannerText.textContent = text;
+    if (bannerBtn) bannerBtn.style.display = showBtn ? "inline-block" : "none";
+    if (track) track.style.display = showTrack ? "block" : "none";
+  }
+  if (settingsStatus) settingsStatus.textContent = text;
+
+  // "Checking" and "up to date" are transient/uninteresting once resolved --
+  // auto-hide the banner shortly after so it doesn't sit there permanently
+  // for the common case where everything's already current.
+  if (payload.type === "not-available" || payload.type === "checking") {
+    setTimeout(function() {
+      if (banner && (payload.type !== "downloaded")) {
+        const stillSameState = bannerText && bannerText.textContent === text;
+        if (stillSameState) banner.style.display = "none";
+      }
+    }, 4000);
+  }
+}
+
+function manualCheckForUpdates() {
+  const settingsStatus = document.getElementById("update-settings-status");
+  if (settingsStatus) settingsStatus.textContent = "Checking for updates…";
+  if (window.admin.checkForUpdates) window.admin.checkForUpdates();
 }
 
 async function doLogin() {
