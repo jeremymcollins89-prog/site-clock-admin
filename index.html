@@ -668,7 +668,10 @@
     </div>
   </div>
   <header>
-    <h1>Coll Timeclock — Admin</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img id="header-logo" src="" style="display:none; max-height:32px; max-width:150px; border-radius:6px; background:#fff; padding:3px; object-fit:contain;" />
+      <h1>Coll Timeclock — Admin</h1>
+    </div>
     <div>
       <button onclick="openPasswordModal()" style="margin-right:8px;">Change password</button>
       <button onclick="doLogout()">Log out</button>
@@ -870,7 +873,7 @@
       <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Company logo</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
-          Shown at the top of every invoice PDF. PNG, JPEG, or WebP, up to 3MB.
+          Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the header up above. PNG, JPEG, or WebP, up to 3MB.
         </p>
         <div id="company-logo-preview-wrap" style="display:none; margin-bottom:10px;">
           <img id="company-logo-preview" style="max-width:180px; max-height:80px; display:block; border:1px solid var(--line); border-radius:10px; padding:6px; background:#fff;" />
@@ -1674,13 +1677,19 @@ function renderCompanyLogoPreview(dataUrl) {
   const wrap = document.getElementById("company-logo-preview-wrap");
   const img = document.getElementById("company-logo-preview");
   const removeBtn = document.getElementById("remove-logo-btn");
+  const headerLogo = document.getElementById("header-logo");
   if (dataUrl) {
     img.src = dataUrl;
     wrap.style.display = "block";
     removeBtn.style.display = "";
+    if (headerLogo) {
+      headerLogo.src = dataUrl;
+      headerLogo.style.display = "block";
+    }
   } else {
     wrap.style.display = "none";
     removeBtn.style.display = "none";
+    if (headerLogo) headerLogo.style.display = "none";
   }
 }
 
