@@ -87,6 +87,7 @@ contextBridge.exposeInMainWorld("admin", {
   updateCustomer: (id, patch) => apiFetch(`/api/admin/customers/${id}`, { method: "PATCH", body: patch }),
   deleteCustomer: (id) => apiFetch(`/api/admin/customers/${id}`, { method: "DELETE" }),
   getCustomerEvents: (id) => apiFetch(`/api/admin/customers/${id}/events`),
+  importCustomers: (customers) => apiFetch("/api/admin/customers/import", { method: "POST", body: { customers } }),
 
   listInvoices: () => apiFetch("/api/admin/invoices"),
   getInvoice: (id) => apiFetch(`/api/admin/invoices/${id}`),
