@@ -78,6 +78,11 @@
     padding: 6px 14px; font-size: 13px; color: var(--charcoal);
   }
   .range-btn.active { background: var(--charcoal); color: #fff; }
+  .billing-subtab-btn {
+    background: #fff; border: 1.5px solid var(--charcoal); border-radius: 10px;
+    padding: 6px 14px; font-size: 13px; color: var(--charcoal);
+  }
+  .billing-subtab-btn.active { background: var(--charcoal); color: #fff; }
   .report-stat-card {
     flex: 1; min-width: 150px; background: #fff; border: 1px solid var(--line);
     border-radius: 12px; padding: 14px;
@@ -904,66 +909,117 @@
     </section>
 
     <section id="tab-invoices" class="tab">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleCatalogSection()">
-            <span id="catalog-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
-            Catalog <span id="catalog-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
-          </h3>
-          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
-            <input id="catalog-search-input" type="text" placeholder="Search catalog items..." autocomplete="off"
-              oninput="onCatalogSearchInput()" onfocus="onCatalogSearchInput()" style="width:100%;" />
-            <div id="catalog-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+        <button class="billing-subtab-btn active" data-billing-subtab="overview" onclick="showBillingSubtab('overview')">Overview</button>
+        <button class="billing-subtab-btn" data-billing-subtab="catalog" onclick="showBillingSubtab('catalog')">Catalog</button>
+        <button class="billing-subtab-btn" data-billing-subtab="quotes" onclick="showBillingSubtab('quotes')">Quotes</button>
+        <button class="billing-subtab-btn" data-billing-subtab="invoices" onclick="showBillingSubtab('invoices')">Invoices</button>
+      </div>
+
+      <div id="billing-subtab-overview" class="billing-subtab-panel">
+        <div class="card">
+          <h3 style="margin-top:0;">Billing overview</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('invoices')">
+              <div style="font-size:12px; color:#8A8578;">Paid invoices</div>
+              <div class="stat-value" style="font-size:22px;" id="billing-overview-paid-total"></div>
+              <div style="font-size:11px; color:#8A8578; margin-top:2px;" id="billing-overview-paid-count"></div>
+            </div>
+            <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('invoices')">
+              <div style="font-size:12px; color:#8A8578;">Unpaid invoices</div>
+              <div class="stat-value" style="font-size:22px;" id="billing-overview-unpaid-total"></div>
+              <div style="font-size:11px; color:#8A8578; margin-top:2px;" id="billing-overview-unpaid-count"></div>
+            </div>
+            <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('quotes')">
+              <div style="font-size:12px; color:#8A8578;">Pending quotes</div>
+              <div class="stat-value" style="font-size:22px;" id="billing-overview-pending-total"></div>
+              <div style="font-size:11px; color:#8A8578; margin-top:2px;" id="billing-overview-pending-count"></div>
+            </div>
           </div>
-          <button class="btn-primary" style="width:auto;" onclick="openCatalogItemModal()">New item</button>
         </div>
-        <div id="catalog-section-body" style="display:none; margin-top:10px;">
-          <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
-          <div id="catalog-items-list"></div>
+
+        <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('catalog')">
+          <div>
+            <h3 style="margin:0;">Catalog</h3>
+            <p style="font-size:12px; color:#8A8578; margin:4px 0 0;" id="billing-overview-catalog-summary">Reusable line items for quotes and invoices.</p>
+          </div>
+          <span style="color:#8A8578; font-size:22px;">&#8250;</span>
+        </div>
+
+        <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('quotes')">
+          <div>
+            <h3 style="margin:0;">Quotes</h3>
+            <p style="font-size:12px; color:#8A8578; margin:4px 0 0;" id="billing-overview-quotes-summary">Estimates for work that hasn't been booked yet.</p>
+          </div>
+          <span style="color:#8A8578; font-size:22px;">&#8250;</span>
+        </div>
+
+        <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('invoices')">
+          <div>
+            <h3 style="margin:0;">Invoices</h3>
+            <p style="font-size:12px; color:#8A8578; margin:4px 0 0;" id="billing-overview-invoices-summary">Billed work, emailed to the customer once sent.</p>
+          </div>
+          <span style="color:#8A8578; font-size:22px;">&#8250;</span>
         </div>
       </div>
 
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleQuotesSection()">
-            <span id="quotes-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
-            Quotes <span id="quotes-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
-          </h3>
-          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
-            <input id="quotes-search-input" type="text" placeholder="Search quotes by customer or #..." autocomplete="off"
-              oninput="onQuotesSearchInput()" onfocus="onQuotesSearchInput()" style="width:100%;" />
-            <div id="quotes-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+      <div id="billing-subtab-catalog" class="billing-subtab-panel" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Catalog <span id="catalog-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
+            <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+              <input id="catalog-search-input" type="text" placeholder="Search catalog items..." autocomplete="off"
+                oninput="onCatalogSearchInput()" onfocus="onCatalogSearchInput()" style="width:100%;" />
+              <div id="catalog-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+            </div>
+            <button class="btn-primary" style="width:auto;" onclick="openCatalogItemModal()">New item</button>
           </div>
-          <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
-        </div>
-        <div id="quotes-section-body" style="display:none; margin-top:10px;">
-          <p style="font-size:12px; color:#8A8578;">
-            Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
-            scheduled job and/or an invoice -- no need to retype anything.
-          </p>
-          <div id="quotes-list"></div>
+          <div style="margin-top:10px;">
+            <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
+            <div id="catalog-items-list"></div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleInvoicesSection()">
-            <span id="invoices-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
-            Invoices <span id="invoices-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
-          </h3>
-          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
-            <input id="invoices-search-input" type="text" placeholder="Search invoices by customer or #..." autocomplete="off"
-              oninput="onInvoicesSearchInput()" onfocus="onInvoicesSearchInput()" style="width:100%;" />
-            <div id="invoices-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+      <div id="billing-subtab-quotes" class="billing-subtab-panel" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Quotes <span id="quotes-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
+            <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+              <input id="quotes-search-input" type="text" placeholder="Search quotes by customer or #..." autocomplete="off"
+                oninput="onQuotesSearchInput()" onfocus="onQuotesSearchInput()" style="width:100%;" />
+              <div id="quotes-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+            </div>
+            <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
           </div>
-          <button class="btn-primary" style="width:auto;" onclick="openInvoiceModal()">New invoice</button>
+          <div style="margin-top:10px;">
+            <p style="font-size:12px; color:#8A8578;">
+              Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
+              scheduled job and/or an invoice -- no need to retype anything.
+            </p>
+            <div id="quotes-list"></div>
+          </div>
         </div>
-        <div id="invoices-section-body" style="display:none; margin-top:10px;">
-          <p style="font-size:12px; color:#8A8578;">
-            Invoices are created as drafts, then emailed to the customer once you click Send.
-            Card payments aren't processed in this app yet -- Mark Paid just records how payment came in.
-          </p>
-          <div id="invoices-list"></div>
+      </div>
+
+      <div id="billing-subtab-invoices" class="billing-subtab-panel" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Invoices <span id="invoices-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
+            <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+              <input id="invoices-search-input" type="text" placeholder="Search invoices by customer or #..." autocomplete="off"
+                oninput="onInvoicesSearchInput()" onfocus="onInvoicesSearchInput()" style="width:100%;" />
+              <div id="invoices-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+            </div>
+            <button class="btn-primary" style="width:auto;" onclick="openInvoiceModal()">New invoice</button>
+          </div>
+          <div style="margin-top:10px;">
+            <p style="font-size:12px; color:#8A8578;">
+              Invoices are created as drafts, then emailed to the customer once you click Send.
+              Card payments aren't processed in this app yet -- Mark Paid just records how payment came in.
+            </p>
+            <div id="invoices-list"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -2619,6 +2675,62 @@ function closeCustomerHistoryModal() {
   document.getElementById("customer-history-modal").classList.remove("visible");
 }
 
+// ---------- Billing overview ----------
+// The Billing tab opens on this summary page, with Catalog/Quotes/Invoices
+// available as sub-tabs (rather than three stacked, always-visible cards).
+// Switches which sub-tab panel is shown and re-renders the overview stats
+// whenever the person lands back on Overview.
+function showBillingSubtab(name) {
+  document.querySelectorAll(".billing-subtab-btn").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.billingSubtab === name);
+  });
+  document.querySelectorAll(".billing-subtab-panel").forEach(function(p) {
+    p.style.display = p.id === "billing-subtab-" + name ? "block" : "none";
+  });
+  if (name === "overview") renderBillingOverview();
+}
+
+// Pulls straight from whatever's already loaded in window.allInvoices /
+// window.allQuotes / window.allCatalogItems -- called after each of those
+// loads so the numbers here never go stale. Void invoices are left out of
+// both the paid and unpaid totals (they're not money owed or collected).
+function renderBillingOverview() {
+  const invoices = window.allInvoices || [];
+  const quotes = window.allQuotes || [];
+  const catalogItems = window.allCatalogItems || [];
+
+  const paidInvoices = invoices.filter(function(inv) { return inv.status === "paid"; });
+  const unpaidInvoices = invoices.filter(function(inv) { return inv.status === "draft" || inv.status === "sent"; });
+  const voidCount = invoices.filter(function(inv) { return inv.status === "void"; }).length;
+  const paidTotal = paidInvoices.reduce(function(sum, inv) { return sum + Number(inv.total); }, 0);
+  const unpaidTotal = unpaidInvoices.reduce(function(sum, inv) { return sum + Number(inv.total); }, 0);
+
+  const pendingQuotes = quotes.filter(function(q) { return q.status === "draft" || q.status === "sent"; });
+  const pendingQuotesTotal = pendingQuotes.reduce(function(sum, q) { return sum + Number(q.total); }, 0);
+
+  billingOverviewSetText("billing-overview-paid-total", fmtMoney(paidTotal));
+  billingOverviewSetText("billing-overview-paid-count", paidInvoices.length === 1 ? "1 invoice" : paidInvoices.length + " invoices");
+  billingOverviewSetText("billing-overview-unpaid-total", fmtMoney(unpaidTotal));
+  billingOverviewSetText("billing-overview-unpaid-count",
+    (unpaidInvoices.length === 1 ? "1 invoice" : unpaidInvoices.length + " invoices") +
+    (voidCount ? " (" + voidCount + " void not counted)" : ""));
+  billingOverviewSetText("billing-overview-pending-total", fmtMoney(pendingQuotesTotal));
+  billingOverviewSetText("billing-overview-pending-count",
+    (pendingQuotes.length === 1 ? "1 quote" : pendingQuotes.length + " quotes") + " awaiting a decision");
+
+  billingOverviewSetText("billing-overview-catalog-summary",
+    catalogItems.length ? (catalogItems.length === 1 ? "1 item" : catalogItems.length + " items") + " ready to drop into a quote or invoice." : "No items yet -- add reusable charges here.");
+  billingOverviewSetText("billing-overview-quotes-summary",
+    quotes.length ? quotes.length + " total, " + pendingQuotes.length + " pending" : "No quotes yet.");
+  billingOverviewSetText("billing-overview-invoices-summary",
+    invoices.length ? invoices.length + " total, " + unpaidInvoices.length + " unpaid" : "No invoices yet.");
+}
+
+function billingOverviewSetText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
 // ---------- Invoices ----------
 // Invoices bill a customer with line items, configurable payment terms,
 // and an emailed PDF. Card/check payments aren't processed in this app --
@@ -2646,25 +2758,6 @@ function invoiceStatusBadge(inv) {
   if (inv.status === "sent" && inv.is_overdue) return '<span class="badge badge-overdue">Overdue</span>';
   if (inv.status === "sent") return '<span class="badge badge-sent">Sent</span>';
   return '<span class="badge badge-draft">Draft</span>';
-}
-
-let invoicesSectionExpanded = false;
-
-function toggleInvoicesSection() {
-  invoicesSectionExpanded = !invoicesSectionExpanded;
-  applyInvoicesSectionState();
-}
-
-function expandInvoicesSection() {
-  invoicesSectionExpanded = true;
-  applyInvoicesSectionState();
-}
-
-function applyInvoicesSectionState() {
-  const body = document.getElementById("invoices-section-body");
-  const icon = document.getElementById("invoices-toggle-icon");
-  if (body) body.style.display = invoicesSectionExpanded ? "block" : "none";
-  if (icon) icon.style.transform = invoicesSectionExpanded ? "rotate(90deg)" : "rotate(0deg)";
 }
 
 // Same header search+dropdown pattern as Crews/Catalog: type (or just focus)
@@ -2726,6 +2819,7 @@ async function loadInvoices() {
   const badge = document.getElementById("invoices-count-badge");
   if (badge) badge.textContent = window.allInvoices.length ? "(" + window.allInvoices.length + ")" : "";
   renderInvoicesList();
+  renderBillingOverview();
 }
 
 function renderInvoicesList() {
@@ -2937,7 +3031,7 @@ async function submitInvoice() {
     }
     closeInvoiceModal();
     await loadInvoices();
-    expandInvoicesSection();
+    showBillingSubtab("invoices");
     if (result.send_warning) {
       alert("Invoice saved as a draft, but wasn't emailed: " + result.send_warning);
     }
@@ -3037,25 +3131,6 @@ function quoteStatusBadge(q) {
   return '<span class="badge badge-draft">Draft</span>';
 }
 
-let quotesSectionExpanded = false;
-
-function toggleQuotesSection() {
-  quotesSectionExpanded = !quotesSectionExpanded;
-  applyQuotesSectionState();
-}
-
-function expandQuotesSection() {
-  quotesSectionExpanded = true;
-  applyQuotesSectionState();
-}
-
-function applyQuotesSectionState() {
-  const body = document.getElementById("quotes-section-body");
-  const icon = document.getElementById("quotes-toggle-icon");
-  if (body) body.style.display = quotesSectionExpanded ? "block" : "none";
-  if (icon) icon.style.transform = quotesSectionExpanded ? "rotate(90deg)" : "rotate(0deg)";
-}
-
 function onQuotesSearchInput() {
   renderQuotesSearchDropdown();
   renderQuotesList();
@@ -3112,6 +3187,7 @@ async function loadQuotes() {
   const badge = document.getElementById("quotes-count-badge");
   if (badge) badge.textContent = window.allQuotes.length ? "(" + window.allQuotes.length + ")" : "";
   renderQuotesList();
+  renderBillingOverview();
 }
 
 function renderQuotesList() {
@@ -3379,7 +3455,7 @@ async function submitQuote() {
     }
     closeQuoteModal();
     await loadQuotes();
-    expandQuotesSection();
+    showBillingSubtab("quotes");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save quote.";
     errEl.style.display = "block";
@@ -3635,28 +3711,6 @@ async function loadReportSummary() {
 
 window.allCatalogItems = [];
 let editingCatalogItemId = null;
-let catalogSectionExpanded = false;
-
-// Same pattern as the Crews list on the Schedule tab: collapsed by default
-// so a growing catalog doesn't push Invoices down every time this tab
-// opens, with a header search box + dropdown for quick lookup, and the
-// full list (with Edit/Delete) available on demand.
-function toggleCatalogSection() {
-  catalogSectionExpanded = !catalogSectionExpanded;
-  applyCatalogSectionState();
-}
-
-function expandCatalogSection() {
-  catalogSectionExpanded = true;
-  applyCatalogSectionState();
-}
-
-function applyCatalogSectionState() {
-  const body = document.getElementById("catalog-section-body");
-  const icon = document.getElementById("catalog-toggle-icon");
-  if (body) body.style.display = catalogSectionExpanded ? "block" : "none";
-  if (icon) icon.style.transform = catalogSectionExpanded ? "rotate(90deg)" : "rotate(0deg)";
-}
 
 async function loadCatalogItems() {
   window.allCatalogItems = await window.admin.listCatalogItems();
@@ -3665,6 +3719,7 @@ async function loadCatalogItems() {
   renderCatalogItemsList();
   populateInvoiceCatalogPicker();
   populateQuoteCatalogPicker();
+  renderBillingOverview();
 }
 
 // Typing (or just clicking into) the search box drops down a quick list of
@@ -3796,7 +3851,7 @@ async function submitCatalogItem() {
     }
     closeCatalogItemModal();
     await loadCatalogItems();
-    expandCatalogSection();
+    showBillingSubtab("catalog");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save catalog item.";
     errEl.style.display = "block";
