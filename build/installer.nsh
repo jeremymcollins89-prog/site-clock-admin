@@ -6,10 +6,23 @@
 ; Force-closing the process first means the installer never hits that lock,
 ; whether it's running silently in the background (auto-update) or someone
 ; double-clicked the downloaded .exe by hand.
+;
+; The Sleep after taskkill matters: taskkill returns as soon as it's told
+; Windows to end the process, not once every file handle that process held
+; is actually released. Under a normal (visible) install there's enough
+; incidental delay for that cleanup to finish before files get overwritten.
+; Under silent auto-update, NSIS moves on almost instantly -- and if it
+; hits a file that's still mid-release, /S mode has no dialog to retry with,
+; so it just silently skips that file and continues, leaving the old
+; version's files in place even though the installer "succeeds" and
+; relaunches the app. A short pause here gives Windows time to actually
+; finish before the copy starts.
 !macro customInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
+  Sleep 1500
 !macroend
 
 !macro customUnInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
+  Sleep 1500
 !macroend
