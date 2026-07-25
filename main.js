@@ -64,15 +64,38 @@ function launchInstallerEscapingJobObject(installerPath, args, callback) {
       settled = true;
       callback(err);
     });
+    // IMPORTANT: wait for this powershell.exe process to actually EXIT before
+    // telling the caller it's safe to call app.quit() -- a prior version of
+    // this function used a flat 800ms setTimeout instead, which raced ahead
+    // of Invoke-CimMethod's real-world latency (WMI/CIM cold-start can easily
+    // take longer than that). If app.quit() fires before the CIM call has
+    // actually run, this powershell.exe process is itself still just a normal
+    // child of the Electron process -- still potentially a member of
+    // whatever Job Object Electron belongs to -- and can get cascade-killed
+    // the instant Electron quits, before it ever hands the installer off to
+    // WMI. That produced exactly this symptom in the field: "no install
+    // marker found" (installer never started at all) even with this
+    // breakaway mechanism in place, and no wmi-launch-result.txt ever got
+    // written -- proof the script was cut short, not that WMI refused it.
+    // Waiting for the real exit event closes that race: by the time it
+    // fires, the CIM call has already resolved one way or another, and if it
+    // succeeded the installer is already running under WmiPrvSE.exe,
+    // independent of this process and its job membership.
+    child.on("exit", () => {
+      if (settled) return;
+      settled = true;
+      callback(null);
+    });
     child.unref();
-    // The launcher script itself starting just means PowerShell is running --
-    // give it a brief moment to actually hand off to WMI (this is normally
-    // near-instant) before we tell the caller it's safe to quit.
+    // Safety net only -- covers the pathological case where powershell.exe
+    // never exits on its own (hung WMI call, etc.) so the app doesn't sit
+    // there forever waiting to quit. Generous on purpose since a slow but
+    // eventually-successful WMI call is far better than quitting too early.
     setTimeout(() => {
       if (settled) return;
       settled = true;
       callback(null);
-    }, 800);
+    }, 10000);
   } catch (err) {
     callback(err);
   }
