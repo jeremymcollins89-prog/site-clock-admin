@@ -280,7 +280,7 @@
     text-align: center; padding-bottom: 4px; letter-spacing: 0.04em;
   }
   .cal-day {
-    min-height: 76px; border: 1px solid var(--line); border-radius: 10px;
+    height: 76px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px;
     padding: 4px; cursor: pointer; background: #fff; transition: box-shadow .15s ease;
   }
   .cal-day:hover { border-color: var(--charcoal); box-shadow: 0 4px 12px rgba(31,36,33,0.08); }
@@ -2985,7 +2985,7 @@ async function renderOverviewCalendar() {
     const dateStr = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
     const dayJobs = jobsByDate[dateStr] || [];
     const isToday = dateStr === today;
-    const pills = dayJobs.slice(0, 3).map(function(j) {
+    const pills = dayJobs.slice(0, 1).map(function(j) {
       const typeLabel = EVENT_TYPE_LABELS[j.event_type] || "Job";
       const prefix = j.event_type && j.event_type !== "job" ? typeLabel.charAt(0) + ": " : "";
       const timePrefix = j.start_time ? formatTimeLabel(j.start_time) + " " : "";
@@ -2994,7 +2994,10 @@ async function renderOverviewCalendar() {
         'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
         'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + j.title + '</span>';
     }).join("");
-    const more = dayJobs.length > 3 ? '<div class="cal-job-more">+' + (dayJobs.length - 3) + ' more</div>' : '';
+    // Every day cell is a fixed height now (so weeks don't stretch unevenly
+    // when one day has more going on than the rest) -- show just the one
+    // event plus a "+N more" hint; click the day to see the full list.
+    const more = dayJobs.length > 1 ? '<div class="cal-job-more">+' + (dayJobs.length - 1) + ' more</div>' : '';
     html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +
       '<div class="cal-day-num">' + day + '</div>' + pills + more +
     '</div>';
@@ -3167,7 +3170,7 @@ async function renderScheduleCalendar() {
       const dateStr = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
       const dayJobs = jobsByDate[dateStr] || [];
       const isToday = dateStr === today;
-      const pills = dayJobs.slice(0, 4).map(function(j) {
+      const pills = dayJobs.slice(0, 1).map(function(j) {
         const typeLabel = EVENT_TYPE_LABELS[j.event_type] || "Job";
         const prefix = j.event_type && j.event_type !== "job" ? typeLabel.charAt(0) + ": " : "";
         const timePrefix = j.start_time ? formatTimeLabel(j.start_time) + " " : "";
@@ -3176,7 +3179,7 @@ async function renderScheduleCalendar() {
           'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
           'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + j.title + '</span>';
       }).join("");
-      const more = dayJobs.length > 4 ? '<div class="cal-job-more">+' + (dayJobs.length - 4) + ' more</div>' : '';
+      const more = dayJobs.length > 1 ? '<div class="cal-job-more">+' + (dayJobs.length - 1) + ' more</div>' : '';
       html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +
         '<div class="cal-day-num">' + day + '</div>' + pills + more +
       '</div>';
