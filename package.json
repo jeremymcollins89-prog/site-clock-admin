@@ -1,6 +1,6 @@
 {
   "name": "coll-timeclock-admin",
-  "version": "2.20.0",
+  "version": "2.20.1",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -28,7 +28,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "Coll-Timeclock-Admin-Setup.exe"
+      "artifactName": "Coll-Timeclock-Admin-Setup.exe",
+      "include": "build/installer.nsh"
     },
     "appx": {
       "identityName": "jcollins.CollTimeclock",
