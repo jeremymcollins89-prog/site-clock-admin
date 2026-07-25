@@ -673,6 +673,10 @@
       <button onclick="doLogout()">Log out</button>
     </div>
   </header>
+  <div id="update-banner" style="display:none; align-items:center; justify-content:space-between; gap:12px; background: var(--teal-deep); color:#fff; padding:8px 20px; font-size:13px;">
+    <span>A new version of Coll Timeclock is ready to install.</span>
+    <button onclick="window.admin.installUpdate()" style="background:#fff; color:var(--teal-deep); border:none; border-radius:8px; padding:6px 14px; font-weight:700; font-size:12.5px; cursor:pointer;">Restart &amp; update</button>
+  </div>
   <nav>
     <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
     <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
@@ -963,6 +967,12 @@ async function init() {
     showApp();
   } else {
     document.getElementById("login-screen").classList.add("visible");
+  }
+  if (window.admin.onUpdateReady) {
+    window.admin.onUpdateReady(function() {
+      const banner = document.getElementById("update-banner");
+      if (banner) banner.style.display = "flex";
+    });
   }
 }
 

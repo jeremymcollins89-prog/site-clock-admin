@@ -1,4 +1,4 @@
-const { contextBridge, shell } = require("electron");
+const { contextBridge, shell, ipcRenderer } = require("electron");
 const Store = require("electron-store");
 const fs = require("fs");
 const os = require("os");
@@ -140,4 +140,9 @@ contextBridge.exposeInMainWorld("admin", {
   updateCompanyLogo: (logoBase64, mimeType) =>
     apiFetch("/api/admin/company-logo", { method: "PUT", body: { logo_base64: logoBase64, mime_type: mimeType } }),
   deleteCompanyLogo: () => apiFetch("/api/admin/company-logo", { method: "DELETE" }),
+
+  // Fires when a downloaded update is ready to install. The renderer shows
+  // a banner; installUpdate() is only called if the person clicks it.
+  onUpdateReady: (callback) => ipcRenderer.on("update-ready", () => callback()),
+  installUpdate: () => ipcRenderer.send("install-update"),
 });
