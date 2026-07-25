@@ -33,7 +33,19 @@
 ; solve it: the auto-updater keeps the download in place and retries on the
 ; next check or button click either way, so a failed attempt just means
 ; trying again shortly after, not getting permanently stuck.
+; Writes the very first line of the diagnostic marker file, before any file
+; is touched -- see the customInstall macro below for the rest of the story.
+; If a failed update shows NEITHER this line nor the customInstall line, the
+; installer process never got far enough to run any of our own code at all
+; (blocked from launching, or killed in the first instant). If it shows THIS
+; line but not the customInstall one, the installer started running but died
+; somewhere during the actual file-copy step -- which is the pattern real-time
+; antivirus scanning killing a running, unsigned installer would produce.
 !macro customInit
+  FileOpen $9 "$APPDATA\coll-timeclock-admin\last-install-marker.txt" w
+  FileWrite $9 "install started$\r$\n"
+  FileClose $9
+
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
 
   FileOpen $9 "$PLUGINSDIR\wait-for-unlock.ps1" w
@@ -56,27 +68,19 @@
 
 ; Diagnostic only -- doesn't change install behavior at all.
 ;
-; The last two fix attempts (widening the pre-install wait to a full active
-; poll, then disabling the forced auto-relaunch entirely) made no measurable
-; difference: real-world logs show that even manually reopening the app well
-; after the silent installer should have finished still shows the OLD
-; version, on back-to-back attempts. That rules out both "old files were
-; still locked" and "the forced relaunch raced the install finishing" as the
-; explanation -- something is preventing the actual file-copy step from ever
-; completing, and there's been no way to see that, because the whole
-; installer runs silently with absolutely nothing surfaced back to the app's
-; own log (electron-log only captures what the ELECTRON app writes -- once
-; quitAndInstall hands off to the NSIS installer, that process is invisible
-; to us).
-;
-; customInstall fires at the very end of the main install Section, after
-; every file has been copied -- so if this line ever runs, the copy
-; genuinely finished. Writing a marker here (checked and cleared by main.js
-; on the next app launch, see main.js) will show, for the first time,
-; whether the Section is even being reached at all -- which tells us whether
-; to keep looking at "why does the copy fail" (Defender/SmartScreen blocking
-; an unsigned silent install being the leading suspect) versus something
-; entirely different happening after a successful copy.
+; The 2.21.5 -> 2.21.6 real-world log confirmed the theory from the last
+; round of instrumentation: on a failed attempt (reopened manually 14 seconds
+; after the silent installer launched -- no timing race possible), NO marker
+; was written at all. That means the file-copy Section this macro sits in
+; simply never finished. Combined with customInit's start-of-install marker
+; (see above), a failed attempt now tells us one of two things: if NEITHER
+; marker line is present, the installer never got running in the first place;
+; if the "install started" line is present but this one isn't, the installer
+; started but was killed or errored out partway through the actual file copy
+; -- the pattern you'd expect from real-time antivirus scanning treating an
+; unsigned installer copying files as suspicious. Either way, this points at
+; something outside our own code (Windows Defender/SmartScreen being the
+; leading suspect for an unsigned .exe), not at install timing.
 !macro customInstall
   FileOpen $9 "$APPDATA\coll-timeclock-admin\last-install-marker.txt" a
   FileWrite $9 "install section completed$\r$\n"

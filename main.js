@@ -6,24 +6,32 @@ const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
 new Store(); // registers electron-store's internal IPC handlers in the main process
 
-// Diagnostic only -- see the matching comment in build/installer.nsh. The
-// installer's customInstall macro writes a line to this file at the very end
-// of its file-copy Section, which is the only way to tell whether that
-// Section is actually being reached during a silent update -- the installer
-// process itself is otherwise a black box once quitAndInstall hands off to
-// it. Checked and cleared on every launch so each entry in the update log
+// Diagnostic only -- see the matching comments in build/installer.nsh. The
+// installer writes "install started" at the very beginning (customInit,
+// before any files are touched) and appends "install section completed" at
+// the very end of the main file-copy Section (customInstall). The installer
+// process itself is otherwise a total black box once quitAndInstall hands
+// off to it, so this is the only way to tell how far a silent update actually
+// got. Checked and cleared on every launch so each entry in the update log
 // reflects only what happened since the last time the app opened.
 function checkInstallMarker() {
   const markerPath = path.join(app.getPath("userData"), "last-install-marker.txt");
   try {
-    if (fs.existsSync(markerPath)) {
-      const contents = fs.readFileSync(markerPath, "utf8").trim();
-      const lines = contents ? contents.split("\n").length : 0;
-      log.info(`Install marker found (${lines} line(s)) -- the installer's file-copy step DID complete since last launch: ${JSON.stringify(contents)}`);
-      fs.unlinkSync(markerPath);
-    } else {
-      log.info("No install marker found since last launch.");
+    if (!fs.existsSync(markerPath)) {
+      log.info("No install marker found since last launch -- the installer never got far enough to run any of our own code (never started, or killed in the first instant).");
+      return;
     }
+    const contents = fs.readFileSync(markerPath, "utf8");
+    const startedFound = contents.includes("install started");
+    const completedFound = contents.includes("install section completed");
+    if (startedFound && completedFound) {
+      log.info(`Install marker: both lines found -- the installer ran start to finish since last launch: ${JSON.stringify(contents.trim())}`);
+    } else if (startedFound && !completedFound) {
+      log.info(`Install marker: only "install started" found -- the installer started but died partway through the file-copy step since last launch: ${JSON.stringify(contents.trim())}`);
+    } else {
+      log.info(`Install marker found but unexpected contents: ${JSON.stringify(contents.trim())}`);
+    }
+    fs.unlinkSync(markerPath);
   } catch (err) {
     log.error("Failed to check install marker:", err);
   }
