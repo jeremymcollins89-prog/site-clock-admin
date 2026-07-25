@@ -124,6 +124,39 @@ contextBridge.exposeInMainWorld("admin", {
     return true;
   },
 
+  listQuotes: () => apiFetch("/api/admin/quotes"),
+  getQuote: (id) => apiFetch(`/api/admin/quotes/${id}`),
+  addQuote: (quote) => apiFetch("/api/admin/quotes", { method: "POST", body: quote }),
+  updateQuote: (id, patch) => apiFetch(`/api/admin/quotes/${id}`, { method: "PATCH", body: patch }),
+  deleteQuote: (id) => apiFetch(`/api/admin/quotes/${id}`, { method: "DELETE" }),
+  sendQuote: (id) => apiFetch(`/api/admin/quotes/${id}/send`, { method: "POST" }),
+  markQuoteAccepted: (id) => apiFetch(`/api/admin/quotes/${id}/mark-accepted`, { method: "PATCH" }),
+  markQuoteDeclined: (id) => apiFetch(`/api/admin/quotes/${id}/mark-declined`, { method: "PATCH" }),
+  convertQuoteToJob: (id, jobPatch) => apiFetch(`/api/admin/quotes/${id}/convert-to-job`, { method: "POST", body: jobPatch }),
+  convertQuoteToInvoice: (id, patch) => apiFetch(`/api/admin/quotes/${id}/convert-to-invoice`, { method: "POST", body: patch || {} }),
+  // Same temp-file-then-open pattern as viewInvoicePdf.
+  viewQuotePdf: async (id) => {
+    const token = store.get("token");
+    const res = await fetch(`${API_BASE_URL}/api/admin/quotes/${id}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let message = "Couldn't load quote PDF";
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch (parseErr) {
+        // response wasn't JSON -- keep the generic message
+      }
+      throw new Error(message);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const tempPath = path.join(os.tmpdir(), `quote-${id}.pdf`);
+    fs.writeFileSync(tempPath, Buffer.from(arrayBuffer));
+    await shell.openPath(tempPath);
+    return true;
+  },
+
   getReportSummary: (start, end) => apiFetch(`/api/admin/reports/summary?start=${start}&end=${end}`),
 
   listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
