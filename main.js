@@ -67,9 +67,28 @@ if (!gotSingleInstanceLock) {
   ipcMain.on("install-update", () => {
     log.info("Restart & update clicked -- calling quitAndInstall");
     try {
-      // isSilent=true, isForceRunAfter=true: apply the update with no visible
-      // installer window, then relaunch automatically.
-      autoUpdater.quitAndInstall(true, true);
+      // isSilent=true, isForceRunAfter=false.
+      //
+      // This used to pass isForceRunAfter=true (auto-reopen immediately after
+      // installing), but real-world logs kept showing the same failure no
+      // matter how the pre-install file-lock wait was tuned (1.5s, 3s, 6s,
+      // then an active poll for exclusive file access -- none of it changed
+      // the odds): the app would relaunch and still report the OLD version
+      // number. That's a strong sign the race was never at the START of the
+      // install (old files still locked) -- it's at the END: NSIS's
+      // "--force-run" appears to relaunch the app essentially the instant the
+      // file copy finishes, which can be before Windows has fully settled the
+      // new file on disk, so the relaunch sometimes loads a stale image of
+      // the exe it just replaced.
+      //
+      // Turning off the forced auto-relaunch sidesteps that race entirely
+      // instead of trying to out-guess its timing: the update still installs
+      // completely silently (no NSIS window), but the person has to
+      // double-click the app back open themselves afterward. By the time a
+      // human notices the app closed and clicks the icon again, the OS has
+      // long since finished writing the file -- there's no realistic way to
+      // react fast enough to hit the same race.
+      autoUpdater.quitAndInstall(true, false);
     } catch (err) {
       // quitAndInstall throwing synchronously is rare, but if it happens the
       // app would otherwise just silently sit there with no explanation --

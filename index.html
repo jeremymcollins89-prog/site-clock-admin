@@ -773,7 +773,7 @@
   <div id="update-banner" style="display:none; flex-direction:column; gap:6px; background: var(--teal-deep); color:#fff; padding:8px 20px; font-size:13px;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
       <span id="update-banner-text">Checking for updates&hellip;</span>
-      <button id="update-banner-btn" onclick="window.admin.installUpdate()" style="display:none; background:#fff; color:var(--teal-deep); border:none; border-radius:8px; padding:6px 14px; font-weight:700; font-size:12.5px; cursor:pointer; flex-shrink:0;">Restart &amp; update</button>
+      <button id="update-banner-btn" onclick="confirmInstallUpdate()" style="display:none; background:#fff; color:var(--teal-deep); border:none; border-radius:8px; padding:6px 14px; font-weight:700; font-size:12.5px; cursor:pointer; flex-shrink:0;">Restart &amp; update</button>
     </div>
     <div id="update-progress-track" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.3); border-radius:3px; overflow:hidden;">
       <div id="update-progress-bar" style="width:0%; height:100%; background:#fff; border-radius:3px; transition: width 0.2s ease;"></div>
@@ -1147,7 +1147,7 @@ function handleUpdateEvent(payload) {
     showTrack = true;
     if (bar) bar.style.width = Math.round(payload.percent) + "%";
   } else if (payload.type === "downloaded") {
-    text = "Update " + payload.version + " ready to install.";
+    text = "Update " + payload.version + " ready to install. The app will close to install it -- reopen it yourself a few seconds after.";
     showBtn = true;
   } else if (payload.type === "not-available") {
     text = "You're on the latest version.";
@@ -1174,6 +1174,16 @@ function handleUpdateEvent(payload) {
       }
     }, 4000);
   }
+}
+
+// Clicking "Restart & update" closes the app to install silently -- it no
+// longer auto-reopens itself afterward (see main.js for why: the forced
+// auto-relaunch was the likely source of the update sometimes "not taking"
+// even after installing fine). A quick heads-up here means the app closing
+// isn't mistaken for a crash.
+function confirmInstallUpdate() {
+  alert("Coll Timeclock Admin will close now to finish installing the update.\n\nJust reopen it from your desktop or Start menu after a few seconds.");
+  window.admin.installUpdate();
 }
 
 function manualCheckForUpdates() {
