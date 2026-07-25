@@ -7,27 +7,44 @@
 ; whether it's running silently in the background (auto-update) or someone
 ; double-clicked the downloaded .exe by hand.
 ;
-; The Sleep after taskkill matters: taskkill returns as soon as it's told
-; Windows to end the process, not once every file handle that process held
-; is actually released. Under a normal (visible) install there's enough
-; incidental delay for that cleanup to finish before files get overwritten.
-; Under silent auto-update, NSIS moves on almost instantly -- and if it
-; hits a file that's still mid-release, /S mode has no dialog to retry with,
-; so it just silently skips that file and continues, leaving the old
-; version's files in place even though the installer "succeeds" and
-; relaunches the app.
+; taskkill returns as soon as it's told Windows to end the process, not once
+; every file handle that process held is actually released. Fixed delays
+; here (tried 1.5s, then 3s) were unreliable -- one update would go through,
+; the next would silently fail the same way, because the real wait time
+; varies by machine. Instead of guessing a number, this actively polls until
+; Windows confirms the process is actually gone, then proceeds immediately
+; -- no more waiting than necessary, and no risk of not waiting enough.
 ;
-; 1.5s (v2.20.7) measurably helped -- one auto-update actually went through
-; for the first time -- but wasn't consistently enough; the very next
-; version bump failed the same way again. Bumped to 3s for more headroom.
-; If this still isn't reliable, the next step is polling for the process to
-; actually disappear (tasklist) instead of a blind fixed delay.
+; The check uses PowerShell's Get-Process rather than parsing tasklist's
+; text output, because tasklist's "no tasks found" message is localized
+; (different wording on non-English Windows) and would silently break this
+; check on any machine not set to English. Get-Process + exit code sidesteps
+; that entirely -- it's just a number, not a sentence to parse.
+!macro WaitForAppToFullyExit
+  StrCpy $8 0
+  wait_for_exit_loop:
+    nsExec::ExecToStack "powershell -NoProfile -Command $\"if (Get-Process -Name 'Coll Timeclock Admin' -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }$\""
+    Pop $7
+    StrCmp $7 "0" wait_for_exit_done
+    IntOp $8 $8 + 1
+    ; Cap it at 10 tries (~3 seconds of polling) so a genuinely stuck
+    ; process can never hang the installer forever -- if it's still not
+    ; gone by then, proceed anyway rather than freeze the update.
+    IntCmp $8 10 wait_for_exit_done
+    Sleep 300
+    Goto wait_for_exit_loop
+  wait_for_exit_done:
+  ; Small buffer even after confirmed exit -- Windows can take an instant
+  ; longer to fully release file handles after the process itself is gone.
+  Sleep 300
+!macroend
+
 !macro customInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  Sleep 3000
+  !insertmacro WaitForAppToFullyExit
 !macroend
 
 !macro customUnInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  Sleep 3000
+  !insertmacro WaitForAppToFullyExit
 !macroend
