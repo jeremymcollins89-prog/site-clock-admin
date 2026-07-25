@@ -1,10 +1,82 @@
 const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
+const { spawn } = require("child_process");
 const Store = require("electron-store");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
 new Store(); // registers electron-store's internal IPC handlers in the main process
+
+// ---------- Installer job-object breakaway ----------
+// Long story, distilled: NSIS marker instrumentation (see build/installer.nsh
+// and checkInstallMarker below) proved the installer reliably STARTS but
+// non-deterministically dies partway through copying files -- roughly half
+// the time -- with no antivirus block logged anywhere and no change from a
+// Defender folder exclusion. That ruled out antivirus.
+//
+// The actual mechanism: electron-updater spawns the installer with
+// `detached: true` (see node_modules/electron-updater/out/BaseUpdater.js),
+// but on Windows, Node/libuv's "detached" mode does NOT pass
+// CREATE_BREAKAWAY_FROM_JOB when creating the child process. Every Windows
+// process is automatically added to any Job Object its parent belongs to
+// unless breakaway is explicitly requested -- and plenty of ordinary
+// launchers, terminal hosts, and monitoring/EDR tools put the processes they
+// start into a Job Object with "kill on job close" behavior. If this
+// Electron process happens to be in one of those, the freshly-spawned
+// installer inherits that same job membership. quitAndInstall calls
+// app.quit() on the very next tick after spawning -- so when this process's
+// handle on the job closes, Windows can tear down the *entire* job,
+// including the installer, mid-copy. This matches multiple long-standing,
+// still-open electron-builder GitHub issues (e.g. #7807, #7294) describing
+// installers dying right after quitAndInstall with no clear cause.
+//
+// Fix: launch the installer via WMI's Win32_Process.Create instead of a
+// direct child process spawn. WMI creates the new process inside the
+// WmiPrvSE.exe service host, so it's rooted in a completely different
+// process tree -- never a member of whatever job this Electron process is
+// in, so it can't be cascade-killed when this process quits.
+function launchInstallerEscapingJobObject(installerPath, args, callback) {
+  try {
+    const scriptPath = path.join(os.tmpdir(), "coll-timeclock-launch-installer.ps1");
+    const resultPath = path.join(app.getPath("userData"), "wmi-launch-result.txt").replace(/\\/g, "\\\\");
+    const commandLine = `"${installerPath}" ${args.join(" ")}`.replace(/'/g, "''");
+    // Separate from the NSIS install marker on purpose -- customInit
+    // overwrites that file the instant the installer starts, so anything
+    // written here beforehand would just get erased. This file records
+    // whether WMI itself accepted the process-creation request (a nonzero
+    // ReturnValue means WMI refused/failed, in which case the installer
+    // never ran at all -- a completely different failure mode than the
+    // job-object cascade-kill this whole mechanism exists to avoid).
+    const psScript =
+      `$cl = '${commandLine}'\r\n` +
+      `$result = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$cl}\r\n` +
+      `"ReturnValue=$($result.ReturnValue) ProcessId=$($result.ProcessId)" | Out-File -FilePath "${resultPath}" -Encoding utf8\r\n`;
+    fs.writeFileSync(scriptPath, psScript, "utf8");
+    const child = spawn(
+      "powershell.exe",
+      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", scriptPath],
+      { detached: true, stdio: "ignore", windowsHide: true }
+    );
+    let settled = false;
+    child.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+      callback(err);
+    });
+    child.unref();
+    // The launcher script itself starting just means PowerShell is running --
+    // give it a brief moment to actually hand off to WMI (this is normally
+    // near-instant) before we tell the caller it's safe to quit.
+    setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      callback(null);
+    }, 800);
+  } catch (err) {
+    callback(err);
+  }
+}
 
 // Diagnostic only -- see the matching comments in build/installer.nsh. The
 // installer writes "install started" at the very beginning (customInit,
@@ -34,6 +106,22 @@ function checkInstallMarker() {
     fs.unlinkSync(markerPath);
   } catch (err) {
     log.error("Failed to check install marker:", err);
+  }
+}
+
+// Companion to launchInstallerEscapingJobObject -- reports whether the WMI
+// process-creation call itself succeeded (ReturnValue 0) the last time an
+// update was installed. Only written right before a WMI-based install
+// attempt, so its absence on a normal launch is expected and not logged.
+function checkWmiLaunchResult() {
+  const resultPath = path.join(app.getPath("userData"), "wmi-launch-result.txt");
+  try {
+    if (!fs.existsSync(resultPath)) return;
+    const contents = fs.readFileSync(resultPath, "utf8").trim();
+    log.info(`WMI installer launch result from last attempt: ${contents}`);
+    fs.unlinkSync(resultPath);
+  } catch (err) {
+    log.error("Failed to check WMI launch result:", err);
   }
 }
 
@@ -86,47 +174,66 @@ if (!gotSingleInstanceLock) {
     if (mainWindow) mainWindow.webContents.send("update-event", payload);
   }
 
+  // Captured from update-downloaded so the install-update handler below can
+  // launch the installer itself (via WMI, see launchInstallerEscapingJobObject)
+  // instead of going through autoUpdater.quitAndInstall's internal spawn.
+  let pendingInstallerPath = null;
+
   autoUpdater.on("checking-for-update", () => sendUpdateEvent({ type: "checking" }));
   autoUpdater.on("update-available", (info) => sendUpdateEvent({ type: "available", version: info.version }));
   autoUpdater.on("update-not-available", () => sendUpdateEvent({ type: "not-available" }));
   autoUpdater.on("download-progress", (p) => sendUpdateEvent({ type: "progress", percent: p.percent }));
-  autoUpdater.on("update-downloaded", (info) => sendUpdateEvent({ type: "downloaded", version: info.version }));
+  autoUpdater.on("update-downloaded", (info) => {
+    pendingInstallerPath = info.downloadedFile || null;
+    sendUpdateEvent({ type: "downloaded", version: info.version });
+  });
   autoUpdater.on("error", (err) => {
     console.error("Auto-update check failed:", err.message);
     sendUpdateEvent({ type: "error", message: err.message });
   });
 
   ipcMain.on("install-update", () => {
-    log.info("Restart & update clicked -- calling quitAndInstall");
-    try {
-      // isSilent=true, isForceRunAfter=false.
-      //
-      // This used to pass isForceRunAfter=true (auto-reopen immediately after
-      // installing), but real-world logs kept showing the same failure no
-      // matter how the pre-install file-lock wait was tuned (1.5s, 3s, 6s,
-      // then an active poll for exclusive file access -- none of it changed
-      // the odds): the app would relaunch and still report the OLD version
-      // number. That's a strong sign the race was never at the START of the
-      // install (old files still locked) -- it's at the END: NSIS's
-      // "--force-run" appears to relaunch the app essentially the instant the
-      // file copy finishes, which can be before Windows has fully settled the
-      // new file on disk, so the relaunch sometimes loads a stale image of
-      // the exe it just replaced.
-      //
-      // Turning off the forced auto-relaunch sidesteps that race entirely
-      // instead of trying to out-guess its timing: the update still installs
-      // completely silently (no NSIS window), but the person has to
-      // double-click the app back open themselves afterward. By the time a
-      // human notices the app closed and clicks the icon again, the OS has
-      // long since finished writing the file -- there's no realistic way to
-      // react fast enough to hit the same race.
-      autoUpdater.quitAndInstall(true, false);
-    } catch (err) {
-      // quitAndInstall throwing synchronously is rare, but if it happens the
-      // app would otherwise just silently sit there with no explanation --
-      // surface it the same way any other update error shows up.
-      log.error("quitAndInstall threw:", err);
-      sendUpdateEvent({ type: "error", message: err.message });
+    log.info("Restart & update clicked");
+    // isSilent=true, isForceRunAfter=false -- no NSIS window, and the person
+    // has to double-click the app back open themselves afterward rather than
+    // relying on NSIS's --force-run auto-relaunch (a past theory about
+    // --force-run racing the install's own completion was tested and
+    // disproven by real logs; kept off since it's simpler either way).
+    const installerArgs = ["--updated", "/S"];
+
+    if (pendingInstallerPath) {
+      // See the long comment above launchInstallerEscapingJobObject for the
+      // full story: this launches the installer through WMI instead of a
+      // direct child-process spawn so it can't be cascade-killed by Windows
+      // when this Electron process's own quit sequence tears down whatever
+      // Job Object it might belong to -- the real, evidence-based cause of
+      // the installer dying mid-copy on this machine.
+      log.info(`Launching installer via WMI (job-object breakaway): ${pendingInstallerPath}`);
+      launchInstallerEscapingJobObject(pendingInstallerPath, installerArgs, (err) => {
+        if (err) {
+          log.error("WMI installer launch failed, falling back to quitAndInstall:", err);
+          try {
+            autoUpdater.quitAndInstall(true, false);
+          } catch (err2) {
+            log.error("Fallback quitAndInstall also threw:", err2);
+            sendUpdateEvent({ type: "error", message: err2.message });
+          }
+          return;
+        }
+        log.info("Installer launched via WMI -- quitting app now");
+        app.quit();
+      });
+    } else {
+      // Shouldn't normally happen (the Restart & update button only appears
+      // after update-downloaded has already fired), but fall back to the
+      // built-in flow rather than doing nothing if it does.
+      log.info("No pending installer path captured -- falling back to quitAndInstall");
+      try {
+        autoUpdater.quitAndInstall(true, false);
+      } catch (err) {
+        log.error("quitAndInstall threw:", err);
+        sendUpdateEvent({ type: "error", message: err.message });
+      }
     }
   });
 
@@ -168,6 +275,7 @@ if (!gotSingleInstanceLock) {
   app.whenReady().then(() => {
     log.info(`App ready -- version ${app.getVersion()}, log file: ${log.transports.file.getFile().path}`);
     checkInstallMarker();
+    checkWmiLaunchResult();
     createWindow();
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
