@@ -924,27 +924,47 @@
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin:0;">Quotes</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleQuotesSection()">
+            <span id="quotes-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+            Quotes <span id="quotes-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
+          </h3>
+          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+            <input id="quotes-search-input" type="text" placeholder="Search quotes by customer or #..." autocomplete="off"
+              oninput="onQuotesSearchInput()" onfocus="onQuotesSearchInput()" style="width:100%;" />
+            <div id="quotes-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+          </div>
           <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
         </div>
-        <p style="font-size:12px; color:#8A8578;">
-          Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
-          scheduled job and/or an invoice -- no need to retype anything.
-        </p>
-        <div id="quotes-list"></div>
+        <div id="quotes-section-body" style="display:none; margin-top:10px;">
+          <p style="font-size:12px; color:#8A8578;">
+            Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
+            scheduled job and/or an invoice -- no need to retype anything.
+          </p>
+          <div id="quotes-list"></div>
+        </div>
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin:0;">Invoices</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleInvoicesSection()">
+            <span id="invoices-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+            Invoices <span id="invoices-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span>
+          </h3>
+          <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+            <input id="invoices-search-input" type="text" placeholder="Search invoices by customer or #..." autocomplete="off"
+              oninput="onInvoicesSearchInput()" onfocus="onInvoicesSearchInput()" style="width:100%;" />
+            <div id="invoices-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+          </div>
           <button class="btn-primary" style="width:auto;" onclick="openInvoiceModal()">New invoice</button>
         </div>
-        <p style="font-size:12px; color:#8A8578;">
-          Invoices are created as drafts, then emailed to the customer once you click Send.
-          Card payments aren't processed in this app yet -- Mark Paid just records how payment came in.
-        </p>
-        <div id="invoices-list"></div>
+        <div id="invoices-section-body" style="display:none; margin-top:10px;">
+          <p style="font-size:12px; color:#8A8578;">
+            Invoices are created as drafts, then emailed to the customer once you click Send.
+            Card payments aren't processed in this app yet -- Mark Paid just records how payment came in.
+          </p>
+          <div id="invoices-list"></div>
+        </div>
       </div>
     </section>
 
@@ -2628,16 +2648,100 @@ function invoiceStatusBadge(inv) {
   return '<span class="badge badge-draft">Draft</span>';
 }
 
+let invoicesSectionExpanded = false;
+
+function toggleInvoicesSection() {
+  invoicesSectionExpanded = !invoicesSectionExpanded;
+  applyInvoicesSectionState();
+}
+
+function expandInvoicesSection() {
+  invoicesSectionExpanded = true;
+  applyInvoicesSectionState();
+}
+
+function applyInvoicesSectionState() {
+  const body = document.getElementById("invoices-section-body");
+  const icon = document.getElementById("invoices-toggle-icon");
+  if (body) body.style.display = invoicesSectionExpanded ? "block" : "none";
+  if (icon) icon.style.transform = invoicesSectionExpanded ? "rotate(90deg)" : "rotate(0deg)";
+}
+
+// Same header search+dropdown pattern as Crews/Catalog: type (or just focus)
+// the box to get a quick list of matches without expanding the full section,
+// click one to jump straight into it.
+function onInvoicesSearchInput() {
+  renderInvoicesSearchDropdown();
+  renderInvoicesList();
+}
+
+function invoiceMatchesTerm(inv, term) {
+  return inv.customer_name.toLowerCase().indexOf(term) !== -1 ||
+    String(inv.invoice_number).indexOf(term) !== -1;
+}
+
+function renderInvoicesSearchDropdown() {
+  const dropdown = document.getElementById("invoices-search-dropdown");
+  const searchInput = document.getElementById("invoices-search-input");
+  if (!dropdown || !searchInput) return;
+  const term = searchInput.value.trim().toLowerCase();
+  const allInvoices = window.allInvoices || [];
+  const matches = !term ? allInvoices : allInvoices.filter(function(inv) { return invoiceMatchesTerm(inv, term); });
+
+  if (allInvoices.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No invoices yet.</div>';
+  } else if (matches.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No invoices match "' + term + '".</div>';
+  } else {
+    dropdown.innerHTML = matches.map(function(inv) {
+      return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
+        'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
+        'onclick="selectInvoicesSearchResult(\'' + inv.id + '\')">' +
+        '<div style="font-weight:600; font-size:13px;">Invoice #' + inv.invoice_number + ' &middot; ' + inv.customer_name + '</div>' +
+        '<div style="font-size:11px; color:#8A8578;">' + fmtMoney(inv.total) + '</div>' +
+      '</div>';
+    }).join("");
+  }
+  dropdown.style.display = "block";
+}
+
+function selectInvoicesSearchResult(invoiceId) {
+  document.getElementById("invoices-search-dropdown").style.display = "none";
+  document.getElementById("invoices-search-input").value = "";
+  renderInvoicesList();
+  openInvoiceModal(invoiceId);
+}
+
+document.addEventListener("click", function(e) {
+  const dropdown = document.getElementById("invoices-search-dropdown");
+  const input = document.getElementById("invoices-search-input");
+  if (!dropdown || !input || dropdown.style.display === "none") return;
+  if (e.target !== input && !dropdown.contains(e.target)) {
+    dropdown.style.display = "none";
+  }
+});
+
 async function loadInvoices() {
   window.allInvoices = await window.admin.listInvoices();
+  const badge = document.getElementById("invoices-count-badge");
+  if (badge) badge.textContent = window.allInvoices.length ? "(" + window.allInvoices.length + ")" : "";
   renderInvoicesList();
 }
 
 function renderInvoicesList() {
   const list = document.getElementById("invoices-list");
-  const invoices = window.allInvoices || [];
-  if (invoices.length === 0) {
+  if (!list) return;
+  const searchInput = document.getElementById("invoices-search-input");
+  const term = searchInput ? searchInput.value.trim().toLowerCase() : "";
+  const allInvoices = window.allInvoices || [];
+  const invoices = !term ? allInvoices : allInvoices.filter(function(inv) { return invoiceMatchesTerm(inv, term); });
+
+  if (allInvoices.length === 0) {
     list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No invoices yet.</p>';
+    return;
+  }
+  if (invoices.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No invoices match "' + term + '".</p>';
     return;
   }
   list.innerHTML = invoices.map(function(inv) {
@@ -2833,6 +2937,7 @@ async function submitInvoice() {
     }
     closeInvoiceModal();
     await loadInvoices();
+    expandInvoicesSection();
     if (result.send_warning) {
       alert("Invoice saved as a draft, but wasn't emailed: " + result.send_warning);
     }
@@ -2932,17 +3037,97 @@ function quoteStatusBadge(q) {
   return '<span class="badge badge-draft">Draft</span>';
 }
 
+let quotesSectionExpanded = false;
+
+function toggleQuotesSection() {
+  quotesSectionExpanded = !quotesSectionExpanded;
+  applyQuotesSectionState();
+}
+
+function expandQuotesSection() {
+  quotesSectionExpanded = true;
+  applyQuotesSectionState();
+}
+
+function applyQuotesSectionState() {
+  const body = document.getElementById("quotes-section-body");
+  const icon = document.getElementById("quotes-toggle-icon");
+  if (body) body.style.display = quotesSectionExpanded ? "block" : "none";
+  if (icon) icon.style.transform = quotesSectionExpanded ? "rotate(90deg)" : "rotate(0deg)";
+}
+
+function onQuotesSearchInput() {
+  renderQuotesSearchDropdown();
+  renderQuotesList();
+}
+
+function quoteMatchesTerm(q, term) {
+  return q.customer_name.toLowerCase().indexOf(term) !== -1 ||
+    String(q.quote_number).indexOf(term) !== -1;
+}
+
+function renderQuotesSearchDropdown() {
+  const dropdown = document.getElementById("quotes-search-dropdown");
+  const searchInput = document.getElementById("quotes-search-input");
+  if (!dropdown || !searchInput) return;
+  const term = searchInput.value.trim().toLowerCase();
+  const allQuotes = window.allQuotes || [];
+  const matches = !term ? allQuotes : allQuotes.filter(function(q) { return quoteMatchesTerm(q, term); });
+
+  if (allQuotes.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No quotes yet.</div>';
+  } else if (matches.length === 0) {
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No quotes match "' + term + '".</div>';
+  } else {
+    dropdown.innerHTML = matches.map(function(q) {
+      return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
+        'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
+        'onclick="selectQuotesSearchResult(\'' + q.id + '\')">' +
+        '<div style="font-weight:600; font-size:13px;">Quote #' + q.quote_number + ' &middot; ' + q.customer_name + '</div>' +
+        '<div style="font-size:11px; color:#8A8578;">' + fmtMoney(q.total) + '</div>' +
+      '</div>';
+    }).join("");
+  }
+  dropdown.style.display = "block";
+}
+
+function selectQuotesSearchResult(quoteId) {
+  document.getElementById("quotes-search-dropdown").style.display = "none";
+  document.getElementById("quotes-search-input").value = "";
+  renderQuotesList();
+  openQuoteModal(quoteId);
+}
+
+document.addEventListener("click", function(e) {
+  const dropdown = document.getElementById("quotes-search-dropdown");
+  const input = document.getElementById("quotes-search-input");
+  if (!dropdown || !input || dropdown.style.display === "none") return;
+  if (e.target !== input && !dropdown.contains(e.target)) {
+    dropdown.style.display = "none";
+  }
+});
+
 async function loadQuotes() {
   window.allQuotes = await window.admin.listQuotes();
+  const badge = document.getElementById("quotes-count-badge");
+  if (badge) badge.textContent = window.allQuotes.length ? "(" + window.allQuotes.length + ")" : "";
   renderQuotesList();
 }
 
 function renderQuotesList() {
   const list = document.getElementById("quotes-list");
   if (!list) return;
-  const quotes = window.allQuotes || [];
-  if (quotes.length === 0) {
+  const searchInput = document.getElementById("quotes-search-input");
+  const term = searchInput ? searchInput.value.trim().toLowerCase() : "";
+  const allQuotes = window.allQuotes || [];
+  const quotes = !term ? allQuotes : allQuotes.filter(function(q) { return quoteMatchesTerm(q, term); });
+
+  if (allQuotes.length === 0) {
     list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No quotes yet.</p>';
+    return;
+  }
+  if (quotes.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No quotes match "' + term + '".</p>';
     return;
   }
   list.innerHTML = quotes.map(function(q) {
@@ -3194,6 +3379,7 @@ async function submitQuote() {
     }
     closeQuoteModal();
     await loadQuotes();
+    expandQuotesSection();
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save quote.";
     errEl.style.display = "block";
