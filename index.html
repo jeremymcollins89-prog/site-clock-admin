@@ -994,8 +994,9 @@
           </div>
           <div style="margin-top:10px;">
             <p style="font-size:12px; color:#8A8578;">
-              Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
-              scheduled job and/or an invoice -- no need to retype anything.
+              Quotes are estimates for work that hasn't been booked yet, emailed to the customer automatically as soon as
+              you save one. Once a customer accepts, convert the quote into a scheduled job and/or an invoice -- no need
+              to retype anything.
             </p>
             <div id="quotes-list"></div>
           </div>
@@ -3395,7 +3396,11 @@ async function openQuoteModal(quoteId) {
   document.querySelectorAll("#quote-line-items-list .line-item-remove").forEach(function(el) { el.style.display = isEditable ? "" : "none"; });
 
   document.getElementById("quote-save-btn").style.display = isEditable ? "" : "none";
-  document.getElementById("quote-save-btn").textContent = isDraft ? "Save draft" : "Save changes";
+  // A brand-new quote gets emailed automatically on save (see sendQuoteNow
+  // on the backend) -- editing an existing one (draft or already sent)
+  // doesn't re-send on its own, so only the "new quote" case gets the
+  // "& send" label.
+  document.getElementById("quote-save-btn").textContent = !quote ? "Save & send" : (isDraft ? "Save draft" : "Save changes");
   document.getElementById("quote-viewpdf-btn").style.display = quote ? "" : "none";
   document.getElementById("quote-send-btn").style.display = quote && isEditable ? "" : "none";
   document.getElementById("quote-send-btn").textContent = quote && quote.status === "sent" ? "Resend to customer" : "Send to customer";
@@ -3448,14 +3453,18 @@ async function submitQuote() {
   };
 
   try {
+    let result;
     if (editingQuoteId) {
-      await window.admin.updateQuote(editingQuoteId, payload);
+      result = await window.admin.updateQuote(editingQuoteId, payload);
     } else {
-      await window.admin.addQuote(payload);
+      result = await window.admin.addQuote(payload);
     }
     closeQuoteModal();
     await loadQuotes();
     showBillingSubtab("quotes");
+    if (result && result.send_warning) {
+      alert("Quote saved as a draft, but wasn't emailed: " + result.send_warning);
+    }
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save quote.";
     errEl.style.display = "block";
