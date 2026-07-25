@@ -3211,9 +3211,16 @@ function renderQuotesList() {
     const actions = [];
     if (q.status === "draft") {
       actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openQuoteModal(\'' + q.id + '\')">Edit</button>');
-      actions.push('<button class="save-btn" style="background:#C1502E;" onclick="deleteQuoteConfirm(\'' + q.id + '\')">Delete</button>');
     } else {
-      actions.push('<button class="save-btn" onclick="openQuoteModal(\'' + q.id + '\')">View</button>');
+      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openQuoteModal(\'' + q.id + '\')">View</button>');
+    }
+    // Converting is allowed from any status except declined (and only once --
+    // no point invoicing a quote that's already been turned into an invoice).
+    if (q.status !== "declined" && !q.converted_invoice_id) {
+      actions.push('<button class="save-btn" style="background: var(--teal-deep); margin-right:6px;" onclick="openConvertQuoteToInvoiceModal(\'' + q.id + '\')">Convert to invoice</button>');
+    }
+    if (q.status === "draft") {
+      actions.push('<button class="save-btn" style="background:#C1502E;" onclick="deleteQuoteConfirm(\'' + q.id + '\')">Delete</button>');
     }
     return '<div class="card invoice-card">' +
       '<div>' +
