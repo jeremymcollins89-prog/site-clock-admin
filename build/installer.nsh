@@ -8,43 +8,20 @@
 ; double-clicked the downloaded .exe by hand.
 ;
 ; taskkill returns as soon as it's told Windows to end the process, not once
-; every file handle that process held is actually released. Fixed delays
-; here (tried 1.5s, then 3s) were unreliable -- one update would go through,
-; the next would silently fail the same way, because the real wait time
-; varies by machine. Instead of guessing a number, this actively polls until
-; Windows confirms the process is actually gone, then proceeds immediately
-; -- no more waiting than necessary, and no risk of not waiting enough.
-;
-; The check uses PowerShell's Get-Process rather than parsing tasklist's
-; text output, because tasklist's "no tasks found" message is localized
-; (different wording on non-English Windows) and would silently break this
-; check on any machine not set to English. Get-Process + exit code sidesteps
-; that entirely -- it's just a number, not a sentence to parse.
-!macro WaitForAppToFullyExit
-  StrCpy $8 0
-  wait_for_exit_loop:
-    nsExec::ExecToStack "powershell -NoProfile -Command $\"if (Get-Process -Name 'Coll Timeclock Admin' -ErrorAction SilentlyContinue) { exit 1 } else { exit 0 }$\""
-    Pop $7
-    StrCmp $7 "0" wait_for_exit_done
-    IntOp $8 $8 + 1
-    ; Cap it at 10 tries (~3 seconds of polling) so a genuinely stuck
-    ; process can never hang the installer forever -- if it's still not
-    ; gone by then, proceed anyway rather than freeze the update.
-    IntCmp $8 10 wait_for_exit_done
-    Sleep 300
-    Goto wait_for_exit_loop
-  wait_for_exit_done:
-  ; Small buffer even after confirmed exit -- Windows can take an instant
-  ; longer to fully release file handles after the process itself is gone.
-  Sleep 300
-!macroend
-
+; every file handle that process held is actually released. A follow-up
+; attempt at actively polling for the process to disappear (via PowerShell's
+; Get-Process) turned out to have its own bug -- nsExec::ExecToStack pushes
+; two values onto the stack (exit code, then output text) and that script
+; only popped one, so it wasn't reliably reading what it thought it was.
+; That version failed twice in a row in real testing. Reverting to the
+; simple fixed delay, which is less elegant but has actually proven itself:
+; 3 seconds worked cleanly on its first real-world attempt.
 !macro customInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  !insertmacro WaitForAppToFullyExit
+  Sleep 3000
 !macroend
 
 !macro customUnInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  !insertmacro WaitForAppToFullyExit
+  Sleep 3000
 !macroend
