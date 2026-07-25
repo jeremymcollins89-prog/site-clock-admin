@@ -784,8 +784,7 @@
     <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
     <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
     <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
-    <button class="tab-btn" data-tab="quotes" onclick="showTab('quotes')">Quotes</button>
-    <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Invoices</button>
+    <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Billing</button>
     <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Reports</button>
     <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">Chat<span id="chat-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
@@ -904,20 +903,6 @@
       </div>
     </section>
 
-    <section id="tab-quotes" class="tab">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin:0;">Quotes</h3>
-          <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
-        </div>
-        <p style="font-size:12px; color:#8A8578;">
-          Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
-          scheduled job and/or an invoice -- no need to retype anything.
-        </p>
-        <div id="quotes-list"></div>
-      </div>
-    </section>
-
     <section id="tab-invoices" class="tab">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -933,9 +918,21 @@
           <button class="btn-primary" style="width:auto;" onclick="openCatalogItemModal()">New item</button>
         </div>
         <div id="catalog-section-body" style="display:none; margin-top:10px;">
-          <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into an invoice's line items with one click, instead of retyping them.</p>
+          <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
           <div id="catalog-items-list"></div>
         </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">Quotes</h3>
+          <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
+        </div>
+        <p style="font-size:12px; color:#8A8578;">
+          Quotes are estimates for work that hasn't been booked yet. Once a customer accepts, convert the quote into a
+          scheduled job and/or an invoice -- no need to retype anything.
+        </p>
+        <div id="quotes-list"></div>
       </div>
 
       <div class="card">
