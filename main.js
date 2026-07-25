@@ -1,9 +1,33 @@
 const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
+const fs = require("fs");
 const Store = require("electron-store");
 const { autoUpdater } = require("electron-updater");
 const log = require("electron-log");
 new Store(); // registers electron-store's internal IPC handlers in the main process
+
+// Diagnostic only -- see the matching comment in build/installer.nsh. The
+// installer's customInstall macro writes a line to this file at the very end
+// of its file-copy Section, which is the only way to tell whether that
+// Section is actually being reached during a silent update -- the installer
+// process itself is otherwise a black box once quitAndInstall hands off to
+// it. Checked and cleared on every launch so each entry in the update log
+// reflects only what happened since the last time the app opened.
+function checkInstallMarker() {
+  const markerPath = path.join(app.getPath("userData"), "last-install-marker.txt");
+  try {
+    if (fs.existsSync(markerPath)) {
+      const contents = fs.readFileSync(markerPath, "utf8").trim();
+      const lines = contents ? contents.split("\n").length : 0;
+      log.info(`Install marker found (${lines} line(s)) -- the installer's file-copy step DID complete since last launch: ${JSON.stringify(contents)}`);
+      fs.unlinkSync(markerPath);
+    } else {
+      log.info("No install marker found since last launch.");
+    }
+  } catch (err) {
+    log.error("Failed to check install marker:", err);
+  }
+}
 
 // electron-updater's own internal steps (download URLs, signature/hash
 // checks, install attempts) all get written here. The click-to-install flow
@@ -135,6 +159,7 @@ if (!gotSingleInstanceLock) {
 
   app.whenReady().then(() => {
     log.info(`App ready -- version ${app.getVersion()}, log file: ${log.transports.file.getFile().path}`);
+    checkInstallMarker();
     createWindow();
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();

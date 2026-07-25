@@ -54,6 +54,35 @@
   Pop $8
 !macroend
 
+; Diagnostic only -- doesn't change install behavior at all.
+;
+; The last two fix attempts (widening the pre-install wait to a full active
+; poll, then disabling the forced auto-relaunch entirely) made no measurable
+; difference: real-world logs show that even manually reopening the app well
+; after the silent installer should have finished still shows the OLD
+; version, on back-to-back attempts. That rules out both "old files were
+; still locked" and "the forced relaunch raced the install finishing" as the
+; explanation -- something is preventing the actual file-copy step from ever
+; completing, and there's been no way to see that, because the whole
+; installer runs silently with absolutely nothing surfaced back to the app's
+; own log (electron-log only captures what the ELECTRON app writes -- once
+; quitAndInstall hands off to the NSIS installer, that process is invisible
+; to us).
+;
+; customInstall fires at the very end of the main install Section, after
+; every file has been copied -- so if this line ever runs, the copy
+; genuinely finished. Writing a marker here (checked and cleared by main.js
+; on the next app launch, see main.js) will show, for the first time,
+; whether the Section is even being reached at all -- which tells us whether
+; to keep looking at "why does the copy fail" (Defender/SmartScreen blocking
+; an unsigned silent install being the leading suspect) versus something
+; entirely different happening after a successful copy.
+!macro customInstall
+  FileOpen $9 "$APPDATA\coll-timeclock-admin\last-install-marker.txt" a
+  FileWrite $9 "install section completed$\r$\n"
+  FileClose $9
+!macroend
+
 !macro customUnInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
 
