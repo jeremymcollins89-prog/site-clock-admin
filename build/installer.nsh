@@ -15,14 +15,19 @@
 ; hits a file that's still mid-release, /S mode has no dialog to retry with,
 ; so it just silently skips that file and continues, leaving the old
 ; version's files in place even though the installer "succeeds" and
-; relaunches the app. A short pause here gives Windows time to actually
-; finish before the copy starts.
+; relaunches the app.
+;
+; 1.5s (v2.20.7) measurably helped -- one auto-update actually went through
+; for the first time -- but wasn't consistently enough; the very next
+; version bump failed the same way again. Bumped to 3s for more headroom.
+; If this still isn't reliable, the next step is polling for the process to
+; actually disappear (tasklist) instead of a blind fixed delay.
 !macro customInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  Sleep 1500
+  Sleep 3000
 !macroend
 
 !macro customUnInit
   nsExec::Exec 'taskkill /F /IM "Coll Timeclock Admin.exe" /T'
-  Sleep 1500
+  Sleep 3000
 !macroend
