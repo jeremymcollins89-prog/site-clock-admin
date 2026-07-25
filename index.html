@@ -3067,9 +3067,9 @@ function renderDayJobCard(j) {
 }
 
 // Splits the day into a "No specific time" section (for events left with no
-// time set -- the clickable toggle in the event form) and an hourly grid
-// below it, so times are easy to scan at a glance. Default range is 6 AM to
-// 9 PM, widened automatically if something's scheduled outside that window.
+// time set -- the clickable toggle in the event form) and a full 24-hour
+// grid below it (12 AM - 11 PM), so times are easy to scan and any hour can
+// be clicked to add an appointment there.
 function openDayModal(dateStr) {
   currentDayModalDate = dateStr;
   const dayJobs = (window.lastJobsByDate && window.lastJobsByDate[dateStr]) || [];
@@ -3089,7 +3089,7 @@ function openDayModal(dateStr) {
   // specific time, not just via the generic "New event" button.
   let hourGridHtml = '';
   {
-    let minHour = 6, maxHour = 21;
+    let minHour = 0, maxHour = 23;
     timedJobs.forEach(function(j) {
       const h = timeHourOf(j.start_time);
       if (h < minHour) minHour = h;
