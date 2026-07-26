@@ -1840,10 +1840,17 @@ function toggleEmployeeRowEdit(id, btn) {
   inputs.forEach(function(el) { el.disabled = false; });
   if (inputs[0]) inputs[0].focus();
   btn.textContent = "Save";
-  btn.onclick = function() { saveEmployeeDetailRow(id); };
+  btn.onclick = function() { saveEmployeeDetailRow(id, btn); };
 }
 
-async function saveEmployeeDetailRow(id) {
+// btn is passed through so this can show immediate "Saving..." feedback and,
+// if the save fails, put the button back the way it was instead of silently
+// doing nothing. Previously this had no try/catch, so a failed save (a
+// network hiccup, an invalid time, etc.) threw an unhandled rejection --
+// renderEmployeeDetail below never ran, the row just sat there still in edit
+// mode with no error and no refresh, which looked exactly like the button
+// didn't do anything.
+async function saveEmployeeDetailRow(id, btn) {
   const inputs = document.querySelectorAll('#employee-modal-content [data-id="' + id + '"]');
   const patch = {};
   inputs.forEach(function(el) {
@@ -1854,10 +1861,19 @@ async function saveEmployeeDetailRow(id) {
     }
     patch[field] = val;
   });
-  await window.admin.updateTimeEntry(id, patch);
-  const start = document.getElementById("emp-detail-start").value;
-  const end = document.getElementById("emp-detail-end").value;
-  await renderEmployeeDetail(start, end);
+  if (btn) { btn.disabled = true; btn.textContent = "Saving..."; }
+  try {
+    await window.admin.updateTimeEntry(id, patch);
+    const start = document.getElementById("emp-detail-start").value;
+    const end = document.getElementById("emp-detail-end").value;
+    // Re-renders the whole time card fresh from the server, so this row
+    // (and its Worked/Break totals) reflects the save right away -- no need
+    // to close and reopen the employee to see it took effect.
+    await renderEmployeeDetail(start, end);
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = "Save"; }
+    alert(err.message || "Couldn't save this time entry. Try again.");
+  }
 }
 
 // For when someone forgets to clock out -- ends their open shift right now
