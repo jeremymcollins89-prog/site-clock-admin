@@ -4467,7 +4467,7 @@ function renderInvoiceBreakdownRows(start, end, mode) {
   const rows = filtered.map(function(inv) {
     const dateLabel = mode === "invoiced" ? (inv.issue_date || "").slice(0, 10) : inv.paid_at.slice(0, 10);
     return '<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer;" ' +
-      'onclick="closeReportBreakdownModal(); showTab(\'invoices\'); showBillingSubtab(\'invoices\');">' +
+      'onclick="closeReportBreakdownModal(); showTab(\'invoices\'); showBillingSubtab(\'invoices\'); openInvoiceModal(\'' + inv.id + '\');">' +
       '<span>#' + inv.invoice_number + ' &middot; ' + inv.customer_name + ' &middot; ' + dateLabel + '</span>' +
       '<span>' + fmtMoney(inv.total) + '</span>' +
     '</div>';
