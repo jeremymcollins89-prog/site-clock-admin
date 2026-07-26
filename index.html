@@ -1702,18 +1702,22 @@ async function renderEmployeeDetail(start, end) {
   }).join("");
 
   const fullAddress = formatAddressParts(ed.street, ed.city, ed.state, ed.zip);
-  const hasContactInfo = ed.phone || ed.email || fullAddress;
   const contactCardHtml = '<div class="card" style="margin:12px 0 16px; cursor:pointer;" onclick="toggleEmpContactCard()">' +
     '<div style="display:flex; justify-content:space-between; align-items:center;">' +
       '<strong style="font-size:13px;">Contact info</strong>' +
       '<span id="emp-contact-toggle-label" style="color:#8A8578; font-size:11px;">Tap to view &#9662;</span>' +
     '</div>' +
     '<div id="emp-contact-details" style="display:none; margin-top:10px;" onclick="event.stopPropagation();">' +
-      (hasContactInfo ? (
-        (ed.phone ? '<div style="font-size:13px; margin-bottom:6px;"><a href="' + telUrl(ed.phone) + '" style="color:var(--rust);">' + ed.phone + '</a></div>' : '') +
-        (ed.email ? '<div style="font-size:13px; margin-bottom:6px;"><a href="mailto:' + ed.email + '" style="color:var(--rust);">' + ed.email + '</a></div>' : '') +
-        (fullAddress ? '<div style="font-size:13px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:var(--rust);">' + fullAddress + ' (directions)</a></div>' : '')
-      ) : '<p style="font-size:12px; color:#8A8578; margin:0;">No phone or address on file -- add it from the Edit button on the Employees list.</p>') +
+      (ed.phone
+        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="' + telUrl(ed.phone) + '" style="color:var(--rust);">' + ed.phone + '</a></div>'
+        : '<div style="font-size:13px; margin-bottom:6px; color:#8A8578;">Phone: not set</div>') +
+      (ed.email
+        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="mailto:' + ed.email + '" style="color:var(--rust);">' + ed.email + '</a></div>'
+        : '<div style="font-size:13px; margin-bottom:6px; color:#8A8578;">Email: not set</div>') +
+      (fullAddress
+        ? '<div style="font-size:13px; margin-bottom:8px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:var(--rust);">' + fullAddress + ' (directions)</a></div>'
+        : '<div style="font-size:13px; margin-bottom:8px; color:#8A8578;">Address: not set</div>') +
+      '<button class="save-btn" style="background:var(--teal);" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + ed.id + '\');">Edit contact info</button>' +
     '</div>' +
   '</div>';
 
