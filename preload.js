@@ -178,6 +178,14 @@ contextBridge.exposeInMainWorld("admin", {
   sendChatMessage: (employeeId, body) =>
     apiFetch(`/api/admin/chat/${employeeId}/messages`, { method: "POST", body: { body } }),
 
+  listTeamChatThreads: () => apiFetch("/api/admin/team-chat/threads"),
+  getTeamChatUnreadCount: () => apiFetch("/api/admin/team-chat/unread-count"),
+  createTeamChatThread: (employeeIds, name) =>
+    apiFetch("/api/admin/team-chat/threads", { method: "POST", body: { employee_ids: employeeIds, name } }),
+  getTeamChatMessages: (threadId) => apiFetch(`/api/admin/team-chat/threads/${threadId}/messages`),
+  sendTeamChatMessage: (threadId, body) =>
+    apiFetch(`/api/admin/team-chat/threads/${threadId}/messages`, { method: "POST", body: { body } }),
+
   getCompanyLogo: () => apiFetch("/api/admin/company-logo"),
   updateCompanyLogo: (logoBase64, mimeType) =>
     apiFetch("/api/admin/company-logo", { method: "PUT", body: { logo_base64: logoBase64, mime_type: mimeType } }),

@@ -1106,25 +1106,68 @@
     </section>
 
     <section id="tab-chat" class="tab">
-      <div class="chat-split">
-        <div class="chat-threads-col" id="chat-threads-list">
-          <p style="color:#8A8578; font-size:12px;">No chats yet.</p>
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <button class="billing-subtab-btn active" data-chat-subtab="direct" onclick="showChatSubtab('direct')">Direct</button>
+        <button class="billing-subtab-btn" data-chat-subtab="team" onclick="showChatSubtab('team')">Team<span id="team-chat-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
+      </div>
+
+      <div id="chat-subtab-direct" class="chat-subtab-panel">
+        <div class="chat-split">
+          <div class="chat-threads-col" id="chat-threads-list">
+            <p style="color:#8A8578; font-size:12px;">No chats yet.</p>
+          </div>
+          <div class="chat-thread-col">
+            <div id="chat-thread-header" class="chat-thread-header" style="color:#8A8578; font-weight:400;">
+              Select someone on the clock to start a conversation.
+            </div>
+            <div id="chat-thread-messages" class="chat-thread-messages"></div>
+            <div id="chat-thread-composer" class="chat-thread-composer" style="display:none;">
+              <input id="chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendChatMessage();}" />
+              <button class="btn-primary" style="width:auto;" onclick="sendChatMessage()">Send</button>
+            </div>
+            <div id="chat-thread-offline-note" style="display:none; font-size:12px; color:#8A8578; margin-top:12px;">
+              This employee isn't clocked in right now, so new messages can't be sent -- you can still see the conversation history above.
+            </div>
+          </div>
         </div>
-        <div class="chat-thread-col">
-          <div id="chat-thread-header" class="chat-thread-header" style="color:#8A8578; font-weight:400;">
-            Select someone on the clock to start a conversation.
+      </div>
+
+      <div id="chat-subtab-team" class="chat-subtab-panel" style="display:none;">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <button class="btn-small" style="background:var(--teal);" onclick="openNewTeamChatModal()">+ New chat</button>
+        </div>
+        <div class="chat-split">
+          <div class="chat-threads-col" id="team-chat-threads-list">
+            <p style="color:#8A8578; font-size:12px;">No team chats yet.</p>
           </div>
-          <div id="chat-thread-messages" class="chat-thread-messages"></div>
-          <div id="chat-thread-composer" class="chat-thread-composer" style="display:none;">
-            <input id="chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendChatMessage();}" />
-            <button class="btn-primary" style="width:auto;" onclick="sendChatMessage()">Send</button>
-          </div>
-          <div id="chat-thread-offline-note" style="display:none; font-size:12px; color:#8A8578; margin-top:12px;">
-            This employee isn't clocked in right now, so new messages can't be sent -- you can still see the conversation history above.
+          <div class="chat-thread-col">
+            <div id="team-chat-thread-header" class="chat-thread-header" style="color:#8A8578; font-weight:400;">
+              Select a chat, or start a new one.
+            </div>
+            <div id="team-chat-thread-messages" class="chat-thread-messages"></div>
+            <div id="team-chat-thread-composer" class="chat-thread-composer" style="display:none;">
+              <input id="team-chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendTeamChatMessage();}" />
+              <button class="btn-primary" style="width:auto;" onclick="sendTeamChatMessage()">Send</button>
+            </div>
           </div>
         </div>
       </div>
     </section>
+
+    <div class="modal-overlay" id="team-chat-new-modal" onclick="if(event.target===this) closeNewTeamChatModal();">
+      <div class="modal-box" style="width:440px;">
+        <button class="modal-close" onclick="closeNewTeamChatModal()">&times;</button>
+        <h2 style="margin-top:0;">New team chat</h2>
+        <label>Employees</label>
+        <div id="team-chat-new-employees" class="checkbox-list" style="max-height:240px; overflow-y:auto;"></div>
+        <div id="team-chat-new-group-name-wrap" style="display:none;">
+          <label>Group name (optional)</label>
+          <input id="team-chat-new-group-name" placeholder="e.g. Roofing crew" />
+        </div>
+        <button class="btn-primary" onclick="submitNewTeamChat()">Start chat</button>
+        <div id="team-chat-new-error" class="error" style="display:none; margin-top:8px;"></div>
+      </div>
+    </div>
 
     <section id="tab-settings" class="tab">
       <div class="card" style="max-width:420px;">
@@ -1459,8 +1502,10 @@ function showApp() {
   loadReportSummary();
   renderScheduleCalendar();
   loadChatThreads();
+  loadTeamChatThreads();
   setInterval(loadOverview, 60000);
   setInterval(loadChatThreads, 15000);
+  setInterval(loadTeamChatThreads, 15000);
   if (window.Notification && Notification.permission === "default") {
     Notification.requestPermission();
   }
@@ -5076,6 +5121,181 @@ async function sendChatMessage() {
     await loadChatThreads();
   } catch (err) {
     alert(err.message || "Couldn't send message.");
+  }
+}
+
+// ---------- Team Chat (admin joining employee-to-employee chats) ----------
+function showChatSubtab(name) {
+  document.querySelectorAll("[data-chat-subtab]").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.chatSubtab === name);
+  });
+  document.getElementById("chat-subtab-direct").style.display = name === "direct" ? "block" : "none";
+  document.getElementById("chat-subtab-team").style.display = name === "team" ? "block" : "none";
+}
+
+let teamChatThreads = [];
+let openTeamChatThreadId = null;
+let lastKnownTeamUnreadByThread = {};
+let teamChatNotifiedFirstLoad = false;
+
+function teamThreadName(t) {
+  if (t.is_group) {
+    return t.name || (t.other_participants || []).map(function(p) { return p.name; }).join(", ") || "Group chat";
+  }
+  return (t.other_participants && t.other_participants[0] && t.other_participants[0].name) || "Direct message";
+}
+
+async function loadTeamChatThreads() {
+  try {
+    teamChatThreads = await window.admin.listTeamChatThreads();
+  } catch (err) {
+    console.error("Couldn't load team chat threads:", err.message);
+    return;
+  }
+  renderTeamChatThreads();
+  detectNewTeamChatMessages();
+}
+
+function renderTeamChatThreads() {
+  const totalUnread = teamChatThreads.reduce(function(sum, t) { return sum + t.unread_count; }, 0);
+  const badge = document.getElementById("team-chat-nav-badge");
+  if (totalUnread > 0) {
+    badge.textContent = totalUnread;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+
+  const list = document.getElementById("team-chat-threads-list");
+  if (teamChatThreads.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:12px;">No team chats yet -- tap "+ New chat" to start one.</p>';
+    return;
+  }
+  list.innerHTML = teamChatThreads.map(function(t) {
+    const name = teamThreadName(t);
+    const preview = t.last_message
+      ? (t.last_message.sender_is_admin ? "You: " : "") + t.last_message.body
+      : "No messages yet";
+    return '<div class="chat-thread-row' + (t.id === openTeamChatThreadId ? ' active' : '') + '" onclick="openTeamChatThread(\'' + t.id + '\')">' +
+      '<div style="flex:1; min-width:0;">' +
+        '<div class="chat-thread-name">' + escapeHtml(name) + '</div>' +
+        '<div class="chat-thread-preview">' + escapeHtml(preview) + '</div>' +
+      '</div>' +
+      (t.unread_count > 0 ? '<span class="chat-unread-pill">' + t.unread_count + '</span>' : '') +
+    '</div>';
+  }).join("");
+}
+
+function detectNewTeamChatMessages() {
+  const isFirstLoad = !teamChatNotifiedFirstLoad;
+  teamChatThreads.forEach(function(t) {
+    const before = lastKnownTeamUnreadByThread[t.id] || 0;
+    if (!isFirstLoad && t.unread_count > before && t.id !== openTeamChatThreadId) {
+      try {
+        new Notification(teamThreadName(t), { body: (t.last_message && t.last_message.body) || "New message" });
+      } catch (err) {
+        // Notification API unavailable/denied -- badge still shows the count.
+      }
+    }
+    lastKnownTeamUnreadByThread[t.id] = t.unread_count;
+  });
+  teamChatNotifiedFirstLoad = true;
+}
+
+async function openTeamChatThread(threadId) {
+  openTeamChatThreadId = threadId;
+  renderTeamChatThreads();
+  const thread = teamChatThreads.find(function(t) { return t.id === threadId; });
+  document.getElementById("team-chat-thread-header").style.cssText = "";
+  document.getElementById("team-chat-thread-header").textContent = thread ? teamThreadName(thread) : "";
+
+  let messages = [];
+  try {
+    messages = await window.admin.getTeamChatMessages(threadId);
+  } catch (err) {
+    console.error("Couldn't load team chat messages:", err.message);
+  }
+  document.getElementById("team-chat-thread-messages").innerHTML = messages.map(function(m) {
+    return '<div class="chat-bubble chat-bubble-' + (m.sender_is_admin ? "admin" : "employee") + '">' +
+      (m.sender_is_admin ? "" : '<div style="font-size:10px; font-weight:700; opacity:0.7; margin-bottom:2px;">' + escapeHtml(m.sender_name) + '</div>') +
+      escapeHtml(m.body) +
+      '<div class="chat-bubble-time">' + fmtDateTime(m.created_at) + '</div>' +
+    '</div>';
+  }).join("") || '<p style="color:#8A8578; font-size:12px;">No messages yet.</p>';
+  document.getElementById("team-chat-thread-messages").scrollTop = document.getElementById("team-chat-thread-messages").scrollHeight;
+  document.getElementById("team-chat-thread-composer").style.display = "flex";
+
+  if (thread) thread.unread_count = 0;
+  lastKnownTeamUnreadByThread[threadId] = 0;
+  renderTeamChatThreads();
+}
+
+async function sendTeamChatMessage() {
+  if (!openTeamChatThreadId) return;
+  const input = document.getElementById("team-chat-message-input");
+  const body = input.value.trim();
+  if (!body) return;
+  input.value = "";
+  try {
+    await window.admin.sendTeamChatMessage(openTeamChatThreadId, body);
+    await openTeamChatThread(openTeamChatThreadId);
+    await loadTeamChatThreads();
+  } catch (err) {
+    alert(err.message || "Couldn't send message.");
+  }
+}
+
+async function openNewTeamChatModal() {
+  const errEl = document.getElementById("team-chat-new-error");
+  errEl.style.display = "none";
+  document.getElementById("team-chat-new-group-name-wrap").style.display = "none";
+  document.getElementById("team-chat-new-group-name").value = "";
+  const list = document.getElementById("team-chat-new-employees");
+  list.innerHTML = '<p style="color:#8A8578; font-size:12px;">Loading...</p>';
+  document.getElementById("team-chat-new-modal").classList.add("visible");
+  try {
+    const employees = (window.allEmployees && window.allEmployees.length ? window.allEmployees : await window.admin.listEmployees())
+      .filter(function(e) { return e.active; });
+    if (employees.length === 0) {
+      list.innerHTML = '<p style="color:#8A8578; font-size:12px;">No active employees yet.</p>';
+      return;
+    }
+    list.innerHTML = employees.map(function(e) {
+      return '<label><input type="checkbox" value="' + e.id + '" onchange="onTeamChatNewSelectionChange()" /> ' + escapeHtml(e.name) + '</label>';
+    }).join("");
+  } catch (err) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:12px;">Couldn\'t load employees.</p>';
+  }
+}
+
+function onTeamChatNewSelectionChange() {
+  const checked = document.querySelectorAll('#team-chat-new-employees input[type="checkbox"]:checked');
+  document.getElementById("team-chat-new-group-name-wrap").style.display = checked.length > 1 ? "block" : "none";
+}
+
+function closeNewTeamChatModal() {
+  document.getElementById("team-chat-new-modal").classList.remove("visible");
+}
+
+async function submitNewTeamChat() {
+  const errEl = document.getElementById("team-chat-new-error");
+  errEl.style.display = "none";
+  const checked = Array.from(document.querySelectorAll('#team-chat-new-employees input[type="checkbox"]:checked')).map(function(cb) { return cb.value; });
+  if (checked.length === 0) {
+    errEl.textContent = "Select at least one employee.";
+    errEl.style.display = "block";
+    return;
+  }
+  const groupName = document.getElementById("team-chat-new-group-name").value.trim();
+  try {
+    const result = await window.admin.createTeamChatThread(checked, checked.length > 1 ? (groupName || null) : null);
+    closeNewTeamChatModal();
+    await loadTeamChatThreads();
+    showChatSubtab("team");
+    await openTeamChatThread(result.id);
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't start chat.";
+    errEl.style.display = "block";
   }
 }
 
