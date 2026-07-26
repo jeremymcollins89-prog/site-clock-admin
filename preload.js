@@ -66,6 +66,9 @@ contextBridge.exposeInMainWorld("admin", {
   updatePayrollEmail: (payrollEmail) =>
     apiFetch("/api/admin/payroll-email", { method: "PATCH", body: { payroll_email: payrollEmail } }),
 
+  getCompanyName: () => apiFetch("/api/admin/company-name"),
+  updateCompanyName: (name) => apiFetch("/api/admin/company-name", { method: "PATCH", body: { name } }),
+
   getPaySchedule: () => apiFetch("/api/admin/pay-schedule"),
   updatePaySchedule: (patch) => apiFetch("/api/admin/pay-schedule", { method: "PATCH", body: patch }),
 
@@ -183,4 +186,10 @@ contextBridge.exposeInMainWorld("admin", {
   installUpdate: () => ipcRenderer.send("install-update"),
   checkForUpdates: () => ipcRenderer.send("check-for-updates"),
   openUpdateLog: () => ipcRenderer.send("open-update-log"),
+
+  // Temporary diagnostic for the quote-notes-field typing bug -- routes a
+  // renderer-side console.log-style message into electron-log so it shows
+  // up in the same update-log.txt Jeremy already knows how to paste, no
+  // DevTools needed. Safe to leave in; harmless if unused.
+  debugLog: (msg) => ipcRenderer.send("debug-log", msg),
 });

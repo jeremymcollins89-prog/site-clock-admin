@@ -264,6 +264,13 @@ if (!gotSingleInstanceLock) {
     autoUpdater.checkForUpdates();
   });
 
+  // Temporary diagnostic for the quote-notes typing bug -- see preload.js's
+  // debugLog and the listeners wired onto quote-notes-input in index.html.
+  // Routes into the same update-log.txt Jeremy already knows how to paste.
+  ipcMain.on("debug-log", (event, msg) => {
+    log.info(`[renderer-debug] ${msg}`);
+  });
+
   // Opens the update log in Notepad (or whatever the system's default .txt
   // viewer is) so a non-technical user can just click a button in Settings
   // instead of having to go find the file themselves.

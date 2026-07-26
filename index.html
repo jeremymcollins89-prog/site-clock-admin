@@ -1074,6 +1074,18 @@
       </div>
 
       <div class="card" style="max-width:420px;">
+        <h3 style="margin-top:0;">Business name</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Shown on invoice/quote PDFs, and as the sender name your customers see on invoice and quote emails.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Business name</label>
+        <input id="company-name-input" placeholder="e.g. Modular Cleanrooms" style="margin-bottom:10px;" />
+        <button class="btn-primary" style="width:auto;" onclick="saveCompanyName()">Save</button>
+        <div id="company-name-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="company-name-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="max-width:420px;">
         <h3 style="margin-top:0;">Company logo</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the header up above. PNG, JPEG, or WebP, up to 3MB.
@@ -1369,6 +1381,7 @@ function showApp() {
   loadReportsExportData();
   loadEmployees();
   loadShopLocation();
+  loadCompanyName();
   loadPayrollEmail();
   loadPaySchedule();
   loadCrews();
@@ -1949,6 +1962,37 @@ async function removeCompanyLogo() {
     renderCompanyLogoPreview(null);
   } catch (err) {
     errEl.textContent = err.message || "Couldn't remove logo.";
+    errEl.style.display = "block";
+  }
+}
+
+async function loadCompanyName() {
+  try {
+    const data = await window.admin.getCompanyName();
+    document.getElementById("company-name-input").value = data.name || "";
+  } catch (err) {
+    // non-fatal — leave the field blank if this fails
+  }
+}
+
+async function saveCompanyName() {
+  const name = document.getElementById("company-name-input").value.trim();
+  const errEl = document.getElementById("company-name-error");
+  const successEl = document.getElementById("company-name-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (!name) {
+    errEl.textContent = "Business name is required.";
+    errEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.updateCompanyName(name);
+    successEl.textContent = "Business name saved.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save business name.";
     errEl.style.display = "block";
   }
 }
@@ -3386,6 +3430,27 @@ async function openQuoteModal(quoteId) {
   setQuoteValidityInput(quote);
   document.getElementById("quote-notes-input").value = quote ? (quote.notes || "") : "";
   document.getElementById("quote-tax-rate-input").value = quote ? Number(quote.tax_rate) || "" : "";
+
+  // Temporary diagnostic for the persistent "can't type in Notes" report --
+  // wired once per element (guarded by a dataset flag so repeated modal
+  // opens don't stack up duplicate listeners) and logs to update-log.txt via
+  // window.admin.debugLog so we get real evidence instead of guessing again:
+  // does focus land here at all, do keydown events fire, does the DOM value
+  // actually change. Safe to remove once the bug is understood.
+  (function wireNotesDebug() {
+    const notesEl = document.getElementById("quote-notes-input");
+    if (notesEl.dataset.debugWired) return;
+    notesEl.dataset.debugWired = "1";
+    notesEl.addEventListener("focus", function() {
+      window.admin.debugLog(`quote-notes focus; disabled=${notesEl.disabled} readOnly=${notesEl.readOnly} tag=${notesEl.tagName}`);
+    });
+    notesEl.addEventListener("keydown", function(e) {
+      window.admin.debugLog(`quote-notes keydown key=${e.key} defaultPrevented(before)=${e.defaultPrevented} activeElement=${document.activeElement && document.activeElement.id}`);
+    });
+    notesEl.addEventListener("input", function() {
+      window.admin.debugLog(`quote-notes input event fired; value.length=${notesEl.value.length}`);
+    });
+  })();
 
   populateQuoteCatalogPicker();
   document.getElementById("quote-line-items-list").innerHTML = "";
