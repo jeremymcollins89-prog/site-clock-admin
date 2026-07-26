@@ -443,6 +443,22 @@
       <input id="edit-emp-pin" placeholder="4-digit PIN" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Hourly rate (used for profit reports)</label>
       <input id="edit-emp-hourly-rate" type="number" step="0.01" min="0" placeholder="e.g. 22.50" style="margin-bottom:16px;" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Phone</label>
+      <input id="edit-emp-phone" placeholder="(555) 555-5555" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Street address</label>
+      <input id="edit-emp-street" placeholder="123 Main St" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">City</label>
+      <input id="edit-emp-city" placeholder="Denver" />
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">State</label>
+          <input id="edit-emp-state" placeholder="CO" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Zip</label>
+          <input id="edit-emp-zip" placeholder="80202" style="margin-bottom:16px;" />
+        </div>
+      </div>
       <button class="btn-primary" onclick="submitEditEmployee()">Save changes</button>
     </div>
   </div>
@@ -1638,7 +1654,14 @@ async function loadOverview() {
 let currentEmployeeDetail = null; // { id, name, active, isClockedIn }
 
 async function openEmployeeDetail(id, name, active, isClockedIn) {
-  currentEmployeeDetail = { id: id, name: name, active: active, isClockedIn: isClockedIn };
+  // Look up the full record (for phone/email/address) rather than adding more
+  // positional params to every call site -- window.allEmployees is already
+  // loaded for the Employees list this modal is opened from.
+  const full = (window.allEmployees || []).find(function(x) { return x.id === id; }) || {};
+  currentEmployeeDetail = {
+    id: id, name: name, active: active, isClockedIn: isClockedIn,
+    email: full.email, phone: full.phone, street: full.street, city: full.city, state: full.state, zip: full.zip,
+  };
 
   const today = new Date();
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -1678,9 +1701,26 @@ async function renderEmployeeDetail(start, end) {
     '</tr>';
   }).join("");
 
+  const fullAddress = formatAddressParts(ed.street, ed.city, ed.state, ed.zip);
+  const hasContactInfo = ed.phone || ed.email || fullAddress;
+  const contactCardHtml = '<div class="card" style="margin:12px 0 16px; cursor:pointer;" onclick="toggleEmpContactCard()">' +
+    '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+      '<strong style="font-size:13px;">Contact info</strong>' +
+      '<span id="emp-contact-toggle-label" style="color:#8A8578; font-size:11px;">Tap to view &#9662;</span>' +
+    '</div>' +
+    '<div id="emp-contact-details" style="display:none; margin-top:10px;" onclick="event.stopPropagation();">' +
+      (hasContactInfo ? (
+        (ed.phone ? '<div style="font-size:13px; margin-bottom:6px;"><a href="' + telUrl(ed.phone) + '" style="color:var(--rust);">' + ed.phone + '</a></div>' : '') +
+        (ed.email ? '<div style="font-size:13px; margin-bottom:6px;"><a href="mailto:' + ed.email + '" style="color:var(--rust);">' + ed.email + '</a></div>' : '') +
+        (fullAddress ? '<div style="font-size:13px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:var(--rust);">' + fullAddress + ' (directions)</a></div>' : '')
+      ) : '<p style="font-size:12px; color:#8A8578; margin:0;">No phone or address on file -- add it from the Edit button on the Employees list.</p>') +
+    '</div>' +
+  '</div>';
+
   document.getElementById("employee-modal-content").innerHTML =
     '<h2 style="margin-bottom:0;">' + ed.name + '</h2>' +
     '<p style="color:#8A8578; margin-top:2px;">' + (ed.active ? "Active" : "Inactive") + '</p>' +
+    contactCardHtml +
     '<div style="display:flex; gap:24px; margin:16px 0;">' +
       '<div>' +
         '<div style="font-size:11px; color:#8A8578; text-transform:uppercase;">Regular hours</div>' +
@@ -1712,6 +1752,15 @@ async function renderEmployeeDetail(start, end) {
         : '') +
     '</div>' +
     (ed.isClockedIn ? '<p id="ping-status-msg" style="font-size:12px; color:#8A8578; margin-top:8px;"></p>' : '');
+}
+
+function toggleEmpContactCard() {
+  const details = document.getElementById("emp-contact-details");
+  const label = document.getElementById("emp-contact-toggle-label");
+  if (!details) return;
+  const showing = details.style.display === "block";
+  details.style.display = showing ? "none" : "block";
+  if (label) label.innerHTML = showing ? "Tap to view &#9662;" : "Tap to hide &#9652;";
 }
 
 function onEmployeeDetailRangeChange() {
@@ -1836,7 +1885,7 @@ async function loadEmployees() {
       '<td><span class="anim-toggle" onclick="event.stopPropagation(); openRatePopover(event, \'' + e.id + '\', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">' + (e.hourly_rate === null || e.hourly_rate === undefined ? "Not set" : fmtMoney(e.hourly_rate) + "/hr") + '</span></td>' +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
       '<td>' +
-        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\', \'' + e.email.replace(/'/g, "\\'") + '\', \'' + e.name.replace(/'/g, "\\'") + '\', ' + !!e.active + ', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">Edit</button>' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\')">Edit</button>' +
         '<button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="event.stopPropagation(); toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button>' +
         forceClockOutBtn +
       '</td>';
@@ -1859,17 +1908,24 @@ async function forceClockOutRowConfirm(timeEntryId, employeeName) {
 
 let editingEmployeeId = null;
 
-function openEditEmployeeModal(id, email, name, active, hourlyRate) {
+function openEditEmployeeModal(id) {
+  const e = (window.allEmployees || []).find(function(x) { return x.id === id; });
+  if (!e) return;
   editingEmployeeId = id;
-  document.getElementById("edit-emp-name").textContent = name || "";
-  document.getElementById("edit-emp-email-display").textContent = email || "";
+  document.getElementById("edit-emp-name").textContent = e.name || "";
+  document.getElementById("edit-emp-email-display").textContent = e.email || "";
   const badge = document.getElementById("edit-emp-status-badge");
-  badge.textContent = active ? "Active" : "Inactive";
-  badge.style.background = active ? "var(--teal-deep)" : "#D8D3C4";
-  badge.style.color = active ? "#fff" : "#5C6660";
-  document.getElementById("edit-emp-email").value = email;
+  badge.textContent = e.active ? "Active" : "Inactive";
+  badge.style.background = e.active ? "var(--teal-deep)" : "#D8D3C4";
+  badge.style.color = e.active ? "#fff" : "#5C6660";
+  document.getElementById("edit-emp-email").value = e.email || "";
   document.getElementById("edit-emp-pin").value = "";
-  document.getElementById("edit-emp-hourly-rate").value = (hourlyRate === null || hourlyRate === undefined) ? "" : hourlyRate;
+  document.getElementById("edit-emp-hourly-rate").value = (e.hourly_rate === null || e.hourly_rate === undefined) ? "" : e.hourly_rate;
+  document.getElementById("edit-emp-phone").value = e.phone || "";
+  document.getElementById("edit-emp-street").value = e.street || "";
+  document.getElementById("edit-emp-city").value = e.city || "";
+  document.getElementById("edit-emp-state").value = e.state || "";
+  document.getElementById("edit-emp-zip").value = e.zip || "";
   document.getElementById("edit-emp-error").style.display = "none";
   document.getElementById("edit-emp-success").style.display = "none";
   document.getElementById("edit-employee-modal").classList.add("visible");
@@ -1900,7 +1956,15 @@ async function submitEditEmployee() {
     return;
   }
 
-  const patch = { email: email, hourly_rate: hourlyRateRaw ? Number(hourlyRateRaw) : null };
+  const patch = {
+    email: email,
+    hourly_rate: hourlyRateRaw ? Number(hourlyRateRaw) : null,
+    phone: document.getElementById("edit-emp-phone").value.trim() || null,
+    street: document.getElementById("edit-emp-street").value.trim() || null,
+    city: document.getElementById("edit-emp-city").value.trim() || null,
+    state: document.getElementById("edit-emp-state").value.trim() || null,
+    zip: document.getElementById("edit-emp-zip").value.trim() || null,
+  };
   if (pin) patch.pin = pin;
 
   try {
