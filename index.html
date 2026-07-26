@@ -1003,6 +1003,20 @@
           <div id="billing-overview-payment-breakdown"></div>
         </div>
 
+        <div class="card" id="stripe-connect-card">
+          <h3 style="margin-top:0;">Get paid online</h3>
+          <p style="font-size:12px; color:#8A8578; margin:4px 0 12px;">
+            Connect your own Stripe account so customer payments on your invoices go straight to your bank account, not ours. Stripe's own processing fees apply (2.9%+30&cent; card / 0.8% bank transfer), plus a 0.5% platform fee per payment.
+          </p>
+          <div id="stripe-connect-connected-row" style="display:none; align-items:center; gap:8px; margin-bottom:4px;">
+            <span class="badge badge-paid">Connected</span>
+            <span style="font-size:12px; color:#8A8578;">Payments go directly to your Stripe account.</span>
+          </div>
+          <button id="stripe-connect-btn" class="save-btn" onclick="startStripeConnect()" style="display:none;">Connect Stripe</button>
+          <div id="stripe-connect-hint" style="display:none; font-size:12px; color:#8A8578; margin-top:8px;">Finish connecting in the browser tab that just opened, then come back and reopen the Billing tab to see it marked as connected.</div>
+          <div id="stripe-connect-error" class="error" style="display:none; margin-top:10px;"></div>
+        </div>
+
         <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('catalog')">
           <div>
             <h3 style="margin:0;">Catalog</h3>
@@ -3032,6 +3046,42 @@ function showBillingSubtab(name) {
   if (name === "transactions") renderTransactionsList();
 }
 
+// Checks whether this company has already connected its own Stripe account
+// (see routes/connect.js) and shows the right state on the "Get paid
+// online" card -- a Connect button if not, or a "Connected" badge if so.
+// Called every time Overview is shown so coming back to the app after
+// finishing Stripe's onboarding in a browser picks up the new status.
+function refreshStripeConnectCard() {
+  const connectedRow = document.getElementById("stripe-connect-connected-row");
+  const btn = document.getElementById("stripe-connect-btn");
+  window.admin.getStripeConnectStatus().then(function(data) {
+    connectedRow.style.display = data.connected ? "flex" : "none";
+    btn.style.display = data.connected ? "none" : "inline-block";
+  }).catch(function() {
+    connectedRow.style.display = "none";
+    btn.style.display = "inline-block";
+  });
+}
+
+function startStripeConnect() {
+  const btn = document.getElementById("stripe-connect-btn");
+  const hint = document.getElementById("stripe-connect-hint");
+  const errEl = document.getElementById("stripe-connect-error");
+  errEl.style.display = "none";
+  hint.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Opening Stripe...";
+  window.admin.startStripeConnect().then(function() {
+    hint.style.display = "block";
+  }).catch(function(err) {
+    errEl.textContent = err.message || "Couldn't start Stripe connection.";
+    errEl.style.display = "block";
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = "Connect Stripe";
+  });
+}
+
 // Pulls straight from whatever's already loaded in window.allInvoices /
 // window.allQuotes / window.allCatalogItems -- called after each of those
 // loads so the numbers here never go stale. Void invoices are left out of
@@ -3068,6 +3118,7 @@ function renderBillingOverview() {
     invoices.length ? invoices.length + " total, " + unpaidInvoices.length + " unpaid" : "No invoices yet.");
 
   renderBillingPaymentBreakdown(paidInvoices, paidTotal);
+  refreshStripeConnectCard();
 }
 
 // Counts + totals paid invoices by how the customer paid (card/cash/check/

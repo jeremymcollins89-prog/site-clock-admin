@@ -186,6 +186,19 @@ contextBridge.exposeInMainWorld("admin", {
   sendTeamChatMessage: (threadId, body) =>
     apiFetch(`/api/admin/team-chat/threads/${threadId}/messages`, { method: "POST", body: { body } }),
 
+  // Stripe Connect: lets this company link its own Stripe account so its
+  // customers' invoice payments land in their own bank account instead of
+  // Jeremy's. The OAuth form itself has to run in a real browser (Stripe
+  // won't allow it inside an embedded Electron webview), so this opens the
+  // authorize URL in the user's default browser via shell.openExternal
+  // rather than navigating inside the app.
+  getStripeConnectStatus: () => apiFetch("/api/connect/status"),
+  startStripeConnect: async () => {
+    const data = await apiFetch("/api/connect/start");
+    await shell.openExternal(data.url);
+    return true;
+  },
+
   getCompanyLogo: () => apiFetch("/api/admin/company-logo"),
   updateCompanyLogo: (logoBase64, mimeType) =>
     apiFetch("/api/admin/company-logo", { method: "PUT", body: { logo_base64: logoBase64, mime_type: mimeType } }),
