@@ -1740,18 +1740,23 @@ async function renderEmployeeDetail(start, end) {
   // loaded rows instead means the button always shows up when it should.
   const openRow = rows.find(function(r) { return !r.clock_out; });
 
+  // Rows start locked (disabled inputs) with an "Edit" button -- clicking it
+  // unlocks just that row's fields for editing and swaps the button to
+  // "Save". This avoids accidentally nudging a time punch or location while
+  // just scrolling/reading the time card, which was too easy when every
+  // field was editable by default.
   const rowsHtml = rows.map(function(r) {
     return '<tr>' +
-      '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" /></td>' +
-      '<td><select data-field="location_type" data-id="' + r.time_entry_id + '">' +
+      '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" disabled /></td>' +
+      '<td><select data-field="location_type" data-id="' + r.time_entry_id + '" disabled>' +
         '<option value="in_town"' + (r.location_type === "in_town" ? " selected" : "") + '>In town</option>' +
         '<option value="traveling"' + (r.location_type === "traveling" ? " selected" : "") + '>Traveling</option>' +
       '</select></td>' +
-      '<td><input type="datetime-local" value="' + (r.clock_in ? toLocalDatetimeInputValue(r.clock_in) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" /></td>' +
-      '<td><input type="datetime-local" value="' + (r.clock_out ? toLocalDatetimeInputValue(r.clock_out) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" /></td>' +
+      '<td><input type="datetime-local" value="' + (r.clock_in ? toLocalDatetimeInputValue(r.clock_in) : "") + '" data-field="clock_in" data-id="' + r.time_entry_id + '" disabled /></td>' +
+      '<td><input type="datetime-local" value="' + (r.clock_out ? toLocalDatetimeInputValue(r.clock_out) : "") + '" data-field="clock_out" data-id="' + r.time_entry_id + '" disabled /></td>' +
       '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
       '<td>' + fmtDuration(r.break_seconds) + '</td>' +
-      '<td><button class="save-btn" onclick="saveEmployeeDetailRow(\'' + r.time_entry_id + '\')">Save</button></td>' +
+      '<td><button class="save-btn" onclick="toggleEmployeeRowEdit(\'' + r.time_entry_id + '\', this)">Edit</button></td>' +
     '</tr>';
   }).join("");
 
@@ -1825,6 +1830,17 @@ function onEmployeeDetailRangeChange() {
   const start = document.getElementById("emp-detail-start").value;
   const end = document.getElementById("emp-detail-end").value;
   renderEmployeeDetail(start, end);
+}
+
+// Unlocks one time-entry row for editing. The button itself is swapped from
+// "Edit" to "Save" (and its click handler reassigned) rather than adding a
+// second button, so the row stays visually simple either way.
+function toggleEmployeeRowEdit(id, btn) {
+  const inputs = document.querySelectorAll('#employee-modal-content [data-id="' + id + '"]');
+  inputs.forEach(function(el) { el.disabled = false; });
+  if (inputs[0]) inputs[0].focus();
+  btn.textContent = "Save";
+  btn.onclick = function() { saveEmployeeDetailRow(id); };
 }
 
 async function saveEmployeeDetailRow(id) {
