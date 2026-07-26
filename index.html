@@ -938,6 +938,11 @@
           </div>
         </div>
 
+        <div class="card">
+          <h3 style="margin-top:0;">Sales by payment type</h3>
+          <div id="billing-overview-payment-breakdown"></div>
+        </div>
+
         <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('catalog')">
           <div>
             <h3 style="margin:0;">Catalog</h3>
@@ -2769,6 +2774,46 @@ function renderBillingOverview() {
     quotes.length ? quotes.length + " total, " + pendingQuotes.length + " pending" : "No quotes yet.");
   billingOverviewSetText("billing-overview-invoices-summary",
     invoices.length ? invoices.length + " total, " + unpaidInvoices.length + " unpaid" : "No invoices yet.");
+
+  renderBillingPaymentBreakdown(paidInvoices, paidTotal);
+}
+
+// Counts + totals paid invoices by how the customer paid (card/cash/check/
+// other), so Jeremy can see at a glance how many sales came in and through
+// which method -- e.g. for reconciling cash on hand or card deposits.
+function renderBillingPaymentBreakdown(paidInvoices, paidTotal) {
+  const container = document.getElementById("billing-overview-payment-breakdown");
+  if (!container) return;
+
+  const methodLabels = { card: "Card", cash: "Cash", check: "Check", other: "Other" };
+  const methodOrder = ["card", "cash", "check", "other"];
+  const counts = {};
+  methodOrder.forEach(function(m) { counts[m] = { count: 0, total: 0 }; });
+  paidInvoices.forEach(function(inv) {
+    const method = counts[inv.payment_method] ? inv.payment_method : "other";
+    counts[method].count += 1;
+    counts[method].total += Number(inv.total);
+  });
+
+  if (!paidInvoices.length) {
+    container.innerHTML = '<p style="font-size:12px; color:#8A8578; margin:0;">No paid invoices yet.</p>';
+    return;
+  }
+
+  const rowsHtml = methodOrder.map(function(m) {
+    const row = counts[m];
+    return '<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;">' +
+      '<span>' + methodLabels[m] + '</span>' +
+      '<span style="color:#8A8578;">' + row.count + (row.count === 1 ? " sale" : " sales") + ' &middot; ' + fmtMoney(row.total) + '</span>' +
+    '</div>';
+  }).join("");
+
+  const totalHtml = '<div style="display:flex; justify-content:space-between; padding-top:10px; font-size:13px; font-weight:600;">' +
+    '<span>Total</span>' +
+    '<span>' + paidInvoices.length + (paidInvoices.length === 1 ? " sale" : " sales") + ' &middot; ' + fmtMoney(paidTotal) + '</span>' +
+  '</div>';
+
+  container.innerHTML = rowsHtml + totalHtml;
 }
 
 function billingOverviewSetText(id, text) {
