@@ -462,6 +462,12 @@
     </label>
     <div id="anim-popover-status" style="font-size:11px; margin-top:8px; display:none;"></div>
   </div>
+  <div class="anim-popover" id="rate-popover">
+    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#8A8578; font-weight:700; margin-bottom:10px;">Hourly rate</div>
+    <input id="rate-popover-input" type="number" min="0" step="0.01" placeholder="e.g. 22.50" style="margin-bottom:8px;" />
+    <button class="btn-primary" style="width:auto;" onclick="submitRatePopover()">Save</button>
+    <div id="rate-popover-status" style="font-size:11px; margin-top:8px; display:none;"></div>
+  </div>
   <div class="modal-overlay" id="crew-modal" onclick="if(event.target===this) closeCrewModal();">
     <div class="modal-box" style="width:380px;">
       <button class="modal-close" onclick="closeCrewModal()">&times;</button>
@@ -652,7 +658,11 @@
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Amount</label>
       <input id="expense-amount-input" type="number" min="0" step="0.01" placeholder="0.00" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Description (optional)</label>
-      <input id="expense-description-input" placeholder="e.g. Cleaning supplies" style="margin-bottom:16px;" />
+      <input id="expense-description-input" placeholder="e.g. Cleaning supplies" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Job (optional)</label>
+      <select id="expense-job-input" style="margin-bottom:16px;">
+        <option value="">— general expense, no job —</option>
+      </select>
       <button class="btn-primary" style="width:auto;" onclick="submitExpense()">Save expense</button>
     </div>
   </div>
@@ -855,7 +865,7 @@
       </div>
       <p style="font-size:12px; color:#8A8578; margin-top:-8px;">Click an employee below to view or edit their hours.</p>
       <table>
-        <thead><tr><th>Name</th><th>Email</th><th>Clock-in Animations</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Clock-in Animations</th><th>Pay Rate</th><th>Status</th><th></th></tr></thead>
         <tbody id="employees-body"></tbody>
       </table>
     </section>
@@ -1765,6 +1775,7 @@ async function loadEmployees() {
       "<td>" + e.name + "</td>" +
       "<td>" + e.email + "</td>" +
       '<td><span class="anim-toggle" onclick="event.stopPropagation(); openAnimationsPopover(event, \'' + e.id + '\', \'' + (e.clock_in_animation || "none") + '\')">' + animationLabel(e.clock_in_animation) + '</span></td>' +
+      '<td><span class="anim-toggle" onclick="event.stopPropagation(); openRatePopover(event, \'' + e.id + '\', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">' + (e.hourly_rate === null || e.hourly_rate === undefined ? "Not set" : fmtMoney(e.hourly_rate) + "/hr") + '</span></td>' +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
       '<td>' +
         '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\', \'' + e.email.replace(/'/g, "\\'") + '\', \'' + e.name.replace(/'/g, "\\'") + '\', ' + !!e.active + ', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">Edit</button>' +
@@ -1904,6 +1915,70 @@ async function submitAnimationsPopover() {
   const statusEl = document.getElementById("anim-popover-status");
   try {
     await window.admin.updateEmployee(animPopoverEmployeeId, { clock_in_animation: value });
+    statusEl.textContent = "Saved.";
+    statusEl.style.color = "var(--teal-deep)";
+    statusEl.style.display = "block";
+    loadEmployees();
+  } catch (err) {
+    statusEl.textContent = err.message || "Couldn't save.";
+    statusEl.style.color = "var(--rust)";
+    statusEl.style.display = "block";
+  }
+}
+
+// Same popover pattern as clock-in animations, but for hourly rate -- lets
+// Jeremy set pay rate directly from the Employees list instead of having to
+// open the full Edit modal, since this feeds straight into the Reports tab's
+// Gross/Net Profit calculations.
+let ratePopoverEmployeeId = null;
+
+function openRatePopover(evt, employeeId, current) {
+  evt.stopPropagation();
+  ratePopoverEmployeeId = employeeId;
+  const pop = document.getElementById("rate-popover");
+  document.getElementById("rate-popover-input").value = (current === null || current === undefined) ? "" : current;
+  const statusEl = document.getElementById("rate-popover-status");
+  statusEl.style.display = "none";
+  const rect = evt.target.getBoundingClientRect();
+  pop.style.display = "block";
+  const popWidth = pop.offsetWidth || 220;
+  const popHeight = pop.offsetHeight || 120;
+  let left = rect.left;
+  if (left + popWidth > window.innerWidth - 12) left = window.innerWidth - popWidth - 12;
+  if (left < 12) left = 12;
+  let top = rect.bottom + 6;
+  if (top + popHeight > window.innerHeight - 12) {
+    top = rect.top - popHeight - 6;
+    if (top < 12) top = 12;
+  }
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+  setTimeout(function() {
+    document.addEventListener("click", closeRatePopoverOnOutsideClick);
+  }, 0);
+}
+
+function closeRatePopoverOnOutsideClick(evt) {
+  const pop = document.getElementById("rate-popover");
+  if (!pop.contains(evt.target)) {
+    pop.style.display = "none";
+    ratePopoverEmployeeId = null;
+    document.removeEventListener("click", closeRatePopoverOnOutsideClick);
+  }
+}
+
+async function submitRatePopover() {
+  if (!ratePopoverEmployeeId) return;
+  const raw = document.getElementById("rate-popover-input").value.trim();
+  const statusEl = document.getElementById("rate-popover-status");
+  if (raw && (isNaN(Number(raw)) || Number(raw) < 0)) {
+    statusEl.textContent = "Must be a non-negative number.";
+    statusEl.style.color = "var(--rust)";
+    statusEl.style.display = "block";
+    return;
+  }
+  try {
+    await window.admin.updateEmployee(ratePopoverEmployeeId, { hourly_rate: raw ? Number(raw) : null });
     statusEl.textContent = "Saved.";
     statusEl.style.color = "var(--teal-deep)";
     statusEl.style.display = "block";
@@ -4103,7 +4178,7 @@ function renderExpensesList() {
   list.innerHTML = expenses.map(function(x) {
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
       '<div><strong>' + fmtMoney(x.amount) + '</strong><div style="font-size:12px; color:#8A8578;">' +
-        x.expense_date + (x.description ? ' &middot; ' + x.description : '') +
+        x.expense_date + (x.description ? ' &middot; ' + x.description : '') + (x.job_title ? ' &middot; Job: ' + x.job_title : '') +
       '</div></div>' +
       '<span style="white-space:nowrap;">' +
         '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openExpenseModal(\'' + x.id + '\')">Edit</button>' +
@@ -4113,7 +4188,26 @@ function renderExpensesList() {
   }).join("");
 }
 
-function openExpenseModal(expenseId) {
+// Fetches the full company job list fresh each time the modal opens (rather
+// than reusing the Schedule tab's range-limited window.lastJobRows), since
+// an expense might belong to a job outside whatever range the calendar
+// currently happens to be showing.
+async function populateExpenseJobPicker(selectedJobId) {
+  const picker = document.getElementById("expense-job-input");
+  let jobs = [];
+  try {
+    jobs = await window.admin.listJobs();
+  } catch (err) {
+    jobs = [];
+  }
+  picker.innerHTML = '<option value="">— general expense, no job —</option>' +
+    jobs.map(function(j) {
+      return '<option value="' + j.id + '">' + j.title + ' (' + j.start_date + ')</option>';
+    }).join("");
+  picker.value = selectedJobId || "";
+}
+
+async function openExpenseModal(expenseId) {
   editingExpenseId = expenseId || null;
   const expense = expenseId ? (window.allExpenses || []).find(function(x) { return x.id === expenseId; }) : null;
   document.getElementById("expense-modal-title").textContent = expense ? "Edit expense" : "New expense";
@@ -4122,6 +4216,7 @@ function openExpenseModal(expenseId) {
   document.getElementById("expense-amount-input").value = expense ? Number(expense.amount) : "";
   document.getElementById("expense-description-input").value = expense ? (expense.description || "") : "";
   document.getElementById("expense-modal").classList.add("visible");
+  await populateExpenseJobPicker(expense ? expense.job_id : null);
 }
 
 function closeExpenseModal() {
@@ -4133,6 +4228,7 @@ async function submitExpense() {
   const expenseDate = document.getElementById("expense-date-input").value;
   const amount = document.getElementById("expense-amount-input").value;
   const description = document.getElementById("expense-description-input").value.trim();
+  const jobId = document.getElementById("expense-job-input").value;
   const errEl = document.getElementById("expense-modal-error");
   errEl.style.display = "none";
 
@@ -4147,7 +4243,7 @@ async function submitExpense() {
     return;
   }
 
-  const payload = { expense_date: expenseDate, amount: Number(amount), description: description || null };
+  const payload = { expense_date: expenseDate, amount: Number(amount), description: description || null, job_id: jobId || null };
   try {
     if (editingExpenseId) {
       await window.admin.updateExpense(editingExpenseId, payload);
