@@ -154,6 +154,13 @@
     padding: 18px; margin-bottom: 14px;
     box-shadow: 0 10px 24px rgba(31,36,33,0.08), 0 2px 6px rgba(31,36,33,0.05);
   }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+  .settings-grid .card { margin-bottom: 0; }
   .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
   .badge-in-town { color: #fff; background: linear-gradient(135deg, #5C9481, var(--teal-deep)); box-shadow: 0 3px 8px rgba(43,69,60,0.35); }
   .badge-traveling { color: #fff; background: linear-gradient(135deg, #E4794F, var(--rust-deep)); box-shadow: 0 3px 8px rgba(166,61,32,0.35); }
@@ -1214,17 +1221,8 @@
     </div>
 
     <section id="tab-settings" class="tab">
-      <div class="card" style="max-width:420px;">
-        <h3 style="margin-top:0;">App updates</h3>
-        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
-          Coll Timeclock checks for updates automatically. Use this if you want to check right now.
-        </p>
-        <button class="btn-secondary" style="width:auto;" onclick="manualCheckForUpdates()">Check for updates</button>
-        <button class="btn-secondary" style="width:auto; margin-left:8px;" onclick="window.admin.openUpdateLog()">View update log</button>
-        <div id="update-settings-status" style="font-size:12px; color:#8A8578; margin-top:10px;"></div>
-      </div>
-
-      <div class="card" style="max-width:420px;">
+      <div class="settings-grid">
+      <div class="card">
         <h3 style="margin-top:0;">Business name</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Shown on invoice/quote PDFs, and as the sender name your customers see on invoice and quote emails.
@@ -1236,7 +1234,7 @@
         <div id="company-name-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Company logo</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the header up above. PNG, JPEG, or WebP, up to 3MB.
@@ -1250,7 +1248,7 @@
         <div id="company-logo-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;" id="stripe-connect-card">
+      <div class="card" id="stripe-connect-card">
         <h3 style="margin-top:0;">Get paid online</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Connect your own Stripe account so customer payments on your invoices go straight to your bank account, not ours. Stripe's own processing fees apply (2.9%+30&cent; card / 0.8% bank transfer), plus a 0.5% platform fee per payment.
@@ -1264,7 +1262,7 @@
         <div id="stripe-connect-error" class="error" style="display:none; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Payroll email</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Where "Submit Hours for Payroll" sends timesheet emails from your employees. Required before employees can submit hours.
@@ -1276,7 +1274,7 @@
         <div id="payroll-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Pay schedule</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           How often your pay periods repeat. This controls what "Submit Hours for Payroll" bundles together.
@@ -1308,7 +1306,7 @@
         <div id="pay-schedule-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Change admin email</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           This is the email you sign into this app with. Changing it requires your current password.
@@ -1322,7 +1320,7 @@
         <div id="change-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Business timezone</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           Where this business is located. Used to send automated emails (like invoice reminders) at a sensible local hour instead of a fixed one.
@@ -1334,7 +1332,7 @@
         <div id="company-timezone-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
       </div>
 
-      <div class="card" style="max-width:420px;">
+      <div class="card">
         <h3 style="margin-top:0;">Shop location</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           This is the location employees auto clock-in at when they arrive (and auto clock-out from when they leave). Tip: right-click your shop's spot in Google Maps, click the coordinates that pop up to copy them, then paste the first number below as Latitude and the second as Longitude.
@@ -1353,6 +1351,17 @@
         <button class="btn-primary" style="width:auto;" onclick="saveShopLocation()">Save</button>
         <div id="shop-location-error" class="error" style="display:none; margin-top:10px;"></div>
         <div id="shop-location-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">App updates</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Coll Timeclock checks for updates automatically. Use this if you want to check right now.
+        </p>
+        <button class="btn-secondary" style="width:auto;" onclick="manualCheckForUpdates()">Check for updates</button>
+        <button class="btn-secondary" style="width:auto; margin-left:8px;" onclick="window.admin.openUpdateLog()">View update log</button>
+        <div id="update-settings-status" style="font-size:12px; color:#8A8578; margin-top:10px;"></div>
+      </div>
       </div>
     </section>
 
