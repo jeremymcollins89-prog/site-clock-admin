@@ -261,6 +261,19 @@ if (!gotSingleInstanceLock) {
   });
 
   ipcMain.on("check-for-updates", () => {
+    // The silent auto-download/auto-install flow above (WMI installer launch,
+    // NSIS /S args, quitAndInstall) is Windows-specific, and Squirrel.Mac
+    // (electron-updater's Mac auto-update mechanism) refuses to run against
+    // an unsigned build anyway -- so rather than let this fail confusingly
+    // partway through on a Mac, just tell the person to grab the latest
+    // version from the download page instead.
+    if (process.platform !== "win32") {
+      sendUpdateEvent({
+        type: "unsupported",
+        message: "Automatic updates aren't available on Mac yet. Check the download page for the latest version.",
+      });
+      return;
+    }
     autoUpdater.checkForUpdates();
   });
 
@@ -310,11 +323,14 @@ if (!gotSingleInstanceLock) {
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
-    autoUpdater.checkForUpdates();
-    // Also re-check periodically in case the app is left open for a long
-    // stretch, or the first check ran before the machine had a network
-    // connection.
-    setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000);
+    // See the check-for-updates handler above for why this is Windows-only.
+    if (process.platform === "win32") {
+      autoUpdater.checkForUpdates();
+      // Also re-check periodically in case the app is left open for a long
+      // stretch, or the first check ran before the machine had a network
+      // connection.
+      setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000);
+    }
   });
 
   app.on("window-all-closed", () => {

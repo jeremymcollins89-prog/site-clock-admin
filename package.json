@@ -1,6 +1,6 @@
 {
   "name": "coll-timeclock-admin",
-  "version": "2.21.28",
+  "version": "2.21.29",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -23,6 +23,15 @@
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "build/icon.png",
+      "category": "public.app-category.business",
+      "identity": null
+    },
+    "dmg": {
+      "artifactName": "Coll-Timeclock-Admin-Setup.dmg"
     },
     "nsis": {
       "oneClick": false,

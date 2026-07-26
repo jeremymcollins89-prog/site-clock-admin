@@ -1362,6 +1362,8 @@ function handleUpdateEvent(payload) {
     text = "You're on the latest version.";
   } else if (payload.type === "error") {
     text = "Update check failed: " + payload.message;
+  } else if (payload.type === "unsupported") {
+    text = payload.message || "Automatic updates aren't available on this platform yet.";
   }
 
   if (banner) {
