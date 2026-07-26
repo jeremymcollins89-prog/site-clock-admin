@@ -440,7 +440,9 @@
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Email</label>
       <input id="edit-emp-email" type="email" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">New PIN (leave blank to keep current)</label>
-      <input id="edit-emp-pin" placeholder="4-digit PIN" style="margin-bottom:16px;" />
+      <input id="edit-emp-pin" placeholder="4-digit PIN" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Hourly rate (used for profit reports)</label>
+      <input id="edit-emp-hourly-rate" type="number" step="0.01" min="0" placeholder="e.g. 22.50" style="margin-bottom:16px;" />
       <button class="btn-primary" onclick="submitEditEmployee()">Save changes</button>
     </div>
   </div>
@@ -637,6 +639,21 @@
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Default unit price</label>
       <input id="catalog-item-price-input" type="number" min="0" step="0.01" placeholder="0.00" />
       <button class="btn-primary" style="width:auto;" onclick="submitCatalogItem()">Save item</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="expense-modal" onclick="if(event.target===this) closeExpenseModal();">
+    <div class="modal-box" style="width:380px;">
+      <button class="modal-close" onclick="closeExpenseModal()">&times;</button>
+      <h2 id="expense-modal-title" style="margin-top:0;">New expense</h2>
+      <div id="expense-modal-error" class="error" style="display:none;"></div>
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Date</label>
+      <input id="expense-date-input" type="date" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Amount</label>
+      <input id="expense-amount-input" type="number" min="0" step="0.01" placeholder="0.00" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Description (optional)</label>
+      <input id="expense-description-input" placeholder="e.g. Cleaning supplies" style="margin-bottom:16px;" />
+      <button class="btn-primary" style="width:auto;" onclick="submitExpense()">Save expense</button>
     </div>
   </div>
 
@@ -914,6 +931,7 @@
         <button class="billing-subtab-btn" data-billing-subtab="catalog" onclick="showBillingSubtab('catalog')">Catalog</button>
         <button class="billing-subtab-btn" data-billing-subtab="quotes" onclick="showBillingSubtab('quotes')">Quotes</button>
         <button class="billing-subtab-btn" data-billing-subtab="invoices" onclick="showBillingSubtab('invoices')">Invoices</button>
+        <button class="billing-subtab-btn" data-billing-subtab="expenses" onclick="showBillingSubtab('expenses')">Expenses</button>
       </div>
 
       <div id="billing-subtab-overview" class="billing-subtab-panel">
@@ -1028,12 +1046,30 @@
           </div>
         </div>
       </div>
+
+      <div id="billing-subtab-expenses" class="billing-subtab-panel" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Expenses <span id="expenses-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
+            <input id="expenses-search-input" type="text" placeholder="Search expenses..." autocomplete="off"
+              oninput="renderExpensesList()" style="flex:1; min-width:180px; max-width:320px;" />
+            <button class="btn-primary" style="width:auto;" onclick="openExpenseModal()">New expense</button>
+          </div>
+          <div style="margin-top:10px;">
+            <p style="font-size:12px; color:#8A8578;">
+              Materials, insurance, rent, or any other business cost -- logged here so Net Profit on the Reports tab
+              reflects what you actually spent, not just labor.
+            </p>
+            <div id="expenses-list"></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="tab-reports" class="tab">
       <div class="card">
         <h3 style="margin-top:0;">Reports</h3>
-        <p style="font-size:12px; color:#8A8578;">Labor hours, invoiced totals, and paid totals for a time range.</p>
+        <p style="font-size:12px; color:#8A8578;">Labor hours, invoiced totals, paid totals, and profit for a time range.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
           <button class="range-btn active" data-range="1w" onclick="selectReportRange('1w')">1 Week</button>
           <button class="range-btn" data-range="1m" onclick="selectReportRange('1m')">1 Month</button>
@@ -1394,6 +1430,7 @@ function showApp() {
   loadInvoices();
   loadQuotes();
   loadCatalogItems();
+  loadExpenses();
   loadCompanyLogo();
   loadCompanyTimezone();
   loadReportSummary();
@@ -1730,7 +1767,7 @@ async function loadEmployees() {
       '<td><span class="anim-toggle" onclick="event.stopPropagation(); openAnimationsPopover(event, \'' + e.id + '\', \'' + (e.clock_in_animation || "none") + '\')">' + animationLabel(e.clock_in_animation) + '</span></td>' +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
       '<td>' +
-        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\', \'' + e.email.replace(/'/g, "\\'") + '\', \'' + e.name.replace(/'/g, "\\'") + '\', ' + !!e.active + ')">Edit</button>' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + e.id + '\', \'' + e.email.replace(/'/g, "\\'") + '\', \'' + e.name.replace(/'/g, "\\'") + '\', ' + !!e.active + ', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">Edit</button>' +
         '<button class="save-btn" style="background: ' + (e.active ? "#C1502E" : "#3D5A50") + ';" onclick="event.stopPropagation(); toggleActive(\'' + e.id + '\', ' + (!e.active) + ')">' + (e.active ? "Deactivate" : "Reactivate") + '</button>' +
         forceClockOutBtn +
       '</td>';
@@ -1753,7 +1790,7 @@ async function forceClockOutRowConfirm(timeEntryId, employeeName) {
 
 let editingEmployeeId = null;
 
-function openEditEmployeeModal(id, email, name, active) {
+function openEditEmployeeModal(id, email, name, active, hourlyRate) {
   editingEmployeeId = id;
   document.getElementById("edit-emp-name").textContent = name || "";
   document.getElementById("edit-emp-email-display").textContent = email || "";
@@ -1763,6 +1800,7 @@ function openEditEmployeeModal(id, email, name, active) {
   badge.style.color = active ? "#fff" : "#5C6660";
   document.getElementById("edit-emp-email").value = email;
   document.getElementById("edit-emp-pin").value = "";
+  document.getElementById("edit-emp-hourly-rate").value = (hourlyRate === null || hourlyRate === undefined) ? "" : hourlyRate;
   document.getElementById("edit-emp-error").style.display = "none";
   document.getElementById("edit-emp-success").style.display = "none";
   document.getElementById("edit-employee-modal").classList.add("visible");
@@ -1776,6 +1814,7 @@ function closeEditEmployeeModal() {
 async function submitEditEmployee() {
   const email = document.getElementById("edit-emp-email").value.trim();
   const pin = document.getElementById("edit-emp-pin").value.trim();
+  const hourlyRateRaw = document.getElementById("edit-emp-hourly-rate").value.trim();
   const errEl = document.getElementById("edit-emp-error");
   const successEl = document.getElementById("edit-emp-success");
   errEl.style.display = "none";
@@ -1786,8 +1825,13 @@ async function submitEditEmployee() {
     errEl.style.display = "block";
     return;
   }
+  if (hourlyRateRaw && (isNaN(Number(hourlyRateRaw)) || Number(hourlyRateRaw) < 0)) {
+    errEl.textContent = "Hourly rate must be a non-negative number.";
+    errEl.style.display = "block";
+    return;
+  }
 
-  const patch = { email: email };
+  const patch = { email: email, hourly_rate: hourlyRateRaw ? Number(hourlyRateRaw) : null };
   if (pin) patch.pin = pin;
 
   try {
@@ -3775,6 +3819,28 @@ function selectReportRange(range) {
   loadReportSummary();
 }
 
+// Gross Profit = Paid revenue minus labor cost (hours worked in the range x
+// each employee's hourly rate). Net Profit = Gross Profit minus logged
+// expenses in the same range. Both are undercounted for any employee
+// without an hourly rate set -- missingHourlyRateWarning() surfaces that.
+function computeProfits(d) {
+  const grossProfit = Number(d.paid_invoice_total) - Number(d.labor_cost || 0);
+  const netProfit = grossProfit - Number(d.expense_total || 0);
+  return { grossProfit: grossProfit, netProfit: netProfit };
+}
+
+function missingHourlyRateWarning() {
+  const employees = window.allEmployees || [];
+  const missing = employees.filter(function(e) {
+    return e.active && (e.hourly_rate === null || e.hourly_rate === undefined);
+  });
+  if (!missing.length) return "";
+  return '<div style="margin-bottom:12px; padding:10px 12px; background:#FBF3E7; border:1px solid #E8D9BE; border-radius:8px; font-size:12px; color:#7A6A4A;">' +
+    "Profit numbers don't include labor cost for " + missing.length + (missing.length === 1 ? " employee" : " employees") +
+    " without an hourly rate set. Add rates in Employees &rarr; Edit for accurate Gross/Net Profit." +
+  '</div>';
+}
+
 async function loadReportSummary() {
   const content = document.getElementById("reports-content");
   content.innerHTML = '<p style="color:#8A8578; font-size:13px;">Loading...</p>';
@@ -3789,8 +3855,11 @@ async function loadReportSummary() {
 
       const thisYearData = await window.admin.getReportSummary(toDateStr(janThisYear), toDateStr(today));
       const lastYearData = await window.admin.getReportSummary(toDateStr(janLastYear), toDateStr(sameDayLastYear));
+      const thisYearProfits = computeProfits(thisYearData);
+      const lastYearProfits = computeProfits(lastYearData);
 
       content.innerHTML =
+        missingHourlyRateWarning() +
         '<div style="display:flex; gap:20px; flex-wrap:wrap;">' +
           '<div style="flex:1; min-width:280px;">' +
             '<div style="font-weight:700; margin-bottom:8px;">This year (' + toDateStr(janThisYear) + ' – ' + toDateStr(today) + ')</div>' +
@@ -3798,6 +3867,8 @@ async function loadReportSummary() {
               renderReportStatCard("Labor hours", fmtHours(thisYearData.labor_hours), null, pctChangeParts(thisYearData.labor_hours, lastYearData.labor_hours, true)) +
               renderReportStatCard("Invoiced", fmtMoney(thisYearData.invoice_total), thisYearData.invoice_count + " invoices", pctChangeParts(thisYearData.invoice_total, lastYearData.invoice_total)) +
               renderReportStatCard("Paid", fmtMoney(thisYearData.paid_invoice_total), thisYearData.paid_invoice_count + " invoices", pctChangeParts(thisYearData.paid_invoice_total, lastYearData.paid_invoice_total)) +
+              renderReportStatCard("Gross Profit", fmtMoney(thisYearProfits.grossProfit), "labor cost " + fmtMoney(thisYearData.labor_cost), pctChangeParts(thisYearProfits.grossProfit, lastYearProfits.grossProfit)) +
+              renderReportStatCard("Net Profit", fmtMoney(thisYearProfits.netProfit), "expenses " + fmtMoney(thisYearData.expense_total), pctChangeParts(thisYearProfits.netProfit, lastYearProfits.netProfit)) +
             '</div>' +
           '</div>' +
           '<div style="flex:1; min-width:280px;">' +
@@ -3806,6 +3877,8 @@ async function loadReportSummary() {
               renderReportStatCard("Labor hours", fmtHours(lastYearData.labor_hours)) +
               renderReportStatCard("Invoiced", fmtMoney(lastYearData.invoice_total), lastYearData.invoice_count + " invoices") +
               renderReportStatCard("Paid", fmtMoney(lastYearData.paid_invoice_total), lastYearData.paid_invoice_count + " invoices") +
+              renderReportStatCard("Gross Profit", fmtMoney(lastYearProfits.grossProfit), "labor cost " + fmtMoney(lastYearData.labor_cost)) +
+              renderReportStatCard("Net Profit", fmtMoney(lastYearProfits.netProfit), "expenses " + fmtMoney(lastYearData.expense_total)) +
             '</div>' +
           '</div>' +
         '</div>';
@@ -3817,11 +3890,16 @@ async function loadReportSummary() {
       window.admin.getReportSummary(toDateStr(bounds.start), toDateStr(bounds.end)),
       window.admin.getReportSummary(toDateStr(bounds.prevStart), toDateStr(bounds.prevEnd)),
     ]);
+    const profits = computeProfits(data);
+    const prevProfits = computeProfits(prevData);
     content.innerHTML =
+      missingHourlyRateWarning() +
       '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
         renderReportStatCard("Labor hours", fmtHours(data.labor_hours), null, pctChangeParts(data.labor_hours, prevData.labor_hours, true)) +
         renderReportStatCard("Invoiced", fmtMoney(data.invoice_total), data.invoice_count + " invoices", pctChangeParts(data.invoice_total, prevData.invoice_total)) +
         renderReportStatCard("Paid", fmtMoney(data.paid_invoice_total), data.paid_invoice_count + " invoices", pctChangeParts(data.paid_invoice_total, prevData.paid_invoice_total)) +
+        renderReportStatCard("Gross Profit", fmtMoney(profits.grossProfit), "labor cost " + fmtMoney(data.labor_cost), pctChangeParts(profits.grossProfit, prevProfits.grossProfit)) +
+        renderReportStatCard("Net Profit", fmtMoney(profits.netProfit), "expenses " + fmtMoney(data.expense_total), pctChangeParts(profits.netProfit, prevProfits.netProfit)) +
       '</div>' +
       '<div style="margin-top:10px; font-size:12px; color:#8A8578;">' + toDateStr(bounds.start) + ' – ' + toDateStr(bounds.end) +
         ' vs. ' + toDateStr(bounds.prevStart) + ' – ' + toDateStr(bounds.prevEnd) + '</div>';
@@ -3988,6 +4066,106 @@ async function deleteCatalogItemConfirm(id) {
   if (!confirm("Delete this catalog item? It won't affect any invoice it's already been used on.")) return;
   await window.admin.deleteCatalogItem(id);
   await loadCatalogItems();
+}
+
+// ---------- Expenses ----------
+// Simple manually-logged business costs (materials, insurance, rent, etc.)
+// that feed into Net Profit on the Reports tab. Loaded once at app start,
+// like catalog items -- editing the list here just re-renders in place.
+window.allExpenses = [];
+let editingExpenseId = null;
+
+async function loadExpenses() {
+  window.allExpenses = await window.admin.listExpenses();
+  const badge = document.getElementById("expenses-count-badge");
+  if (badge) badge.textContent = window.allExpenses.length ? "(" + window.allExpenses.length + ")" : "";
+  renderExpensesList();
+}
+
+function renderExpensesList() {
+  const list = document.getElementById("expenses-list");
+  if (!list) return;
+  const searchInput = document.getElementById("expenses-search-input");
+  const term = searchInput ? searchInput.value.trim().toLowerCase() : "";
+  const allExpenses = window.allExpenses || [];
+  const expenses = !term ? allExpenses : allExpenses.filter(function(x) {
+    return (x.description || "").toLowerCase().indexOf(term) !== -1;
+  });
+
+  if (allExpenses.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No expenses logged yet.</p>';
+    return;
+  }
+  if (expenses.length === 0) {
+    list.innerHTML = '<p style="color:#8A8578; font-size:13px;">No expenses match "' + term + '".</p>';
+    return;
+  }
+  list.innerHTML = expenses.map(function(x) {
+    return '<div class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
+      '<div><strong>' + fmtMoney(x.amount) + '</strong><div style="font-size:12px; color:#8A8578;">' +
+        x.expense_date + (x.description ? ' &middot; ' + x.description : '') +
+      '</div></div>' +
+      '<span style="white-space:nowrap;">' +
+        '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openExpenseModal(\'' + x.id + '\')">Edit</button>' +
+        '<button class="save-btn" style="background: #C1502E;" onclick="deleteExpenseConfirm(\'' + x.id + '\')">Delete</button>' +
+      '</span>' +
+    '</div>';
+  }).join("");
+}
+
+function openExpenseModal(expenseId) {
+  editingExpenseId = expenseId || null;
+  const expense = expenseId ? (window.allExpenses || []).find(function(x) { return x.id === expenseId; }) : null;
+  document.getElementById("expense-modal-title").textContent = expense ? "Edit expense" : "New expense";
+  document.getElementById("expense-modal-error").style.display = "none";
+  document.getElementById("expense-date-input").value = expense ? expense.expense_date : toDateStr(new Date());
+  document.getElementById("expense-amount-input").value = expense ? Number(expense.amount) : "";
+  document.getElementById("expense-description-input").value = expense ? (expense.description || "") : "";
+  document.getElementById("expense-modal").classList.add("visible");
+}
+
+function closeExpenseModal() {
+  document.getElementById("expense-modal").classList.remove("visible");
+  editingExpenseId = null;
+}
+
+async function submitExpense() {
+  const expenseDate = document.getElementById("expense-date-input").value;
+  const amount = document.getElementById("expense-amount-input").value;
+  const description = document.getElementById("expense-description-input").value.trim();
+  const errEl = document.getElementById("expense-modal-error");
+  errEl.style.display = "none";
+
+  if (!expenseDate) {
+    errEl.textContent = "Date is required.";
+    errEl.style.display = "block";
+    return;
+  }
+  if (amount === "" || isNaN(Number(amount)) || Number(amount) < 0) {
+    errEl.textContent = "Amount must be a non-negative number.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const payload = { expense_date: expenseDate, amount: Number(amount), description: description || null };
+  try {
+    if (editingExpenseId) {
+      await window.admin.updateExpense(editingExpenseId, payload);
+    } else {
+      await window.admin.addExpense(payload);
+    }
+    closeExpenseModal();
+    await loadExpenses();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save expense.";
+    errEl.style.display = "block";
+  }
+}
+
+async function deleteExpenseConfirm(id) {
+  if (!confirm("Delete this expense?")) return;
+  await window.admin.deleteExpense(id);
+  await loadExpenses();
 }
 
 function renderJobColorSwatches() {

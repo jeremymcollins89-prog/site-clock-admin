@@ -162,6 +162,11 @@ contextBridge.exposeInMainWorld("admin", {
 
   getReportSummary: (start, end) => apiFetch(`/api/admin/reports/summary?start=${start}&end=${end}`),
 
+  listExpenses: () => apiFetch("/api/admin/expenses"),
+  addExpense: (expense) => apiFetch("/api/admin/expenses", { method: "POST", body: expense }),
+  updateExpense: (id, patch) => apiFetch(`/api/admin/expenses/${id}`, { method: "PATCH", body: patch }),
+  deleteExpense: (id) => apiFetch(`/api/admin/expenses/${id}`, { method: "DELETE" }),
+
   listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
