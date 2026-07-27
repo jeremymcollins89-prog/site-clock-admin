@@ -1183,14 +1183,7 @@
         <div id="reports-content"></div>
       </div>
       <div class="card" style="margin-top:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h3 style="margin:0;">Gross Profit by Month</h3>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <button class="save-btn" style="padding:2px 10px;" onclick="changeMonthlyProfitYear(-1)">&lsaquo;</button>
-            <span id="monthly-profit-year-label" style="font-weight:700; min-width:44px; text-align:center;"></span>
-            <button class="save-btn" style="padding:2px 10px;" onclick="changeMonthlyProfitYear(1)">&rsaquo;</button>
-          </div>
-        </div>
+        <h3 style="margin:0 0 4px;">Gross Profit: This Month vs Last Month</h3>
         <div id="monthly-profit-chart"></div>
       </div>
     </section>
@@ -2014,10 +2007,19 @@ function exportQuickBooksCsv() {
 }
 
 async function loadEmployees() {
-  const [rows, overview] = await Promise.all([
-    window.admin.listEmployees(),
-    window.admin.getOverview(),
-  ]);
+  let rows, overview;
+  try {
+    [rows, overview] = await Promise.all([
+      window.admin.listEmployees(),
+      window.admin.getOverview(),
+    ]);
+  } catch (err) {
+    // If either call fails (a network blip on getOverview, say), don't let
+    // it wipe out an already-correct window.allEmployees with nothing --
+    // just skip this refresh and let the next successful one catch up,
+    // rather than the list silently going stale or blank.
+    return;
+  }
   window.allEmployees = rows;
   const openEntryByEmployee = {};
   (overview.employees || []).forEach(function(oe) {
@@ -2125,22 +2127,30 @@ async function submitEditEmployee() {
   if (pin) patch.pin = pin;
 
   try {
-    await window.admin.updateEmployee(editingEmployeeId, patch);
+    // Use the server's own response as the source of truth for the local
+    // cache, rather than relying solely on the loadEmployees() refresh below
+    // to pick up the change. If that refresh ever loses a race with another
+    // in-flight request (or the getOverview() half of it hiccups), the edit
+    // you just saved would otherwise flash correct and then look like it
+    // "reverted" the next time you opened this employee -- even though the
+    // database itself was updated fine the whole time.
+    const updated = await window.admin.updateEmployee(editingEmployeeId, patch);
+    const idx = (window.allEmployees || []).findIndex(function(x) { return x.id === editingEmployeeId; });
+    if (idx !== -1) Object.assign(window.allEmployees[idx], updated);
     successEl.textContent = "Employee updated.";
     successEl.style.display = "block";
-    await loadEmployees();
+    loadEmployees(); // background refresh of the list view; not depended on above
     // If the employee-detail modal (with the Contact info card) is open
     // behind this Edit modal for the same employee, refresh it too --
     // otherwise it keeps showing the pre-edit phone/email/address until the
     // app is reloaded, since it was rendered before this save.
     if (currentEmployeeDetail && currentEmployeeDetail.id === editingEmployeeId) {
-      const full = (window.allEmployees || []).find(function(x) { return x.id === editingEmployeeId; }) || {};
-      currentEmployeeDetail.email = full.email;
-      currentEmployeeDetail.phone = full.phone;
-      currentEmployeeDetail.street = full.street;
-      currentEmployeeDetail.city = full.city;
-      currentEmployeeDetail.state = full.state;
-      currentEmployeeDetail.zip = full.zip;
+      currentEmployeeDetail.email = updated.email;
+      currentEmployeeDetail.phone = updated.phone;
+      currentEmployeeDetail.street = updated.street;
+      currentEmployeeDetail.city = updated.city;
+      currentEmployeeDetail.state = updated.state;
+      currentEmployeeDetail.zip = updated.zip;
       const startEl = document.getElementById("emp-detail-start");
       const endEl = document.getElementById("emp-detail-end");
       if (startEl && endEl) renderEmployeeDetail(startEl.value, endEl.value);
@@ -4582,79 +4592,73 @@ async function loadReportSummary() {
   }
 }
 
-let currentMonthlyProfitYear = new Date().getFullYear();
-const SHORT_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function changeMonthlyProfitYear(delta) {
-  currentMonthlyProfitYear += delta;
-  loadMonthlyProfitChart();
-}
-
 async function loadMonthlyProfitChart() {
-  document.getElementById("monthly-profit-year-label").textContent = currentMonthlyProfitYear;
   const el = document.getElementById("monthly-profit-chart");
   el.innerHTML = '<p style="color:#8A8578; font-size:13px;">Loading...</p>';
   try {
-    const data = await window.admin.getMonthlyProfit(currentMonthlyProfitYear);
-    el.innerHTML = renderMonthlyProfitChart(data.months, currentMonthlyProfitYear);
+    const now = new Date();
+    const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+    let prevYear = curYear, prevMonth = curMonth - 1;
+    if (prevMonth === 0) { prevMonth = 12; prevYear = curYear - 1; }
+
+    // Only fetch the previous year too if the month before this one actually
+    // falls in it (i.e. we're looking at January) -- otherwise one request
+    // for the current year already has both months' data.
+    const years = prevYear === curYear ? [curYear] : [curYear, prevYear];
+    const results = await Promise.all(years.map(function(y) { return window.admin.getMonthlyProfit(y); }));
+    const byYear = {};
+    years.forEach(function(y, i) { byYear[y] = results[i]; });
+
+    const thisMonthData = byYear[curYear].months.find(function(m) { return m.month === curMonth; });
+    const lastMonthData = byYear[prevYear].months.find(function(m) { return m.month === prevMonth; });
+
+    el.innerHTML = renderMonthlyProfitChart(thisMonthData, lastMonthData);
   } catch (err) {
     el.innerHTML = '<p style="color:#8A8578; font-size:13px;">Couldn\'t load monthly profit.</p>';
   }
 }
 
-// Hand-built SVG bar chart -- no charting library dependency. Bars are
-// scaled against the largest |gross_profit| in the year so a loss month
-// (rare, but possible if labor/fees exceed paid revenue) renders as a
-// downward rust-colored bar below the zero line rather than breaking the
-// scale for every other month. The real current month and the month right
-// before it are called out in their own colors (amber / light amber) so
-// "this month vs last month" is easy to pick out from the rest of the
-// year at a glance, since they always sit right next to each other here.
-function renderMonthlyProfitChart(months, year) {
-  const width = 900, height = 260, barGap = 10;
-  const chartW = width - 60, chartH = height - 50;
-  const zeroY = 20 + chartH * 0.75;
-  const maxPositive = Math.max(1, ...months.map(function(m) { return m.gross_profit; }));
-  const maxNegative = Math.max(1, ...months.map(function(m) { return -m.gross_profit; }));
-  const posScale = (chartH * 0.75 - 10) / maxPositive;
-  const negScale = (chartH * 0.25 - 10) / maxNegative;
-  const barWidth = (chartW - barGap * 13) / 12;
+// Hand-built SVG bar chart -- just the two bars that matter for a quick
+// gut-check: this month vs last month. This month renders in a bright
+// green (deliberately brighter than the muted teal used for money numbers
+// elsewhere in the app, so it's the first thing your eye lands on), last
+// month stays amber. Either bar flips to rust if that month was actually
+// a loss (labor + fees outweighing paid revenue).
+function renderMonthlyProfitChart(thisMonth, lastMonth) {
+  const width = 320, height = 220;
+  const chartH = height - 50;
+  const zeroY = 20 + chartH * 0.7;
+  const bars_ = [
+    { label: "Last month", profit: lastMonth ? lastMonth.gross_profit : 0, color: "#F4B04C" },
+    { label: "This month", profit: thisMonth ? thisMonth.gross_profit : 0, color: "#2FA84F" },
+  ];
+  const maxPositive = Math.max(1, ...bars_.map(function(v) { return v.profit; }));
+  const maxNegative = Math.max(1, ...bars_.map(function(v) { return -v.profit; }));
+  const posScale = (chartH * 0.7 - 10) / maxPositive;
+  const negScale = (chartH * 0.3 - 10) / maxNegative;
+  const barWidth = 90, gap = 40;
+  const startX = (width - (barWidth * 2 + gap)) / 2;
 
-  const now = new Date();
-  const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
-  let prevYear = curYear, prevMonth = curMonth - 1;
-  if (prevMonth === 0) { prevMonth = 12; prevYear = curYear - 1; }
-
-  const bars = months.map(function(m, i) {
-    const x = 50 + i * (barWidth + barGap);
-    const isNeg = m.gross_profit < 0;
-    const barH = Math.abs(m.gross_profit) * (isNeg ? negScale : posScale);
+  const bars = bars_.map(function(v, i) {
+    const x = startX + i * (barWidth + gap);
+    const isNeg = v.profit < 0;
+    const barH = Math.abs(v.profit) * (isNeg ? negScale : posScale);
     const y = isNeg ? zeroY : zeroY - barH;
-    const isCurrentMonth = year === curYear && m.month === curMonth;
-    const isLastMonth = year === prevYear && m.month === prevMonth;
-    let color = isNeg ? "#C1502E" : "#46705F";
-    if (!isNeg && isCurrentMonth) color = "#DB8A16";
-    else if (!isNeg && isLastMonth) color = "#F4B04C";
+    const color = isNeg ? "#C1502E" : v.color;
+    const labelY = isNeg ? y + barH + 16 : y - 8;
     return '<g>' +
-      '<rect x="' + x + '" y="' + y + '" width="' + barWidth + '" height="' + Math.max(barH, 1) + '" rx="3" fill="' + color + '">' +
-        '<title>' + SHORT_MONTH_LABELS[m.month - 1] + ' ' + fmtMoney(m.gross_profit) + '</title>' +
+      '<rect x="' + x + '" y="' + y + '" width="' + barWidth + '" height="' + Math.max(barH, 1) + '" rx="4" fill="' + color + '">' +
+        '<title>' + v.label + ' ' + fmtMoney(v.profit) + '</title>' +
       '</rect>' +
-      '<text x="' + (x + barWidth / 2) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="11" fill="#8A8578">' + SHORT_MONTH_LABELS[m.month - 1] + '</text>' +
+      '<text x="' + (x + barWidth / 2) + '" y="' + labelY + '" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2421">' + fmtMoney(v.profit) + '</text>' +
+      '<text x="' + (x + barWidth / 2) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="12" fill="#8A8578">' + v.label + '</text>' +
     '</g>';
   }).join("");
 
-  const legend =
-    '<div style="display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#8A8578; margin-top:6px;">' +
-      '<span><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#DB8A16; margin-right:5px; vertical-align:middle;"></span>This month</span>' +
-      '<span><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#F4B04C; margin-right:5px; vertical-align:middle;"></span>Last month</span>' +
-      '<span><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#46705F; margin-right:5px; vertical-align:middle;"></span>Other months</span>' +
-      '<span><span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:#C1502E; margin-right:5px; vertical-align:middle;"></span>Loss</span>' +
-    '</div>';
-
-  return '<svg viewBox="0 0 ' + width + ' ' + height + '" style="width:100%; height:auto; max-height:280px;">' +
-    '<line x1="50" y1="' + zeroY + '" x2="' + (width - 10) + '" y2="' + zeroY + '" stroke="#D8D3C4" stroke-width="1"/>' +
+  return '<svg viewBox="0 0 ' + width + ' ' + height + '" style="width:100%; max-width:360px; height:auto; max-height:240px; display:block; margin:0 auto;">' +
+    '<line x1="10" y1="' + zeroY + '" x2="' + (width - 10) + '" y2="' + zeroY + '" stroke="#D8D3C4" stroke-width="1"/>' +
     bars +
-  '</svg>' + legend;
+  '</svg>';
 }
 
 // ---------- Report bubble breakdowns ----------
