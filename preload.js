@@ -105,6 +105,8 @@ contextBridge.exposeInMainWorld("admin", {
   markInvoicePaid: (id, paymentMethod) =>
     apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod } }),
   voidInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/void`, { method: "PATCH" }),
+  resendInvoiceReceipt: (id, email) =>
+    apiFetch(`/api/admin/invoices/${id}/resend-receipt`, { method: "POST", body: { email: email || "" } }),
   // Downloads the invoice PDF to a temp file and opens it in the user's
   // default PDF viewer (Adobe, Edge, whatever they have) -- more reliable
   // across Electron versions than trying to render a PDF inside the app

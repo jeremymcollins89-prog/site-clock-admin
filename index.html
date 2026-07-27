@@ -720,6 +720,29 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="resend-receipt-modal" onclick="if(event.target===this) closeResendReceiptModal();">
+    <div class="modal-box" style="width:360px;">
+      <button class="modal-close" onclick="closeResendReceiptModal()">&times;</button>
+      <h2 style="margin-top:0;">Resend receipt</h2>
+      <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+        Sends the same payment confirmation email for this invoice again.
+      </p>
+      <label style="font-size:13px; color:#1F2421; display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px;">
+        <input type="radio" name="resend-receipt-choice" value="onfile" checked onchange="toggleResendReceiptEmailField()" style="width:16px; height:16px; margin:0;" />
+        Send to email on file
+      </label>
+      <div id="resend-receipt-onfile-email" style="font-size:12.5px; color:#8A8578; margin:0 0 12px 24px;"></div>
+      <label style="font-size:13px; color:#1F2421; display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px;">
+        <input type="radio" name="resend-receipt-choice" value="other" onchange="toggleResendReceiptEmailField()" style="width:16px; height:16px; margin:0;" />
+        Send to a different email
+      </label>
+      <input id="resend-receipt-email-input" type="email" placeholder="name@example.com" disabled style="margin-bottom:16px;" />
+      <button class="btn-primary" style="width:auto;" onclick="submitResendReceipt()">Send</button>
+      <div id="resend-receipt-error" class="error" style="display:none; margin-top:10px;"></div>
+      <div id="resend-receipt-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="report-breakdown-modal" onclick="if(event.target===this) closeReportBreakdownModal();">
     <div class="modal-box" style="width:520px; max-height:80vh; overflow-y:auto;">
       <button class="modal-close" onclick="closeReportBreakdownModal()">&times;</button>
@@ -3403,6 +3426,7 @@ function renderTransactionsList() {
       '<span style="display:flex; align-items:center; gap:10px;">' +
         '<strong>' + fmtMoney(inv.total) + '</strong>' +
         '<button class="save-btn" onclick="viewInvoicePdf(\'' + inv.id + '\')">Receipt</button>' +
+        '<button class="save-btn" style="background: var(--charcoal);" onclick="openResendReceiptModal(\'' + inv.id + '\')">Resend receipt</button>' +
       '</span>' +
     '</div>';
   }).join("");
@@ -3743,6 +3767,64 @@ async function submitMarkPaid() {
     await loadInvoices();
   } catch (err) {
     errEl.textContent = err.message || "Couldn't mark invoice as paid.";
+    errEl.style.display = "block";
+  }
+}
+
+let resendReceiptInvoiceId = null;
+
+function toggleResendReceiptEmailField() {
+  const other = document.querySelector('input[name="resend-receipt-choice"][value="other"]').checked;
+  document.getElementById("resend-receipt-email-input").disabled = !other;
+  if (other) document.getElementById("resend-receipt-email-input").focus();
+}
+
+// Looks up the customer's email on file for display -- the Transactions
+// list itself only has customer_name (see GET /admin/invoices), so this
+// fetches the single-invoice detail (which joins the customer row) just to
+// show what "email on file" actually means before sending.
+async function openResendReceiptModal(invoiceId) {
+  resendReceiptInvoiceId = invoiceId;
+  document.getElementById("resend-receipt-error").style.display = "none";
+  document.getElementById("resend-receipt-success").style.display = "none";
+  document.getElementById("resend-receipt-email-input").value = "";
+  document.querySelector('input[name="resend-receipt-choice"][value="onfile"]').checked = true;
+  toggleResendReceiptEmailField();
+  document.getElementById("resend-receipt-onfile-email").textContent = "Loading...";
+  document.getElementById("resend-receipt-modal").classList.add("visible");
+  try {
+    const invoice = await window.admin.getInvoice(invoiceId);
+    document.getElementById("resend-receipt-onfile-email").textContent = invoice.customer_email || "No email on file";
+  } catch (err) {
+    document.getElementById("resend-receipt-onfile-email").textContent = "No email on file";
+  }
+}
+
+function closeResendReceiptModal() {
+  document.getElementById("resend-receipt-modal").classList.remove("visible");
+  resendReceiptInvoiceId = null;
+}
+
+async function submitResendReceipt() {
+  const useOther = document.querySelector('input[name="resend-receipt-choice"][value="other"]').checked;
+  const email = useOther ? document.getElementById("resend-receipt-email-input").value.trim() : "";
+  const errEl = document.getElementById("resend-receipt-error");
+  const successEl = document.getElementById("resend-receipt-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+
+  if (useOther && !email) {
+    errEl.textContent = "Enter an email address to send to.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  try {
+    const result = await window.admin.resendInvoiceReceipt(resendReceiptInvoiceId, email);
+    successEl.textContent = result.message || "Receipt sent.";
+    successEl.style.display = "block";
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't send receipt.";
     errEl.style.display = "block";
   }
 }
