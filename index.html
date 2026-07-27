@@ -4187,7 +4187,12 @@ async function submitConvertQuoteToInvoice() {
     closeConvertQuoteToInvoiceModal();
     await loadQuotes();
     await loadInvoices();
-    alert("Created draft Invoice #" + result.invoice.invoice_number + ". Review and send it from the Invoices tab.");
+    // Jump straight into editing the new draft invoice instead of just
+    // telling Jeremy where to find it -- it's already pre-filled from the
+    // quote's customer and line items, so this saves the extra trip.
+    showTab("invoices");
+    showBillingSubtab("invoices");
+    await openInvoiceModal(result.invoice.id);
   } catch (err) {
     errEl.textContent = err.message || "Couldn't convert quote to an invoice.";
     errEl.style.display = "block";
