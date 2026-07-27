@@ -3490,11 +3490,11 @@ function renderInvoicesList() {
     const actions = [];
     if (inv.status === "draft") {
       actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openInvoiceModal(\'' + inv.id + '\')">Edit</button>');
-      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="viewInvoicePdf(\'' + inv.id + '\')">View PDF</button>');
+      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="viewInvoicePdf(\'' + inv.id + '\')">View</button>');
       actions.push('<button class="save-btn" style="background:#C1502E;" onclick="deleteInvoiceConfirm(\'' + inv.id + '\')">Delete</button>');
     } else {
-      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openInvoiceModal(\'' + inv.id + '\')">View</button>');
-      actions.push('<button class="save-btn" onclick="viewInvoicePdf(\'' + inv.id + '\')">View PDF</button>');
+      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openInvoiceModal(\'' + inv.id + '\')">Edit</button>');
+      actions.push('<button class="save-btn" onclick="viewInvoicePdf(\'' + inv.id + '\')">View</button>');
       if (inv.status === "sent") {
         actions.push('<button class="save-btn" style="background: var(--charcoal); margin-left:6px;" onclick="openMarkPaidModal(\'' + inv.id + '\')">Mark paid</button>');
       }
