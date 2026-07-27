@@ -177,6 +177,7 @@ contextBridge.exposeInMainWorld("admin", {
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
   deleteCatalogItem: (id) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "DELETE" }),
+  importCatalogItems: (items) => apiFetch("/api/admin/catalog-items/import", { method: "POST", body: { items } }),
 
   listChatThreads: () => apiFetch("/api/admin/chat/threads"),
   getChatMessages: (employeeId) => apiFetch(`/api/admin/chat/${employeeId}/messages`),
