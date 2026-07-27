@@ -3796,7 +3796,13 @@ function renderQuotesList() {
     if (q.status === "draft") {
       actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openQuoteModal(\'' + q.id + '\')">Edit</button>');
     } else {
-      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openQuoteModal(\'' + q.id + '\')">View</button>');
+      // "sent" quotes are still editable (see openQuoteModal's isEditable
+      // check); accepted/declined ones open the same modal read-only, same
+      // as View used to behave before it was changed to jump straight to
+      // the PDF. Either way, both buttons are offered here since viewing
+      // the PDF and editing the underlying quote are different intents.
+      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="viewQuotePdf(\'' + q.id + '\')">View</button>');
+      actions.push('<button class="save-btn" style="margin-right:6px;" onclick="openQuoteModal(\'' + q.id + '\')">Edit</button>');
     }
     // Converting is allowed from any status except declined (and only once --
     // no point invoicing a quote that's already been turned into an invoice).
