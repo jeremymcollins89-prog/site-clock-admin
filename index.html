@@ -1182,6 +1182,17 @@
         </div>
         <div id="reports-content"></div>
       </div>
+      <div class="card" style="margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <h3 style="margin:0;">Gross Profit by Month</h3>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="save-btn" style="padding:2px 10px;" onclick="changeMonthlyProfitYear(-1)">&lsaquo;</button>
+            <span id="monthly-profit-year-label" style="font-weight:700; min-width:44px; text-align:center;"></span>
+            <button class="save-btn" style="padding:2px 10px;" onclick="changeMonthlyProfitYear(1)">&rsaquo;</button>
+          </div>
+        </div>
+        <div id="monthly-profit-chart"></div>
+      </div>
     </section>
 
     <section id="tab-chat" class="tab">
@@ -1613,6 +1624,7 @@ function showApp() {
   loadCompanyLogo();
   loadCompanyTimezone();
   loadReportSummary();
+  loadMonthlyProfitChart();
   renderScheduleCalendar();
   loadChatThreads();
   loadTeamChatThreads();
@@ -4560,6 +4572,61 @@ async function loadReportSummary() {
   } catch (err) {
     content.innerHTML = '<p style="color:#8A8578; font-size:13px;">Couldn\'t load report data.</p>';
   }
+}
+
+let currentMonthlyProfitYear = new Date().getFullYear();
+const SHORT_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function changeMonthlyProfitYear(delta) {
+  currentMonthlyProfitYear += delta;
+  loadMonthlyProfitChart();
+}
+
+async function loadMonthlyProfitChart() {
+  document.getElementById("monthly-profit-year-label").textContent = currentMonthlyProfitYear;
+  const el = document.getElementById("monthly-profit-chart");
+  el.innerHTML = '<p style="color:#8A8578; font-size:13px;">Loading...</p>';
+  try {
+    const data = await window.admin.getMonthlyProfit(currentMonthlyProfitYear);
+    el.innerHTML = renderMonthlyProfitChart(data.months);
+  } catch (err) {
+    el.innerHTML = '<p style="color:#8A8578; font-size:13px;">Couldn\'t load monthly profit.</p>';
+  }
+}
+
+// Hand-built SVG bar chart -- no charting library dependency. Bars are
+// scaled against the largest |gross_profit| in the year so a loss month
+// (rare, but possible if labor/fees exceed paid revenue) renders as a
+// downward rust-colored bar below the zero line rather than breaking the
+// scale for every other month.
+function renderMonthlyProfitChart(months) {
+  const width = 900, height = 260, barGap = 10;
+  const chartW = width - 60, chartH = height - 50;
+  const zeroY = 20 + chartH * 0.75;
+  const maxPositive = Math.max(1, ...months.map(function(m) { return m.gross_profit; }));
+  const maxNegative = Math.max(1, ...months.map(function(m) { return -m.gross_profit; }));
+  const posScale = (chartH * 0.75 - 10) / maxPositive;
+  const negScale = (chartH * 0.25 - 10) / maxNegative;
+  const barWidth = (chartW - barGap * 13) / 12;
+
+  const bars = months.map(function(m, i) {
+    const x = 50 + i * (barWidth + barGap);
+    const isNeg = m.gross_profit < 0;
+    const barH = Math.abs(m.gross_profit) * (isNeg ? negScale : posScale);
+    const y = isNeg ? zeroY : zeroY - barH;
+    const color = isNeg ? "#C1502E" : "#46705F";
+    return '<g>' +
+      '<rect x="' + x + '" y="' + y + '" width="' + barWidth + '" height="' + Math.max(barH, 1) + '" rx="3" fill="' + color + '">' +
+        '<title>' + SHORT_MONTH_LABELS[m.month - 1] + ' ' + fmtMoney(m.gross_profit) + '</title>' +
+      '</rect>' +
+      '<text x="' + (x + barWidth / 2) + '" y="' + (height - 8) + '" text-anchor="middle" font-size="11" fill="#8A8578">' + SHORT_MONTH_LABELS[m.month - 1] + '</text>' +
+    '</g>';
+  }).join("");
+
+  return '<svg viewBox="0 0 ' + width + ' ' + height + '" style="width:100%; height:auto; max-height:280px;">' +
+    '<line x1="50" y1="' + zeroY + '" x2="' + (width - 10) + '" y2="' + zeroY + '" stroke="#D8D3C4" stroke-width="1"/>' +
+    bars +
+  '</svg>';
 }
 
 // ---------- Report bubble breakdowns ----------

@@ -168,6 +168,7 @@ contextBridge.exposeInMainWorld("admin", {
 
   getReportSummary: (start, end) => apiFetch(`/api/admin/reports/summary?start=${start}&end=${end}`),
   getLaborBreakdown: (start, end) => apiFetch(`/api/admin/reports/labor-breakdown?start=${start}&end=${end}`),
+  getMonthlyProfit: (year) => apiFetch(`/api/admin/reports/monthly-profit?year=${year}`),
 
   listExpenses: () => apiFetch("/api/admin/expenses"),
   addExpense: (expense) => apiFetch("/api/admin/expenses", { method: "POST", body: expense }),
