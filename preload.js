@@ -66,6 +66,10 @@ contextBridge.exposeInMainWorld("admin", {
   updatePayrollEmail: (payrollEmail) =>
     apiFetch("/api/admin/payroll-email", { method: "PATCH", body: { payroll_email: payrollEmail } }),
 
+  getLongShiftAlert: () => apiFetch("/api/admin/long-shift-alert"),
+  updateLongShiftAlert: (hours) =>
+    apiFetch("/api/admin/long-shift-alert", { method: "PATCH", body: { long_shift_alert_hours: hours } }),
+
   getCompanyName: () => apiFetch("/api/admin/company-name"),
   updateCompanyName: (name) => apiFetch("/api/admin/company-name", { method: "PATCH", body: { name } }),
 

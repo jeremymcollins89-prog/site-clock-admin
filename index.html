@@ -452,6 +452,11 @@
       <input id="edit-emp-pin" placeholder="4-digit PIN" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Hourly rate (used for profit reports)</label>
       <input id="edit-emp-hourly-rate" type="number" step="0.01" min="0" placeholder="e.g. 22.50" style="margin-bottom:16px;" />
+      <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Break length (for the 5-min-left reminder)</label>
+      <select id="edit-emp-break-minutes" style="margin-bottom:16px;">
+        <option value="30">30 minutes</option>
+        <option value="60">60 minutes</option>
+      </select>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Phone</label>
       <input id="edit-emp-phone" placeholder="(555) 555-5555" />
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Street address</label>
@@ -1275,6 +1280,20 @@
       </div>
 
       <div class="card">
+        <h3 style="margin-top:0;">Long shift alert</h3>
+        <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+          Get a notification if an employee is still clocked in past this many hours -- handy for catching a forgotten clock-out.
+        </p>
+        <label style="font-size:11px; color:#8A8578; display:block; margin-bottom:4px;">Alert me after</label>
+        <select id="long-shift-alert-select" style="margin-bottom:10px; width:100%; padding:8px; border-radius:4px; border:1.5px solid var(--line);">
+          <option value="">Off</option>
+        </select>
+        <button class="btn-primary" style="width:auto;" onclick="saveLongShiftAlert()">Save</button>
+        <div id="long-shift-alert-error" class="error" style="display:none; margin-top:10px;"></div>
+        <div id="long-shift-alert-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top:0;">Pay schedule</h3>
         <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
           How often your pay periods repeat. This controls what "Submit Hours for Payroll" bundles together.
@@ -1559,6 +1578,8 @@ function showApp() {
   loadShopLocation();
   loadCompanyName();
   loadPayrollEmail();
+  populateLongShiftAlertOptions();
+  loadLongShiftAlert();
   loadPaySchedule();
   loadCrews();
   loadCustomers();
@@ -1651,17 +1672,21 @@ async function loadOverview() {
   const data = await window.admin.getOverview();
   const activeOnly = data.employees.filter(function(e) { return e.active; });
   const list = document.getElementById("overview-list");
+  // Same threshold as the Settings tab's "Long shift alert" (null means the
+  // admin turned it off), so this badge and the push notification always
+  // agree on what counts as "too long."
+  const alertHours = data.long_shift_alert_hours;
 
   list.innerHTML = activeOnly.map(function(e) {
     const isClockedIn = !!e.open_entry_id;
     const shiftHours = isClockedIn && e.open_clock_in ? (Date.now() - new Date(e.open_clock_in).getTime()) / 3600000 : 0;
-    const shiftTooLong = isClockedIn && shiftHours > 10;
+    const shiftTooLong = isClockedIn && alertHours && shiftHours > alertHours;
 
     const statusBadge = isClockedIn
       ? '<span class="badge" style="color:#fff; background:linear-gradient(135deg, #5C9481, var(--teal-deep)); box-shadow:0 3px 8px rgba(43,69,60,0.4);">Clocked In</span>'
       : '<span class="badge" style="background:#EDEAE1; color:#6b6759;">Off the Clock</span>';
     const longShiftBadge = shiftTooLong
-      ? '<span class="badge" style="color:#fff; margin-left:6px; background:linear-gradient(135deg, #E4794F, var(--rust-deep)); box-shadow:0 3px 8px rgba(166,61,32,0.4);">Over 10h — check in?</span>'
+      ? '<span class="badge" style="color:#fff; margin-left:6px; background:linear-gradient(135deg, #E4794F, var(--rust-deep)); box-shadow:0 3px 8px rgba(166,61,32,0.4);">Over ' + alertHours + 'h — check in?</span>'
       : '';
 
     const currentJob = isClockedIn
@@ -2011,6 +2036,7 @@ function openEditEmployeeModal(id) {
   document.getElementById("edit-emp-email").value = e.email || "";
   document.getElementById("edit-emp-pin").value = "";
   document.getElementById("edit-emp-hourly-rate").value = (e.hourly_rate === null || e.hourly_rate === undefined) ? "" : e.hourly_rate;
+  document.getElementById("edit-emp-break-minutes").value = e.break_minutes === 60 ? "60" : "30";
   document.getElementById("edit-emp-phone").value = e.phone || "";
   document.getElementById("edit-emp-street").value = e.street || "";
   document.getElementById("edit-emp-city").value = e.city || "";
@@ -2049,6 +2075,7 @@ async function submitEditEmployee() {
   const patch = {
     email: email,
     hourly_rate: hourlyRateRaw ? Number(hourlyRateRaw) : null,
+    break_minutes: Number(document.getElementById("edit-emp-break-minutes").value),
     phone: document.getElementById("edit-emp-phone").value.trim() || null,
     street: document.getElementById("edit-emp-street").value.trim() || null,
     city: document.getElementById("edit-emp-city").value.trim() || null,
@@ -2345,6 +2372,42 @@ async function saveCompanyName() {
     successEl.style.display = "block";
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save business name.";
+    errEl.style.display = "block";
+  }
+}
+
+function populateLongShiftAlertOptions() {
+  const select = document.getElementById("long-shift-alert-select");
+  for (let h = 1; h <= 24; h++) {
+    const opt = document.createElement("option");
+    opt.value = String(h);
+    opt.textContent = h === 1 ? "1 hour" : h + " hours";
+    select.appendChild(opt);
+  }
+}
+
+async function loadLongShiftAlert() {
+  try {
+    const data = await window.admin.getLongShiftAlert();
+    document.getElementById("long-shift-alert-select").value = data.long_shift_alert_hours ? String(data.long_shift_alert_hours) : "";
+  } catch (err) {
+    // non-fatal — leave the default selection if this fails
+  }
+}
+
+async function saveLongShiftAlert() {
+  const raw = document.getElementById("long-shift-alert-select").value;
+  const errEl = document.getElementById("long-shift-alert-error");
+  const successEl = document.getElementById("long-shift-alert-success");
+  errEl.style.display = "none";
+  successEl.style.display = "none";
+  try {
+    await window.admin.updateLongShiftAlert(raw ? Number(raw) : null);
+    successEl.textContent = "Long shift alert saved.";
+    successEl.style.display = "block";
+    await loadOverview();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't save long shift alert.";
     errEl.style.display = "block";
   }
 }
@@ -4375,8 +4438,8 @@ async function loadReportSummary() {
               renderReportStatCard("Labor hours", fmtHours(thisYearData.labor_hours), "labor cost " + fmtMoney(thisYearData.labor_cost), pctChangeParts(thisYearData.labor_hours, lastYearData.labor_hours, true), reportBubbleOnclick("labor", thisYearStart, thisYearEnd)) +
               renderReportStatCard("Invoiced", fmtMoney(thisYearData.invoice_total), thisYearData.invoice_count + " invoices", pctChangeParts(thisYearData.invoice_total, lastYearData.invoice_total), reportBubbleOnclick("invoiced", thisYearStart, thisYearEnd)) +
               renderReportStatCard("Paid", fmtMoney(thisYearData.paid_invoice_total), thisYearData.paid_invoice_count + " invoices", pctChangeParts(thisYearData.paid_invoice_total, lastYearData.paid_invoice_total), reportBubbleOnclick("paid", thisYearStart, thisYearEnd)) +
-              renderReportStatCard("Gross Profit", fmtMoney(thisYearProfits.grossProfit), "labor cost " + fmtMoney(thisYearData.labor_cost) + " &middot; processing fees " + fmtMoney(thisYearProfits.feesTotal), profitChangeParts(thisYearProfits.grossProfit, lastYearProfits.grossProfit), reportBubbleOnclick("gross", thisYearStart, thisYearEnd)) +
-              renderReportStatCard("Net Profit", fmtMoney(thisYearProfits.netProfit), "expenses " + fmtMoney(thisYearData.expense_total) + " &middot; processing fees " + fmtMoney(thisYearProfits.feesTotal), profitChangeParts(thisYearProfits.netProfit, lastYearProfits.netProfit), reportBubbleOnclick("net", thisYearStart, thisYearEnd)) +
+              renderReportStatCard("Gross Profit", fmtMoney(thisYearProfits.grossProfit), null, profitChangeParts(thisYearProfits.grossProfit, lastYearProfits.grossProfit), reportBubbleOnclick("gross", thisYearStart, thisYearEnd)) +
+              renderReportStatCard("Net Profit", fmtMoney(thisYearProfits.netProfit), null, profitChangeParts(thisYearProfits.netProfit, lastYearProfits.netProfit), reportBubbleOnclick("net", thisYearStart, thisYearEnd)) +
             '</div>' +
           '</div>' +
           '<div style="flex:1; min-width:280px;">' +
@@ -4385,8 +4448,8 @@ async function loadReportSummary() {
               renderReportStatCard("Labor hours", fmtHours(lastYearData.labor_hours), "labor cost " + fmtMoney(lastYearData.labor_cost), null, reportBubbleOnclick("labor", lastYearStart, lastYearEnd)) +
               renderReportStatCard("Invoiced", fmtMoney(lastYearData.invoice_total), lastYearData.invoice_count + " invoices", null, reportBubbleOnclick("invoiced", lastYearStart, lastYearEnd)) +
               renderReportStatCard("Paid", fmtMoney(lastYearData.paid_invoice_total), lastYearData.paid_invoice_count + " invoices", null, reportBubbleOnclick("paid", lastYearStart, lastYearEnd)) +
-              renderReportStatCard("Gross Profit", fmtMoney(lastYearProfits.grossProfit), "labor cost " + fmtMoney(lastYearData.labor_cost) + " &middot; processing fees " + fmtMoney(lastYearProfits.feesTotal), null, reportBubbleOnclick("gross", lastYearStart, lastYearEnd)) +
-              renderReportStatCard("Net Profit", fmtMoney(lastYearProfits.netProfit), "expenses " + fmtMoney(lastYearData.expense_total) + " &middot; processing fees " + fmtMoney(lastYearProfits.feesTotal), null, reportBubbleOnclick("net", lastYearStart, lastYearEnd)) +
+              renderReportStatCard("Gross Profit", fmtMoney(lastYearProfits.grossProfit), null, null, reportBubbleOnclick("gross", lastYearStart, lastYearEnd)) +
+              renderReportStatCard("Net Profit", fmtMoney(lastYearProfits.netProfit), null, null, reportBubbleOnclick("net", lastYearStart, lastYearEnd)) +
             '</div>' +
           '</div>' +
         '</div>';
@@ -4407,8 +4470,8 @@ async function loadReportSummary() {
         renderReportStatCard("Labor hours", fmtHours(data.labor_hours), "labor cost " + fmtMoney(data.labor_cost), pctChangeParts(data.labor_hours, prevData.labor_hours, true), reportBubbleOnclick("labor", rangeStart, rangeEnd)) +
         renderReportStatCard("Invoiced", fmtMoney(data.invoice_total), data.invoice_count + " invoices", pctChangeParts(data.invoice_total, prevData.invoice_total), reportBubbleOnclick("invoiced", rangeStart, rangeEnd)) +
         renderReportStatCard("Paid", fmtMoney(data.paid_invoice_total), data.paid_invoice_count + " invoices", pctChangeParts(data.paid_invoice_total, prevData.paid_invoice_total), reportBubbleOnclick("paid", rangeStart, rangeEnd)) +
-        renderReportStatCard("Gross Profit", fmtMoney(profits.grossProfit), "labor cost " + fmtMoney(data.labor_cost) + " &middot; processing fees " + fmtMoney(profits.feesTotal), profitChangeParts(profits.grossProfit, prevProfits.grossProfit), reportBubbleOnclick("gross", rangeStart, rangeEnd)) +
-        renderReportStatCard("Net Profit", fmtMoney(profits.netProfit), "expenses " + fmtMoney(data.expense_total) + " &middot; processing fees " + fmtMoney(profits.feesTotal), profitChangeParts(profits.netProfit, prevProfits.netProfit), reportBubbleOnclick("net", rangeStart, rangeEnd)) +
+        renderReportStatCard("Gross Profit", fmtMoney(profits.grossProfit), null, profitChangeParts(profits.grossProfit, prevProfits.grossProfit), reportBubbleOnclick("gross", rangeStart, rangeEnd)) +
+        renderReportStatCard("Net Profit", fmtMoney(profits.netProfit), null, profitChangeParts(profits.netProfit, prevProfits.netProfit), reportBubbleOnclick("net", rangeStart, rangeEnd)) +
       '</div>' +
       '<div style="margin-top:10px; font-size:12px; color:#8A8578;">' + rangeStart + ' – ' + rangeEnd +
         ' vs. ' + toDateStr(bounds.prevStart) + ' – ' + toDateStr(bounds.prevEnd) + '</div>';
@@ -4546,23 +4609,13 @@ function renderProcessingFeeRows(summary) {
 }
 
 function renderGrossProfitBreakdown(summary, breakdown) {
-  const laborRows = breakdown.length ? breakdown.map(function(r) {
-    const rateText = r.hourly_rate === null ? '<span style="color:var(--rust);">no rate set</span>' : fmtMoney(r.hourly_rate) + '/hr';
-    return '<div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12.5px; color:#8A8578;">' +
-      '<span>' + r.employee_name + ' (' + fmtHours(r.hours) + ' &middot; ' + rateText + ')</span>' +
-      '<span>' + fmtMoney(r.cost) + '</span>' +
-    '</div>';
-  }).join("") : '<p style="color:#8A8578; font-size:12.5px;">No hours worked in this range.</p>';
-
   const feesTotal = Number(summary.stripe_fee_total || 0) + Number(summary.platform_fee_total || 0);
   const grossProfit = Number(summary.paid_invoice_total) - Number(summary.labor_cost) - feesTotal;
   return '<div style="display:flex; justify-content:space-between; font-size:14px; padding:6px 0;">' +
       '<span>Paid revenue</span><span>' + fmtMoney(summary.paid_invoice_total) + '</span>' +
     '</div>' +
-    '<div style="font-size:12px; color:#8A8578; font-weight:600; margin:8px 0 4px;">Minus labor cost:</div>' +
-    laborRows +
-    '<div style="display:flex; justify-content:space-between; font-size:12.5px; padding-top:4px; border-top:1px solid var(--line); margin-top:6px;">' +
-      '<span>Labor cost total</span><span>' + fmtMoney(summary.labor_cost) + '</span>' +
+    '<div style="display:flex; justify-content:space-between; font-size:14px; padding:6px 0;">' +
+      '<span>Labor cost</span><span>' + fmtMoney(summary.labor_cost) + '</span>' +
     '</div>' +
     (feesTotal > 0
       ? '<div style="font-size:12px; color:#8A8578; font-weight:600; margin:8px 0 4px;">Minus processing fees:</div>' +
