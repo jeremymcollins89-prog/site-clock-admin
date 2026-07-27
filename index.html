@@ -1736,9 +1736,9 @@ async function loadOverview() {
 
     const statValueClass = isClockedIn ? "stat-value accent" : "stat-value";
 
-    return '<div class="card employee-card" style="opacity:1;' + (shiftTooLong ? ' border-color:var(--rust);' : '') + '" onclick="openEmployeeDetail(\'' + e.id + '\', \'' + e.name + '\', ' + e.active + ', ' + isClockedIn + ')">' +
+    return '<div class="card employee-card" style="opacity:1;' + (shiftTooLong ? ' border-color:var(--rust);' : '') + '" onclick="openEmployeeDetail(\'' + e.id + '\', ' + e.active + ', ' + isClockedIn + ')">' +
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-          '<strong style="font-size:16px;">' + e.name + '</strong>' +
+          '<strong style="font-size:16px;">' + escapeHtml(e.name) + '</strong>' +
           '<span>' + statusBadge + longShiftBadge + '</span>' +
         '</div>' +
         currentJob +
@@ -1769,13 +1769,16 @@ async function loadOverview() {
 // and Save buttons inside it know who to reload/save against.
 let currentEmployeeDetail = null; // { id, name, active, isClockedIn }
 
-async function openEmployeeDetail(id, name, active, isClockedIn) {
-  // Look up the full record (for phone/email/address) rather than adding more
-  // positional params to every call site -- window.allEmployees is already
-  // loaded for the Employees list this modal is opened from.
+async function openEmployeeDetail(id, active, isClockedIn) {
+  // Look up the full record (for name/phone/email/address) rather than
+  // passing more values as positional params through an inline onclick=""
+  // string -- window.allEmployees is already loaded for the Employees list
+  // this modal is opened from. This also means an employee's own name never
+  // gets interpolated into an HTML attribute, which matters because a name
+  // is free text someone could set to include a stray quote or JS.
   const full = (window.allEmployees || []).find(function(x) { return x.id === id; }) || {};
   currentEmployeeDetail = {
-    id: id, name: name, active: active, isClockedIn: isClockedIn,
+    id: id, name: full.name, active: active, isClockedIn: isClockedIn,
     email: full.email, phone: full.phone, street: full.street, city: full.city, state: full.state, zip: full.zip,
   };
 
@@ -1830,20 +1833,20 @@ async function renderEmployeeDetail(start, end) {
     '</div>' +
     '<div id="emp-contact-details" style="display:none; margin-top:10px;" onclick="event.stopPropagation();">' +
       (ed.phone
-        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="' + telUrl(ed.phone) + '" style="color:var(--rust);">' + ed.phone + '</a></div>'
+        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="' + escapeHtml(telUrl(ed.phone)) + '" style="color:var(--rust);">' + escapeHtml(ed.phone) + '</a></div>'
         : '<div style="font-size:13px; margin-bottom:6px; color:#8A8578;">Phone: not set</div>') +
       (ed.email
-        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="mailto:' + ed.email + '" style="color:var(--rust);">' + ed.email + '</a></div>'
+        ? '<div style="font-size:13px; margin-bottom:6px;"><a href="mailto:' + escapeHtml(ed.email) + '" style="color:var(--rust);">' + escapeHtml(ed.email) + '</a></div>'
         : '<div style="font-size:13px; margin-bottom:6px; color:#8A8578;">Email: not set</div>') +
       (fullAddress
-        ? '<div style="font-size:13px; margin-bottom:8px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:var(--rust);">' + fullAddress + ' (directions)</a></div>'
+        ? '<div style="font-size:13px; margin-bottom:8px;"><a href="' + escapeHtml(mapsUrl(fullAddress)) + '" target="_blank" style="color:var(--rust);">' + escapeHtml(fullAddress) + ' (directions)</a></div>'
         : '<div style="font-size:13px; margin-bottom:8px; color:#8A8578;">Address: not set</div>') +
       '<button class="save-btn" style="background:var(--teal);" onclick="event.stopPropagation(); openEditEmployeeModal(\'' + ed.id + '\');">Edit contact info</button>' +
     '</div>' +
   '</div>';
 
   document.getElementById("employee-modal-content").innerHTML =
-    '<h2 style="margin-bottom:0;">' + ed.name + '</h2>' +
+    '<h2 style="margin-bottom:0;">' + escapeHtml(ed.name) + '</h2>' +
     '<p style="color:#8A8578; margin-top:2px;">' + (ed.active ? "Active" : "Inactive") + '</p>' +
     contactCardHtml +
     '<div style="display:flex; gap:24px; margin:16px 0;">' +
@@ -2034,14 +2037,14 @@ async function loadEmployees() {
   rows.forEach(function(e) {
     const tr = document.createElement("tr");
     tr.style.cursor = "pointer";
-    tr.onclick = function() { openEmployeeDetail(e.id, e.name, e.active, false); };
+    tr.onclick = function() { openEmployeeDetail(e.id, e.active, false); };
     const openEntryId = openEntryByEmployee[e.id];
     const forceClockOutBtn = openEntryId
       ? '<button class="save-btn" style="background: #C1502E; margin-left:6px;" onclick="event.stopPropagation(); forceClockOutRowConfirm(\'' + openEntryId + '\', \'' + e.name.replace(/'/g, "\\'") + '\')">Force clock out</button>'
       : '';
     tr.innerHTML =
-      "<td>" + e.name + "</td>" +
-      "<td>" + e.email + "</td>" +
+      "<td>" + escapeHtml(e.name) + "</td>" +
+      "<td>" + escapeHtml(e.email) + "</td>" +
       '<td><span class="anim-toggle" onclick="event.stopPropagation(); openAnimationsPopover(event, \'' + e.id + '\', \'' + (e.clock_in_animation || "none") + '\')">' + animationLabel(e.clock_in_animation) + '</span></td>' +
       '<td><span class="anim-toggle" onclick="event.stopPropagation(); openRatePopover(event, \'' + e.id + '\', ' + (e.hourly_rate === null || e.hourly_rate === undefined ? "null" : Number(e.hourly_rate)) + ')">' + (e.hourly_rate === null || e.hourly_rate === undefined ? "Not set" : fmtMoney(e.hourly_rate) + "/hr") + '</span></td>' +
       "<td>" + (e.active ? "Active" : "Inactive") + "</td>" +
@@ -2767,11 +2770,11 @@ function renderCrewSearchDropdown() {
     dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:#8A8578;">No teams match "' + term + '".</div>';
   } else {
     dropdown.innerHTML = matches.map(function(c) {
-      const memberNames = c.members.map(function(m) { return m.name; }).join(", ") || "No members yet";
+      const memberNames = escapeHtml(c.members.map(function(m) { return m.name; }).join(", ") || "No members yet");
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectCrewSearchResult(\'' + c.id + '\')">' +
-        '<div style="font-weight:600; font-size:13px;">' + c.name + '</div>' +
+        '<div style="font-weight:600; font-size:13px;">' + escapeHtml(c.name) + '</div>' +
         '<div style="font-size:11px; color:#8A8578;">' + memberNames + '</div>' +
       '</div>';
     }).join("");
@@ -2815,10 +2818,10 @@ function renderCrewsList() {
     return;
   }
   list.innerHTML = crews.map(function(c) {
-    const members = c.members.map(function(m) { return '<span class="chip">' + m.name + '</span>'; }).join("");
+    const members = c.members.map(function(m) { return '<span class="chip">' + escapeHtml(m.name) + '</span>'; }).join("");
     return '<div class="card" style="margin-bottom:8px;">' +
       '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-        '<strong>' + c.name + '</strong>' +
+        '<strong>' + escapeHtml(c.name) + '</strong>' +
         '<span>' +
           '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCrewModal(\'' + c.id + '\')">Edit</button>' +
           '<button class="save-btn" style="background: #C1502E;" onclick="deleteCrewConfirm(\'' + c.id + '\')">Delete</button>' +
@@ -2840,7 +2843,7 @@ function openCrewModal(crewId) {
   const employees = (window.allEmployees || []).filter(function(e) { return e.active || memberIds.indexOf(e.id) !== -1; });
   document.getElementById("crew-members-list").innerHTML = employees.map(function(e) {
     const checked = memberIds.indexOf(e.id) !== -1 ? "checked" : "";
-    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
+    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + escapeHtml(e.name) + '</label>';
   }).join("") || '<p style="color:#8A8578; font-size:12px;">Add employees first, then build teams.</p>';
 
   document.getElementById("crew-modal").classList.add("visible");
@@ -3050,17 +3053,17 @@ function renderCustomersList() {
   list.innerHTML = customers.map(function(c) {
     const fullAddress = formatAddress(c);
     const details = (c.phone
-      ? '<div style="font-size:12px;"><a href="' + telUrl(c.phone) + '" style="color:' + JOB_COLORS.rust + ';">' + c.phone + '</a></div>'
+      ? '<div style="font-size:12px;"><a href="' + escapeHtml(telUrl(c.phone)) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.phone) + '</a></div>'
       : "") + (c.email
-      ? '<div style="font-size:12px;"><a href="mailto:' + c.email + '" style="color:' + JOB_COLORS.rust + ';">' + c.email + '</a></div>'
+      ? '<div style="font-size:12px;"><a href="mailto:' + escapeHtml(c.email) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.email) + '</a></div>'
       : "") + (fullAddress
-      ? '<div style="font-size:12px;"><a href="' + mapsUrl(fullAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + fullAddress + ' (directions)</a></div>'
+      ? '<div style="font-size:12px;"><a href="' + escapeHtml(mapsUrl(fullAddress)) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(fullAddress) + ' (directions)</a></div>'
       : "");
     return '<div class="card customer-card">' +
       '<div>' +
-        '<strong>' + c.name + '</strong>' +
+        '<strong>' + escapeHtml(c.name) + '</strong>' +
         details +
-        (c.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + c.notes + '</div>' : '') +
+        (c.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:4px;">' + escapeHtml(c.notes) + '</div>' : '') +
       '</div>' +
       '<span style="white-space:nowrap;">' +
         '<button class="save-btn" style="background: var(--charcoal); margin-right:6px;" onclick="openCustomerHistoryModal(\'' + c.id + '\')">History</button>' +
@@ -3160,7 +3163,7 @@ async function openCustomerHistoryModal(id) {
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
           '<div>' +
             '<span class="job-color-dot" style="background:' + (JOB_COLORS[ev.color] || JOB_COLORS.rust) + ';"></span>' +
-            '<strong>' + ev.title + '</strong>' +
+            '<strong>' + escapeHtml(ev.title) + '</strong>' +
             '<span class="type-badge">' + (EVENT_TYPE_LABELS[ev.event_type] || "Job") + '</span>' +
           '</div>' +
         '</div>' +
@@ -3181,7 +3184,7 @@ async function openCustomerHistoryModal(id) {
   }).join("");
 
   document.getElementById("customer-history-content").innerHTML =
-    '<h2 style="margin-top:0; font-size:18px;">' + customer.name + '</h2>' +
+    '<h2 style="margin-top:0; font-size:18px;">' + escapeHtml(customer.name) + '</h2>' +
     '<p style="font-size:12px; color:#8A8578; margin-top:-8px;">Appointments and invoices</p>' +
     (rows || '<p style="color:#8A8578; font-size:13px;">Nothing on file for this customer yet.</p>');
 
@@ -3452,7 +3455,7 @@ function renderTransactionsList() {
     const methodLabel = methodLabels[inv.payment_method] || "Other";
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
       '<div>' +
-        '<strong>' + inv.customer_name + '</strong> &middot; Invoice #' + inv.invoice_number +
+        '<strong>' + escapeHtml(inv.customer_name) + '</strong> &middot; Invoice #' + inv.invoice_number +
         '<div style="font-size:12px; color:#8A8578; margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
           '<span>' + String(inv.paid_at).slice(0, 10) + ' &middot; ' + methodLabel + '</span>' + channelBadge +
         '</div>' +
@@ -3496,7 +3499,7 @@ function renderInvoicesSearchDropdown() {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectInvoicesSearchResult(\'' + inv.id + '\')">' +
-        '<div style="font-weight:600; font-size:13px;">Invoice #' + inv.invoice_number + ' &middot; ' + inv.customer_name + '</div>' +
+        '<div style="font-weight:600; font-size:13px;">Invoice #' + inv.invoice_number + ' &middot; ' + escapeHtml(inv.customer_name) + '</div>' +
         '<div style="font-size:11px; color:#8A8578;">' + fmtMoney(inv.total) + '</div>' +
       '</div>';
     }).join("");
@@ -3560,7 +3563,7 @@ function renderInvoicesList() {
     return '<div class="card invoice-card">' +
       '<div>' +
         '<strong>Invoice #' + inv.invoice_number + '</strong> ' + invoiceStatusBadge(inv) +
-        '<div style="font-size:13px; margin-top:4px;">' + inv.customer_name + '</div>' +
+        '<div style="font-size:13px; margin-top:4px;">' + escapeHtml(inv.customer_name) + '</div>' +
         '<div style="font-size:12px; color:#8A8578; margin-top:2px;">' +
           PAYMENT_TERMS_LABELS[inv.payment_terms] + ' &middot; Due ' + inv.due_date.slice(0, 10) +
         '</div>' +
@@ -3663,7 +3666,7 @@ async function openInvoiceModal(invoiceId) {
 
   const customers = window.allCustomers || [];
   document.getElementById("invoice-customer-input").innerHTML =
-    customers.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join("");
+    customers.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join("");
   document.getElementById("invoice-customer-input").value = invoice ? invoice.customer_id : (customers[0] ? customers[0].id : "");
 
   document.getElementById("invoice-terms-input").value = invoice ? invoice.payment_terms : "due_on_receipt";
@@ -3922,7 +3925,7 @@ function renderQuotesSearchDropdown() {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectQuotesSearchResult(\'' + q.id + '\')">' +
-        '<div style="font-weight:600; font-size:13px;">Quote #' + q.quote_number + ' &middot; ' + q.customer_name + '</div>' +
+        '<div style="font-weight:600; font-size:13px;">Quote #' + q.quote_number + ' &middot; ' + escapeHtml(q.customer_name) + '</div>' +
         '<div style="font-size:11px; color:#8A8578;">' + fmtMoney(q.total) + '</div>' +
       '</div>';
     }).join("");
@@ -3994,7 +3997,7 @@ function renderQuotesList() {
     return '<div class="card invoice-card">' +
       '<div>' +
         '<strong>Quote #' + q.quote_number + '</strong> ' + quoteStatusBadge(q) +
-        '<div style="font-size:13px; margin-top:4px;">' + q.customer_name + '</div>' +
+        '<div style="font-size:13px; margin-top:4px;">' + escapeHtml(q.customer_name) + '</div>' +
         '<div style="font-size:12px; color:#8A8578; margin-top:2px;">' +
           (q.expiration_date ? 'Valid until ' + q.expiration_date.slice(0, 10) : 'No expiration set') +
         '</div>' +
@@ -4112,7 +4115,7 @@ function populateQuoteCatalogPicker() {
   if (!picker) return;
   const items = window.allCatalogItems || [];
   picker.innerHTML = '<option value="">+ Add from catalog...</option>' +
-    items.map(function(item) { return '<option value="' + item.id + '">' + item.name + ' — ' + fmtMoney(item.unit_price) + '</option>'; }).join("");
+    items.map(function(item) { return '<option value="' + item.id + '">' + escapeHtml(item.name) + ' — ' + fmtMoney(item.unit_price) + '</option>'; }).join("");
 }
 
 function addLineItemFromCatalogToQuote() {
@@ -4148,7 +4151,7 @@ async function openQuoteModal(quoteId) {
 
   const customers = window.allCustomers || [];
   document.getElementById("quote-customer-input").innerHTML =
-    customers.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join("");
+    customers.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join("");
   document.getElementById("quote-customer-input").value = quote ? quote.customer_id : (customers[0] ? customers[0].id : "");
 
   document.getElementById("quote-issue-date-input").value = quote ? quote.issue_date.slice(0, 10) : todayStr();
@@ -4696,7 +4699,7 @@ function renderInvoiceBreakdownRows(start, end, mode) {
     const dateLabel = mode === "invoiced" ? (inv.issue_date || "").slice(0, 10) : inv.paid_at.slice(0, 10);
     return '<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer;" ' +
       'onclick="closeReportBreakdownModal(); viewInvoicePdf(\'' + inv.id + '\');">' +
-      '<span>#' + inv.invoice_number + ' &middot; ' + inv.customer_name + ' &middot; ' + dateLabel + '</span>' +
+      '<span>#' + inv.invoice_number + ' &middot; ' + escapeHtml(inv.customer_name) + ' &middot; ' + dateLabel + '</span>' +
       '<span>' + fmtMoney(inv.total) + '</span>' +
     '</div>';
   }).join("");
@@ -4826,7 +4829,7 @@ function renderCatalogSearchDropdown() {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectCatalogSearchResult(\'' + i.id + '\')">' +
-        '<div style="font-weight:600; font-size:13px;">' + i.name + '</div>' +
+        '<div style="font-weight:600; font-size:13px;">' + escapeHtml(i.name) + '</div>' +
         '<div style="font-size:11px; color:#8A8578;">' + fmtMoney(i.unit_price) + '</div>' +
       '</div>';
     }).join("");
@@ -4870,7 +4873,7 @@ function renderCatalogItemsList() {
   }
   list.innerHTML = items.map(function(item) {
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
-      '<div><strong>' + item.name + '</strong><div style="font-size:12px; color:#8A8578;">' + fmtMoney(item.unit_price) + '</div></div>' +
+      '<div><strong>' + escapeHtml(item.name) + '</strong><div style="font-size:12px; color:#8A8578;">' + fmtMoney(item.unit_price) + '</div></div>' +
       '<span style="white-space:nowrap;">' +
         '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCatalogItemModal(\'' + item.id + '\')">Edit</button>' +
         '<button class="save-btn" style="background: #C1502E;" onclick="deleteCatalogItemConfirm(\'' + item.id + '\')">Delete</button>' +
@@ -4884,7 +4887,7 @@ function populateInvoiceCatalogPicker() {
   if (!picker) return;
   const items = window.allCatalogItems || [];
   picker.innerHTML = '<option value="">+ Add from catalog...</option>' +
-    items.map(function(item) { return '<option value="' + item.id + '">' + item.name + ' — ' + fmtMoney(item.unit_price) + '</option>'; }).join("");
+    items.map(function(item) { return '<option value="' + item.id + '">' + escapeHtml(item.name) + ' — ' + fmtMoney(item.unit_price) + '</option>'; }).join("");
 }
 
 function addLineItemFromCatalog() {
@@ -5073,7 +5076,7 @@ async function populateExpenseJobPicker(selectedJobId) {
   }
   picker.innerHTML = '<option value="">— general expense, no job —</option>' +
     jobs.map(function(j) {
-      return '<option value="' + j.id + '">' + j.title + ' (' + j.start_date + ')</option>';
+      return '<option value="' + j.id + '">' + escapeHtml(j.title) + ' (' + j.start_date + ')</option>';
     }).join("");
   picker.value = selectedJobId || "";
 }
@@ -5170,7 +5173,7 @@ function openJobModal(jobId, prefillDateStr, prefillTimeStr) {
   const customers = window.allCustomers || [];
   document.getElementById("job-customer-input").innerHTML =
     '<option value="">— none —</option>' +
-    customers.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join("");
+    customers.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join("");
   document.getElementById("job-customer-input").value = job && job.customer_id ? job.customer_id : "";
 
   document.getElementById("job-notes-input").value = job ? (job.notes || "") : "";
@@ -5194,13 +5197,13 @@ function openJobModal(jobId, prefillDateStr, prefillTimeStr) {
   const crews = window.allCrews || [];
   document.getElementById("job-crews-list").innerHTML = crews.map(function(c) {
     const checked = assignedCrewIds.indexOf(c.id) !== -1 ? "checked" : "";
-    return '<label><input type="checkbox" value="' + c.id + '" ' + checked + ' /> ' + c.name + '</label>';
+    return '<label><input type="checkbox" value="' + c.id + '" ' + checked + ' /> ' + escapeHtml(c.name) + '</label>';
   }).join("") || '<p style="color:#8A8578; font-size:12px;">No teams yet.</p>';
 
   const employees = (window.allEmployees || []).filter(function(e) { return e.active || assignedIds.indexOf(e.id) !== -1; });
   document.getElementById("job-employees-list").innerHTML = employees.map(function(e) {
     const checked = assignedIds.indexOf(e.id) !== -1 ? "checked" : "";
-    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + e.name + '</label>';
+    return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + escapeHtml(e.name) + '</label>';
   }).join("");
 
   document.getElementById("job-modal").classList.add("visible");
@@ -5403,8 +5406,8 @@ async function renderOverviewCalendar() {
       const timePrefix = j.start_time ? formatTimeLabel(j.start_time) + " " : "";
       const tooltip = typeLabel + " — " + j.title + (j.customer_name ? " (" + j.customer_name + ")" : "");
       return '<span class="cal-job-pill" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';" ' +
-        'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
-        'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + j.title + '</span>';
+        'title="' + escapeHtml(tooltip) + '" ' +
+        'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + escapeHtml(j.title) + '</span>';
     }).join("");
     // Every day cell is a fixed height (so weeks don't stretch unevenly),
     // sized to comfortably fit up to 3 events -- a 4th+ collapses into a
@@ -5436,12 +5439,12 @@ function formatDayHeading(dateStr) {
 // One event's full detail card -- same content whether it's shown in the
 // "No specific time" section or slotted into an hour row below.
 function renderDayJobCard(j) {
-  const assigned = j.assigned_employees.map(function(e) { return '<span class="chip">' + e.name + '</span>'; }).join("");
+  const assigned = j.assigned_employees.map(function(e) { return '<span class="chip">' + escapeHtml(e.name) + '</span>'; }).join("");
   return '<div class="card" style="margin-bottom:0;">' +
     '<div style="display:flex; justify-content:space-between; align-items:center;">' +
       '<div>' +
         '<span class="job-color-dot" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';"></span>' +
-        '<strong>' + j.title + '</strong>' +
+        '<strong>' + escapeHtml(j.title) + '</strong>' +
         '<span class="type-badge">' + (EVENT_TYPE_LABELS[j.event_type] || "Job") + '</span>' +
       '</div>' +
       '<span>' +
@@ -5452,12 +5455,12 @@ function renderDayJobCard(j) {
     (j.customer_name ? (function() {
       const jobAddress = formatAddressParts(j.customer_street, j.customer_city, j.customer_state, j.customer_zip);
       return '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' +
-        '<strong>' + j.customer_name + '</strong>' +
-        (j.customer_phone ? ' &middot; <a href="' + telUrl(j.customer_phone) + '" style="color:' + JOB_COLORS.rust + ';">' + j.customer_phone + '</a>' : "") +
-        (jobAddress ? ' &middot; <a href="' + mapsUrl(jobAddress) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + jobAddress + ' (directions)</a>' : "") +
+        '<strong>' + escapeHtml(j.customer_name) + '</strong>' +
+        (j.customer_phone ? ' &middot; <a href="' + escapeHtml(telUrl(j.customer_phone)) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(j.customer_phone) + '</a>' : "") +
+        (jobAddress ? ' &middot; <a href="' + escapeHtml(mapsUrl(jobAddress)) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(jobAddress) + ' (directions)</a>' : "") +
       '</div>';
     })() : '') +
-    (j.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' + j.notes + '</div>' : '') +
+    (j.notes ? '<div style="font-size:12px; color:#8A8578; margin-top:6px;">' + escapeHtml(j.notes) + '</div>' : '') +
     '<div style="margin-top:6px;">' + (assigned || '<span style="color:#8A8578; font-size:12px;">Nobody assigned yet</span>') + '</div>' +
   '</div>';
 }
@@ -5596,8 +5599,8 @@ async function renderScheduleCalendar() {
         const timePrefix = j.start_time ? formatTimeLabel(j.start_time) + " " : "";
         const tooltip = typeLabel + " — " + j.title + (j.customer_name ? " (" + j.customer_name + ")" : "");
         return '<span class="cal-job-pill" style="background:' + (JOB_COLORS[j.color] || JOB_COLORS.rust) + ';" ' +
-          'title="' + tooltip.replace(/"/g, '&quot;') + '" ' +
-          'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + j.title + '</span>';
+          'title="' + escapeHtml(tooltip) + '" ' +
+          'onclick="event.stopPropagation(); openJobModal(\'' + j.id + '\');">' + timePrefix + prefix + escapeHtml(j.title) + '</span>';
       }).join("");
       const more = dayJobs.length > 3 ? '<div class="cal-job-more">+' + (dayJobs.length - 3) + ' more</div>' : '';
       html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + '" onclick="openDayModal(\'' + dateStr + '\')">' +
