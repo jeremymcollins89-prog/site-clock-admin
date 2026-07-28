@@ -1,6 +1,6 @@
 {
   "name": "coll-timeclock-admin",
-  "version": "2.21.58",
+  "version": "2.21.59",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

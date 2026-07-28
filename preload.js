@@ -103,7 +103,7 @@ contextBridge.exposeInMainWorld("admin", {
   reorderRouteStops: (id, stopIds) => apiFetch(`/api/admin/routing/${id}/reorder`, { method: "PATCH", body: { stop_ids: stopIds } }),
   removeRouteStop: (routeId, stopId) => apiFetch(`/api/admin/routing/${routeId}/stops/${stopId}`, { method: "DELETE" }),
   deleteRoute: (id) => apiFetch(`/api/admin/routing/${id}`, { method: "DELETE" }),
-  getEmployeeLocation: (employeeId) => apiFetch(`/api/admin/routing/employee-location/${employeeId}`),
+  getOnClockLocations: () => apiFetch("/api/admin/routing/on-clock-locations"),
 
   listCustomers: () => apiFetch("/api/admin/customers"),
   addCustomer: (customer) => apiFetch("/api/admin/customers", { method: "POST", body: customer }),
