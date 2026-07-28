@@ -100,6 +100,7 @@ contextBridge.exposeInMainWorld("admin", {
   getRoute: (id) => apiFetch(`/api/admin/routing/${id}`),
   buildRoute: (body) => apiFetch("/api/admin/routing", { method: "POST", body }),
   reoptimizeRoute: (id) => apiFetch(`/api/admin/routing/${id}/reoptimize`, { method: "POST" }),
+  sendRoute: (id) => apiFetch(`/api/admin/routing/${id}/send`, { method: "POST" }),
   reorderRouteStops: (id, stopIds) => apiFetch(`/api/admin/routing/${id}/reorder`, { method: "PATCH", body: { stop_ids: stopIds } }),
   removeRouteStop: (routeId, stopId) => apiFetch(`/api/admin/routing/${routeId}/stops/${stopId}`, { method: "DELETE" }),
   deleteRoute: (id) => apiFetch(`/api/admin/routing/${id}`, { method: "DELETE" }),
