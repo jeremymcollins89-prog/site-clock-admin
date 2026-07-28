@@ -107,6 +107,8 @@ contextBridge.exposeInMainWorld("admin", {
   geocodeCandidates: (customerIds) =>
     apiFetch("/api/admin/routing/geocode-candidates", { method: "POST", body: { customer_ids: customerIds } }),
 
+  suggestAddress: (query) => apiFetch(`/api/admin/geocode/suggest?q=${encodeURIComponent(query)}`),
+
   listCustomers: () => apiFetch("/api/admin/customers"),
   addCustomer: (customer) => apiFetch("/api/admin/customers", { method: "POST", body: customer }),
   updateCustomer: (id, patch) => apiFetch(`/api/admin/customers/${id}`, { method: "PATCH", body: patch }),
