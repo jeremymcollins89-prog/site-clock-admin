@@ -92,6 +92,19 @@ contextBridge.exposeInMainWorld("admin", {
   listTimeOffRequests: (status) => apiFetch(`/api/admin/time-off-requests${status ? `?status=${status}` : ""}`),
   reviewTimeOffRequest: (id, status) => apiFetch(`/api/admin/time-off-requests/${id}`, { method: "PATCH", body: { status } }),
 
+  getRoutingCandidates: (params) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/admin/routing/candidates${qs ? `?${qs}` : ""}`);
+  },
+  listRoutes: (date) => apiFetch(`/api/admin/routing${date ? `?date=${date}` : ""}`),
+  getRoute: (id) => apiFetch(`/api/admin/routing/${id}`),
+  buildRoute: (body) => apiFetch("/api/admin/routing", { method: "POST", body }),
+  reoptimizeRoute: (id) => apiFetch(`/api/admin/routing/${id}/reoptimize`, { method: "POST" }),
+  reorderRouteStops: (id, stopIds) => apiFetch(`/api/admin/routing/${id}/reorder`, { method: "PATCH", body: { stop_ids: stopIds } }),
+  removeRouteStop: (routeId, stopId) => apiFetch(`/api/admin/routing/${routeId}/stops/${stopId}`, { method: "DELETE" }),
+  deleteRoute: (id) => apiFetch(`/api/admin/routing/${id}`, { method: "DELETE" }),
+  getEmployeeLocation: (employeeId) => apiFetch(`/api/admin/routing/employee-location/${employeeId}`),
+
   listCustomers: () => apiFetch("/api/admin/customers"),
   addCustomer: (customer) => apiFetch("/api/admin/customers", { method: "POST", body: customer }),
   updateCustomer: (id, patch) => apiFetch(`/api/admin/customers/${id}`, { method: "PATCH", body: patch }),
