@@ -123,8 +123,8 @@ contextBridge.exposeInMainWorld("admin", {
   updateInvoice: (id, patch) => apiFetch(`/api/admin/invoices/${id}`, { method: "PATCH", body: patch }),
   deleteInvoice: (id) => apiFetch(`/api/admin/invoices/${id}`, { method: "DELETE" }),
   sendInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/send`, { method: "POST" }),
-  markInvoicePaid: (id, paymentMethod) =>
-    apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod } }),
+  markInvoicePaid: (id, paymentMethod, checkNumber) =>
+    apiFetch(`/api/admin/invoices/${id}/mark-paid`, { method: "PATCH", body: { payment_method: paymentMethod, check_number: checkNumber } }),
   voidInvoice: (id) => apiFetch(`/api/admin/invoices/${id}/void`, { method: "PATCH" }),
   resendInvoiceReceipt: (id, email) =>
     apiFetch(`/api/admin/invoices/${id}/resend-receipt`, { method: "POST", body: { email: email || "" } }),
