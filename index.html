@@ -598,6 +598,14 @@
       </select>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="job-notes-input" placeholder="Any details the team should know" />
+
+      <div id="job-attachments-section" style="display:none; margin:14px 0;">
+        <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Attachments</label>
+        <div id="job-attachments-list" style="margin-bottom:8px;"></div>
+        <input type="file" id="job-attachment-file-input" style="display:none;" onchange="onJobAttachmentFileSelected(event)" />
+        <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('job-attachment-file-input').click()">+ Add attachment</button>
+      </div>
+
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
           <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Start date</label>
@@ -622,13 +630,6 @@
       <div id="job-crews-list" class="checkbox-list"></div>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
       <div id="job-employees-list" class="checkbox-list"></div>
-
-      <div id="job-attachments-section" style="display:none; margin:14px 0;">
-        <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Attachments</label>
-        <div id="job-attachments-list" style="margin-bottom:8px;"></div>
-        <input type="file" id="job-attachment-file-input" style="display:none;" onchange="onJobAttachmentFileSelected(event)" />
-        <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('job-attachment-file-input').click()">+ Add attachment</button>
-      </div>
 
       <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save event</button>
     </div>
