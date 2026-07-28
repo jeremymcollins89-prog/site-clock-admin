@@ -104,6 +104,8 @@ contextBridge.exposeInMainWorld("admin", {
   removeRouteStop: (routeId, stopId) => apiFetch(`/api/admin/routing/${routeId}/stops/${stopId}`, { method: "DELETE" }),
   deleteRoute: (id) => apiFetch(`/api/admin/routing/${id}`, { method: "DELETE" }),
   getOnClockLocations: () => apiFetch("/api/admin/routing/on-clock-locations"),
+  geocodeCandidates: (customerIds) =>
+    apiFetch("/api/admin/routing/geocode-candidates", { method: "POST", body: { customer_ids: customerIds } }),
 
   listCustomers: () => apiFetch("/api/admin/customers"),
   addCustomer: (customer) => apiFetch("/api/admin/customers", { method: "POST", body: customer }),
