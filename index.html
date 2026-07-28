@@ -622,6 +622,14 @@
       <div id="job-crews-list" class="checkbox-list"></div>
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
       <div id="job-employees-list" class="checkbox-list"></div>
+
+      <div id="job-attachments-section" style="display:none; margin:14px 0;">
+        <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Attachments</label>
+        <div id="job-attachments-list" style="margin-bottom:8px;"></div>
+        <input type="file" id="job-attachment-file-input" style="display:none;" onchange="onJobAttachmentFileSelected(event)" />
+        <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('job-attachment-file-input').click()">+ Add attachment</button>
+      </div>
+
       <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save event</button>
     </div>
   </div>
@@ -725,6 +733,13 @@
         <div class="invoice-totals-row"><span>Subtotal</span><span id="invoice-subtotal-display">$0.00</span></div>
         <div class="invoice-totals-row"><span id="invoice-tax-label-display">Tax</span><span id="invoice-tax-display">$0.00</span></div>
         <div class="invoice-totals-row grand"><span>Total due</span><span id="invoice-total-display">$0.00</span></div>
+      </div>
+
+      <div id="invoice-attachments-section" style="display:none; margin:14px 0;">
+        <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Attachments</label>
+        <div id="invoice-attachments-list" style="margin-bottom:8px;"></div>
+        <input type="file" id="invoice-attachment-file-input" style="display:none;" onchange="onInvoiceAttachmentFileSelected(event)" />
+        <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('invoice-attachment-file-input').click()">+ Add attachment</button>
       </div>
 
       <p id="invoice-save-hint" style="font-size:11px; color:#8A8578; margin:2px 0 0;">Saving emails this invoice to the customer right away, unless they don't have an email on file.</p>
@@ -3889,6 +3904,10 @@ async function openInvoiceModal(invoiceId) {
   document.getElementById("invoice-markpaid-btn").style.display = invoice && invoice.status === "sent" ? "" : "none";
   document.getElementById("invoice-void-btn").style.display = invoice && invoice.status !== "void" && invoice.status !== "paid" ? "" : "none";
 
+  const invoiceAttachmentsSection = document.getElementById("invoice-attachments-section");
+  invoiceAttachmentsSection.style.display = invoiceId ? "" : "none";
+  if (invoiceId) renderAttachmentsList("invoice-attachments-list", "invoice", invoiceId);
+
   document.getElementById("invoice-modal").classList.add("visible");
 }
 
@@ -5427,6 +5446,97 @@ function toggleJobTimeInput() {
   if (noTime) timeInput.value = "";
 }
 
+// ---------- File attachments (shared between Job and Invoice modals) ----------
+// Files live directly in Postgres (see backend/schema-attachments.sql) --
+// admins can attach reference photos, PDFs, contracts, etc. to a specific
+// job or invoice. Only available once the job/invoice actually has a saved
+// id -- there's nothing to attach a file to before that, so both modals
+// hide this section for a brand-new, not-yet-saved record.
+window.attachmentsCache = window.attachmentsCache || {};
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+async function renderAttachmentsList(containerId, entityType, entityId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!entityId) { container.innerHTML = ""; return; }
+  container.innerHTML = '<p style="font-size:12px; color:#8A8578;">Loading...</p>';
+  try {
+    const attachments = await window.admin.listAttachments(entityType, entityId);
+    attachments.forEach(function(a) { window.attachmentsCache[a.id] = a; });
+    if (attachments.length === 0) {
+      container.innerHTML = '<p style="font-size:12px; color:#8A8578;">No attachments yet.</p>';
+      return;
+    }
+    container.innerHTML = attachments.map(function(a) {
+      return '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line);">' +
+        '<span style="font-size:13px; cursor:pointer; text-decoration:underline;" onclick="viewAttachmentFile(\'' + a.id + '\')">' +
+          escapeHtml(a.file_name) +
+        '</span>' +
+        '<span style="display:flex; align-items:center; gap:8px; flex-shrink:0;">' +
+          '<span style="font-size:11px; color:#8A8578;">' + formatFileSize(a.file_size) + '</span>' +
+          '<button class="save-btn" style="width:auto; padding:2px 8px; font-size:11px; color:#B4231F; border-color:#B4231F;" ' +
+            'onclick="deleteAttachmentFile(\'' + a.id + '\', \'' + entityType + '\', \'' + entityId + '\', \'' + containerId + '\')">Remove</button>' +
+        '</span>' +
+      '</div>';
+    }).join("");
+  } catch (err) {
+    container.innerHTML = '<p style="font-size:12px; color:#B4231F;">Couldn\'t load attachments.</p>';
+  }
+}
+
+async function handleAttachmentUpload(event, entityType, entityId, containerId) {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file || !entityId) return;
+  if (file.size > 10 * 1024 * 1024) {
+    alert("That file is over the 10MB limit.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async function() {
+    const base64 = String(reader.result).split(",")[1];
+    try {
+      await window.admin.uploadAttachment(entityType, entityId, file.name, file.type || "application/octet-stream", base64);
+      renderAttachmentsList(containerId, entityType, entityId);
+    } catch (err) {
+      alert(err.message || "Couldn't upload that file.");
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function viewAttachmentFile(id) {
+  const meta = window.attachmentsCache[id];
+  try {
+    await window.admin.viewAttachment(id, meta ? meta.file_name : "attachment");
+  } catch (err) {
+    alert(err.message || "Couldn't open that file.");
+  }
+}
+
+async function deleteAttachmentFile(id, entityType, entityId, containerId) {
+  if (!confirm("Remove this attachment?")) return;
+  try {
+    await window.admin.deleteAttachment(id);
+    renderAttachmentsList(containerId, entityType, entityId);
+  } catch (err) {
+    alert(err.message || "Couldn't remove that file.");
+  }
+}
+
+function onJobAttachmentFileSelected(event) {
+  handleAttachmentUpload(event, "job", editingJobId, "job-attachments-list");
+}
+
+function onInvoiceAttachmentFileSelected(event) {
+  handleAttachmentUpload(event, "invoice", editingInvoiceId, "invoice-attachments-list");
+}
+
 function openJobModal(jobId, prefillDateStr, prefillTimeStr) {
   editingJobId = jobId || null;
   const job = jobId ? (window.lastJobRows || []).find(function(j) { return j.id === jobId; }) : null;
@@ -5471,6 +5581,10 @@ function openJobModal(jobId, prefillDateStr, prefillTimeStr) {
     const checked = assignedIds.indexOf(e.id) !== -1 ? "checked" : "";
     return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + escapeHtml(e.name) + '</label>';
   }).join("");
+
+  const attachmentsSection = document.getElementById("job-attachments-section");
+  attachmentsSection.style.display = jobId ? "" : "none";
+  if (jobId) renderAttachmentsList("job-attachments-list", "job", jobId);
 
   document.getElementById("job-modal").classList.add("visible");
 }

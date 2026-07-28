@@ -154,6 +154,43 @@ contextBridge.exposeInMainWorld("admin", {
     return true;
   },
 
+  // File attachments on jobs and invoices -- list/upload/delete go through
+  // the normal JSON+base64 apiFetch helper (same pattern as the company
+  // logo), but viewing one downloads it to a temp file and opens it in the
+  // OS's default viewer, same trick as viewInvoicePdf/viewQuotePdf below,
+  // since Electron doesn't have a good way to preview an arbitrary file
+  // type (image, PDF, Word doc...) inline.
+  listAttachments: (entityType, entityId) =>
+    apiFetch(`/api/admin/attachments?entity_type=${entityType}&entity_id=${entityId}`),
+  uploadAttachment: (entityType, entityId, fileName, mimeType, base64) =>
+    apiFetch("/api/admin/attachments", {
+      method: "POST",
+      body: { entity_type: entityType, entity_id: entityId, file_name: fileName, mime_type: mimeType, file_base64: base64 },
+    }),
+  deleteAttachment: (id) => apiFetch(`/api/admin/attachments/${id}`, { method: "DELETE" }),
+  viewAttachment: async (id, fileName) => {
+    const token = store.get("token");
+    const res = await fetch(`${API_BASE_URL}/api/admin/attachments/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let message = "Couldn't load that file";
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch (parseErr) {
+        // response wasn't JSON -- keep the generic message
+      }
+      throw new Error(message);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const safeName = (fileName || "attachment").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const tempPath = path.join(os.tmpdir(), `attachment-${id}-${safeName}`);
+    fs.writeFileSync(tempPath, Buffer.from(arrayBuffer));
+    await shell.openPath(tempPath);
+    return true;
+  },
+
   listQuotes: () => apiFetch("/api/admin/quotes"),
   getQuote: (id) => apiFetch(`/api/admin/quotes/${id}`),
   addQuote: (quote) => apiFetch("/api/admin/quotes", { method: "POST", body: quote }),
