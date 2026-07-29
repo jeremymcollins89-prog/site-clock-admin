@@ -52,7 +52,8 @@
     "publish": {
       "provider": "github",
       "owner": "jeremymcollins89-prog",
-      "repo": "site-clock-admin"
+      "repo": "site-clock-admin",
+      "releaseType": "release"
     }
   }
 }
