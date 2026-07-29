@@ -979,6 +979,7 @@
   <main>
 
     <section id="tab-overview" class="tab active">
+      <div id="overview-profit-bubbles" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;"></div>
       <div class="overview-split">
         <div class="overview-cal-col">
           <div class="cal-toolbar">
@@ -1836,7 +1837,30 @@ async function reverseGeocode(lat, lng) {
   }
 }
 
+// Home screen Gross/Net Profit bubbles -- same month-to-date figures as the
+// Reports tab (reuses computeProfits/renderReportStatCard so the numbers and
+// the itemized breakdown modal always agree with Reports), just surfaced
+// here too since profit is the number Jeremy checks most often.
+async function loadOverviewProfitBubbles() {
+  const el = document.getElementById("overview-profit-bubbles");
+  if (!el) return;
+  try {
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const start = toDateStr(monthStart), end = toDateStr(today);
+    const data = await window.admin.getReportSummary(start, end);
+    const profits = computeProfits(data);
+    el.innerHTML =
+      renderReportStatCard("Gross Profit (this month)", fmtMoney(profits.grossProfit), null, null, reportBubbleOnclick("gross", start, end)) +
+      renderReportStatCard("Net Profit (this month)", fmtMoney(profits.netProfit), null, null, reportBubbleOnclick("net", start, end));
+  } catch (err) {
+    // non-fatal -- just leave the bubbles empty rather than breaking Overview
+    el.innerHTML = "";
+  }
+}
+
 async function loadOverview() {
+  loadOverviewProfitBubbles();
   const data = await window.admin.getOverview();
   const activeOnly = data.employees.filter(function(e) { return e.active; });
   const list = document.getElementById("overview-list");
