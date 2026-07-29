@@ -70,6 +70,10 @@ contextBridge.exposeInMainWorld("admin", {
   updateLongShiftAlert: (hours) =>
     apiFetch("/api/admin/long-shift-alert", { method: "PATCH", body: { long_shift_alert_hours: hours } }),
 
+  getShowProfitBubbles: () => apiFetch("/api/admin/show-profit-bubbles"),
+  updateShowProfitBubbles: (show) =>
+    apiFetch("/api/admin/show-profit-bubbles", { method: "PATCH", body: { show_profit_bubbles: show } }),
+
   getCompanyName: () => apiFetch("/api/admin/company-name"),
   updateCompanyName: (name) => apiFetch("/api/admin/company-name", { method: "PATCH", body: { name } }),
 
