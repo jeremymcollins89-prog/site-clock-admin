@@ -1028,7 +1028,7 @@
     <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
     <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
     <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Billing</button>
-    <button class="tab-btn" data-tab="inventory" onclick="showTab('inventory')">Inventory</button>
+    <button class="tab-btn" data-tab="inventory" onclick="showTab('inventory')">Inventory<span id="pull-sheets-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Reports</button>
     <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">Chat<span id="chat-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
@@ -1881,9 +1881,11 @@ function showApp() {
   loadTimeOffRequests();
   loadChatThreads();
   loadTeamChatThreads();
+  loadPullSheets();
   setInterval(loadOverview, 60000);
   setInterval(loadChatThreads, 15000);
   setInterval(loadTeamChatThreads, 15000);
+  setInterval(loadPullSheets, 15000);
   if (window.Notification && Notification.permission === "default") {
     Notification.requestPermission();
   }
@@ -5690,11 +5692,28 @@ async function buildPullSheetForSource(sourceType, sourceId) {
   await selectPullSheetSource(sourceType, sourceId);
 }
 
+// Badge on the top Inventory nav tab -- counts pull sheets an employee has
+// marked "pulled" and are waiting on a review/fulfill from you. Not shown
+// for plain "open" ones (nothing to review yet) or "fulfilled" ones
+// (already handled). Mirrors the chat unread badge's look/behavior.
+function updatePullSheetsNavBadge(sheets) {
+  const badge = document.getElementById("pull-sheets-nav-badge");
+  if (!badge) return;
+  const count = sheets.filter(function(s) { return s.status === "pulled"; }).length;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+}
+
 async function loadPullSheets() {
   const body = document.getElementById("pull-sheets-list-body");
   if (!body) return;
   try {
     const sheets = await window.admin.listPullSheets();
+    updatePullSheetsNavBadge(sheets);
     if (sheets.length === 0) {
       body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#8A8578; padding:16px;">No pull sheets built yet.</td></tr>';
       return;
