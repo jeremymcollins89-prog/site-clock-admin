@@ -17,7 +17,16 @@ async function apiFetch(path, { method = "GET", body } = {}) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (parseErr) {
+    // The server returned something that isn't JSON at all -- a plain
+    // 404/502 error page rather than our API actually responding. Surfacing
+    // the raw parse error ("Unexpected token < in JSON") is meaningless, so
+    // give a message that points at the real, actionable cause instead.
+    throw new Error(`The server didn't respond as expected (status ${res.status}). If you just deployed an update, give it a minute and try again.`);
+  }
   if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
 }
@@ -240,6 +249,38 @@ contextBridge.exposeInMainWorld("admin", {
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
   getInventory: () => apiFetch("/api/admin/inventory"),
+  getCatalogItemHolds: (id) => apiFetch(`/api/admin/catalog-items/${id}/holds`),
+  getPullSheetSources: () => apiFetch("/api/admin/pull-sheets/sources"),
+  listPullSheets: () => apiFetch("/api/admin/pull-sheets"),
+  getPullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}`),
+  buildPullSheet: (sourceType, sourceId) =>
+    apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: sourceType, source_id: sourceId } }),
+  buildManualPullSheet: (items, label) =>
+    apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: "manual", items, label } }),
+  fulfillPullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}/fulfill`, { method: "PATCH" }),
+  deletePullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}`, { method: "DELETE" }),
+  // Same temp-file-then-open pattern as viewInvoicePdf/viewQuotePdf.
+  viewPullSheetPdf: async (id) => {
+    const token = store.get("token");
+    const res = await fetch(`${API_BASE_URL}/api/admin/pull-sheets/${id}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let message = "Couldn't load pull sheet PDF";
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch (parseErr) {
+        // response wasn't JSON -- keep the generic message
+      }
+      throw new Error(message);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const tempPath = path.join(os.tmpdir(), `pull-sheet-${id}.pdf`);
+    fs.writeFileSync(tempPath, Buffer.from(arrayBuffer));
+    await shell.openPath(tempPath);
+    return true;
+  },
   deleteCatalogItem: (id) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "DELETE" }),
   importCatalogItems: (items) => apiFetch("/api/admin/catalog-items/import", { method: "POST", body: { items } }),
 

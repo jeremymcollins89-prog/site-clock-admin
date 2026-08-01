@@ -747,6 +747,7 @@
       <div id="invoice-modal-actions" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn-primary" id="invoice-save-btn" style="width:auto;" onclick="submitInvoice()">Save &amp; send to customer</button>
         <button class="save-btn" id="invoice-viewpdf-btn" style="display:none;" onclick="viewInvoicePdf(editingInvoiceId)">View PDF</button>
+        <button class="save-btn" id="invoice-pullsheet-btn" style="display:none; background: var(--teal-deep);" onclick="buildPullSheetForSource('invoice', editingInvoiceId)">Build Pull Sheet</button>
         <button class="save-btn" id="invoice-send-btn" style="display:none;" onclick="sendInvoiceConfirm()">Send to customer</button>
         <button class="save-btn" id="invoice-markpaid-btn" style="display:none; background: var(--charcoal);" onclick="openMarkPaidModal()">Mark paid</button>
         <button class="save-btn" id="invoice-void-btn" style="display:none; background: #C1502E;" onclick="voidInvoiceConfirm()">Void</button>
@@ -764,6 +765,60 @@
       <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">Default unit price</label>
       <input id="catalog-item-price-input" type="number" min="0" step="0.01" placeholder="0.00" />
       <button class="btn-primary" style="width:auto;" onclick="submitCatalogItem()">Save item</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="item-holds-modal" onclick="if(event.target===this) closeItemHoldsModal();">
+    <div class="modal-box" style="width:420px; max-height:80vh; overflow-y:auto;">
+      <button class="modal-close" onclick="closeItemHoldsModal()">&times;</button>
+      <h2 id="item-holds-modal-title" style="margin-top:0;">On hold</h2>
+      <div id="item-holds-modal-error" class="error" style="display:none;"></div>
+      <div id="item-holds-list"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="pull-sheet-modal" onclick="if(event.target===this) closePullSheetModal();">
+    <div class="modal-box" style="width:460px; max-height:80vh; overflow-y:auto;">
+      <button class="modal-close" onclick="closePullSheetModal()">&times;</button>
+      <h2 id="pull-sheet-modal-title" style="margin-top:0;">Build pull sheet</h2>
+      <div id="pull-sheet-modal-error" class="error" style="display:none;"></div>
+
+      <div id="pull-sheet-picker-step">
+        <button class="btn-secondary" style="width:auto; margin-bottom:12px;" onclick="openManualPullSheetStep()">Start a blank pull sheet</button>
+        <p style="font-size:12px; color:#8A8578;">Or choose the quote or invoice this pull sheet is for. Only jobs with inventory-tracked items still left to pull are listed.</p>
+        <div id="pull-sheet-source-list"></div>
+      </div>
+
+      <div id="pull-sheet-manual-step" style="display:none;">
+        <label style="font-size:12px; color:#8A8578; display:block; margin-bottom:4px;">What's this for? (optional)</label>
+        <input id="pull-sheet-manual-label" placeholder="e.g. Restocking the van" style="margin-bottom:10px;" />
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <select id="pull-sheet-manual-item-picker" style="flex:1;"></select>
+          <input id="pull-sheet-manual-qty-input" type="number" min="1" step="1" placeholder="Qty" style="width:80px;" />
+          <button class="btn-secondary" style="width:auto; white-space:nowrap;" onclick="addManualPullSheetItem()">Add</button>
+        </div>
+        <table>
+          <thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
+          <tbody id="pull-sheet-manual-items-body"></tbody>
+        </table>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-secondary" style="width:auto;" onclick="backToPullSheetPicker()">Back</button>
+          <button class="btn-primary" style="width:auto;" onclick="submitManualPullSheet()">Create pull sheet</button>
+        </div>
+      </div>
+
+      <div id="pull-sheet-detail-step" style="display:none;">
+        <div id="pull-sheet-detail-header" style="margin-bottom:10px; font-size:13px; color:#8A8578;"></div>
+        <table>
+          <thead><tr><th>Item</th><th>Requested</th><th>Pulled</th></tr></thead>
+          <tbody id="pull-sheet-detail-items"></tbody>
+        </table>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-secondary" style="width:auto;" onclick="viewPullSheetPdf(currentPullSheetId)">Print / PDF</button>
+          <button class="save-btn" id="pull-sheet-cancel-btn" style="background:#C1502E;" onclick="cancelPullSheetFromModal()">Cancel pull sheet</button>
+          <button class="btn-primary" id="pull-sheet-fulfill-btn" style="width:auto;" onclick="fulfillPullSheetFromModal()">Mark fulfilled</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -894,6 +949,7 @@
       <div id="quote-modal-actions" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn-primary" id="quote-save-btn" style="width:auto;" onclick="submitQuote()">Save draft</button>
         <button class="save-btn" id="quote-viewpdf-btn" style="display:none;" onclick="viewQuotePdf(editingQuoteId)">View PDF</button>
+        <button class="save-btn" id="quote-pullsheet-btn" style="display:none; background: var(--teal-deep);" onclick="buildPullSheetForSource('quote', editingQuoteId)">Build Pull Sheet</button>
         <button class="save-btn" id="quote-send-btn" style="display:none;" onclick="sendQuoteConfirm()">Send to customer</button>
         <button class="save-btn" id="quote-accept-btn" style="display:none; background: var(--charcoal);" onclick="markQuoteAcceptedConfirm()">Mark accepted</button>
         <button class="save-btn" id="quote-decline-btn" style="display:none; background: #C1502E;" onclick="markQuoteDeclinedConfirm()">Mark declined</button>
@@ -1130,7 +1186,6 @@
     <section id="tab-invoices" class="tab">
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
         <button class="billing-subtab-btn active" data-billing-subtab="overview" onclick="showBillingSubtab('overview')">Overview</button>
-        <button class="billing-subtab-btn" data-billing-subtab="catalog" onclick="showBillingSubtab('catalog')">Catalog</button>
         <button class="billing-subtab-btn" data-billing-subtab="quotes" onclick="showBillingSubtab('quotes')">Quotes</button>
         <button class="billing-subtab-btn" data-billing-subtab="invoices" onclick="showBillingSubtab('invoices')">Invoices</button>
         <button class="billing-subtab-btn" data-billing-subtab="transactions" onclick="showBillingSubtab('transactions')">Transactions</button>
@@ -1164,14 +1219,6 @@
           <div id="billing-overview-payment-breakdown"></div>
         </div>
 
-        <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('catalog')">
-          <div>
-            <h3 style="margin:0;">Catalog</h3>
-            <p style="font-size:12px; color:#8A8578; margin:4px 0 0;" id="billing-overview-catalog-summary">Reusable line items for quotes and invoices.</p>
-          </div>
-          <span style="color:#8A8578; font-size:22px;">&#8250;</span>
-        </div>
-
         <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('quotes')">
           <div>
             <h3 style="margin:0;">Quotes</h3>
@@ -1186,31 +1233,6 @@
             <p style="font-size:12px; color:#8A8578; margin:4px 0 0;" id="billing-overview-invoices-summary">Billed work, emailed to the customer once sent.</p>
           </div>
           <span style="color:#8A8578; font-size:22px;">&#8250;</span>
-        </div>
-      </div>
-
-      <div id="billing-subtab-catalog" class="billing-subtab-panel" style="display:none;">
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-            <h3 style="margin:0;">Catalog <span id="catalog-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
-            <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
-              <input id="catalog-search-input" type="text" placeholder="Search catalog items..." autocomplete="off"
-                oninput="onCatalogSearchInput()" onfocus="onCatalogSearchInput()" style="width:100%;" />
-              <div id="catalog-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
-            </div>
-            <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('catalog-import-input').click()">Import Catalog</button>
-            <button class="btn-primary" style="width:auto;" onclick="openCatalogItemModal()">New item</button>
-          </div>
-          <input type="file" id="catalog-import-input" accept=".xlsx,.xls,.csv,text/csv" style="display:none;" onchange="handleCatalogImportFile(event)" />
-          <div style="margin-top:10px;">
-            <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
-            <p style="font-size:11px; color:#8A8578; margin-top:-6px;">
-              Import an Excel (.xlsx) or CSV file with a Name column. Unit Price, Quantity (on hand), and Unit Cost columns are
-              all optional -- if a row has a Quantity or Cost, inventory tracking turns on for that item automatically. Rows
-              matching an existing item's name are skipped.
-            </p>
-            <div id="catalog-items-list"></div>
-          </div>
         </div>
       </div>
 
@@ -1302,9 +1324,16 @@
     </section>
 
     <section id="tab-inventory" class="tab">
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-        <button class="billing-subtab-btn active" data-inventory-subtab="items" onclick="showInventorySubtab('items')">Items</button>
-        <button class="billing-subtab-btn" data-inventory-subtab="settings" onclick="showInventorySubtab('settings')">Settings</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; justify-content:space-between; align-items:center;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="billing-subtab-btn active" data-inventory-subtab="items" onclick="showInventorySubtab('items')">Items</button>
+          <button class="billing-subtab-btn" data-inventory-subtab="catalog" onclick="showInventorySubtab('catalog')">Catalog</button>
+          <button class="billing-subtab-btn" data-inventory-subtab="settings" onclick="showInventorySubtab('settings')">Settings</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-secondary" style="width:auto; font-size:11px; padding:3px 12px; border-radius:999px;" onclick="openBuildPullSheetModal()">Build Pull Sheet</button>
+          <button class="btn-secondary" style="width:auto; font-size:11px; padding:3px 12px; border-radius:999px;" onclick="goToNewCatalogItem()">+ New item</button>
+        </div>
       </div>
 
       <div id="inventory-subtab-items">
@@ -1320,6 +1349,46 @@
             <thead><tr><th>Item</th><th>Available</th><th>On hold</th><th>Unit cost</th><th>Total value</th></tr></thead>
             <tbody id="inventory-items-body"></tbody>
           </table>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3 style="margin-top:0;">Pull sheets</h3>
+          <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
+            Picking lists built from a quote or invoice's inventory-tracked items. Marking one fulfilled removes those
+            quantities from stock -- building one on its own doesn't change any numbers yet.
+          </p>
+          <table>
+            <thead><tr><th>Job</th><th>Customer</th><th>Items</th><th>Status</th><th>Built</th><th></th></tr></thead>
+            <tbody id="pull-sheets-list-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="inventory-subtab-catalog" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Catalog <span id="catalog-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
+            <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
+              <input id="catalog-search-input" type="text" placeholder="Search catalog items..." autocomplete="off"
+                oninput="onCatalogSearchInput()" onfocus="onCatalogSearchInput()" style="width:100%;" />
+              <div id="catalog-search-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:260px; overflow-y:auto;"></div>
+            </div>
+            <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('catalog-import-input').click()">Import Catalog</button>
+            <button class="btn-primary" style="width:auto;" onclick="openCatalogItemModal()">New item</button>
+          </div>
+          <input type="file" id="catalog-import-input" accept=".xlsx,.xls,.csv,text/csv" style="display:none;" onchange="handleCatalogImportFile(event)" />
+          <div style="margin-top:10px;">
+            <p style="font-size:12px; color:#8A8578;">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
+            <p style="font-size:11px; color:#8A8578; margin-top:-6px;">
+              Import an Excel (.xlsx) or CSV file with a Name column. Unit Price, Quantity (on hand), and Unit Cost columns are
+              all optional -- if a row has a Quantity or Cost, inventory tracking turns on for that item automatically. Rows
+              matching an existing item's name are skipped.
+            </p>
+            <button class="btn-secondary" id="catalog-list-toggle-btn" style="width:auto; font-size:12px; padding:4px 12px; margin-top:4px;" onclick="toggleCatalogItemsList()">Show catalog items</button>
+            <div id="catalog-items-list-wrapper" style="display:none; margin-top:10px;">
+              <div id="catalog-items-list"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1824,7 +1893,7 @@ function showTab(name) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
   if (name === "settings") refreshStripeConnectCard();
-  if (name === "inventory") loadInventory();
+  if (name === "inventory") { loadInventory(); loadPullSheets(); }
 }
 
 function fmtDuration(seconds) {
@@ -3517,8 +3586,9 @@ function closeCustomerHistoryModal() {
 }
 
 // ---------- Billing overview ----------
-// The Billing tab opens on this summary page, with Catalog/Quotes/Invoices
-// available as sub-tabs (rather than three stacked, always-visible cards).
+// The Billing tab opens on this summary page, with Quotes/Invoices/etc
+// available as sub-tabs (rather than always-visible cards). Catalog used to
+// live here too, but now lives under Inventory instead.
 // Switches which sub-tab panel is shown and re-renders the overview stats
 // whenever the person lands back on Overview.
 function showBillingSubtab(name) {
@@ -3575,7 +3645,6 @@ function startStripeConnect() {
 function renderBillingOverview() {
   const invoices = window.allInvoices || [];
   const quotes = window.allQuotes || [];
-  const catalogItems = window.allCatalogItems || [];
 
   const paidInvoices = invoices.filter(function(inv) { return inv.status === "paid"; });
   const unpaidInvoices = invoices.filter(function(inv) { return inv.status === "draft" || inv.status === "sent"; });
@@ -3596,8 +3665,6 @@ function renderBillingOverview() {
   billingOverviewSetText("billing-overview-pending-count",
     (pendingQuotes.length === 1 ? "1 quote" : pendingQuotes.length + " quotes") + " awaiting a decision");
 
-  billingOverviewSetText("billing-overview-catalog-summary",
-    catalogItems.length ? (catalogItems.length === 1 ? "1 item" : catalogItems.length + " items") + " ready to drop into a quote or invoice." : "No items yet -- add reusable charges here.");
   billingOverviewSetText("billing-overview-quotes-summary",
     quotes.length ? quotes.length + " total, " + pendingQuotes.length + " pending" : "No quotes yet.");
   billingOverviewSetText("billing-overview-invoices-summary",
@@ -4018,6 +4085,7 @@ async function openInvoiceModal(invoiceId) {
   document.getElementById("invoice-save-btn").style.display = isDraft ? "" : "none";
   document.getElementById("invoice-save-hint").style.display = isDraft ? "" : "none";
   document.getElementById("invoice-viewpdf-btn").style.display = invoice ? "" : "none";
+  document.getElementById("invoice-pullsheet-btn").style.display = invoice && invoice.status !== "void" ? "" : "none";
   document.getElementById("invoice-send-btn").style.display = invoice && invoice.status !== "void" ? "" : "none";
   document.getElementById("invoice-send-btn").textContent = invoice && invoice.status !== "draft" ? "Resend to customer" : "Send to customer";
   document.getElementById("invoice-markpaid-btn").style.display = invoice && invoice.status === "sent" ? "" : "none";
@@ -4234,6 +4302,7 @@ let convertingQuoteToJobId = null;
 let convertingQuoteToInvoiceId = null;
 
 function quoteStatusBadge(q) {
+  if (q.status === "void") return '<span class="badge badge-void">Void</span>';
   if (q.status === "accepted") return '<span class="badge badge-accepted">Accepted</span>';
   if (q.status === "declined") return '<span class="badge badge-declined">Declined</span>';
   if (q.status === "sent" && q.is_expired) return '<span class="badge badge-overdue">Expired</span>';
@@ -4331,7 +4400,7 @@ function renderQuotesList() {
     }
     // Converting is allowed from any status except declined (and only once --
     // no point invoicing a quote that's already been turned into an invoice).
-    if (q.status !== "declined" && !q.converted_invoice_id) {
+    if (q.status !== "declined" && q.status !== "void" && !q.converted_invoice_id) {
       actions.push('<button class="save-btn" style="background: var(--teal-deep); margin-right:6px;" onclick="openConvertQuoteToInvoiceModal(\'' + q.id + '\')">Convert to invoice</button>');
     }
     if (q.status === "draft") {
@@ -4549,6 +4618,7 @@ async function openQuoteModal(quoteId) {
   // "& send" label.
   document.getElementById("quote-save-btn").textContent = !quote ? "Save & send" : (isDraft ? "Save draft" : "Save changes");
   document.getElementById("quote-viewpdf-btn").style.display = quote ? "" : "none";
+  document.getElementById("quote-pullsheet-btn").style.display = quote && quote.status !== "declined" && quote.status !== "void" ? "" : "none";
   document.getElementById("quote-send-btn").style.display = quote && isEditable ? "" : "none";
   document.getElementById("quote-send-btn").textContent = quote && quote.status === "sent" ? "Resend to customer" : "Send to customer";
   document.getElementById("quote-accept-btn").style.display = quote && ["draft", "sent"].includes(quote.status) ? "" : "none";
@@ -5212,11 +5282,32 @@ function renderNetProfitBreakdown(summary, breakdown, start, end) {
 window.allCatalogItems = [];
 let editingCatalogItemId = null;
 
+// The full item list is collapsed behind a toggle by default -- with
+// potentially hundreds of catalog items (see the inventory bulk import),
+// showing every one of them as soon as you land on the Catalog sub-tab made
+// it unusable. The quick search dropdown above still works either way for
+// jumping straight to one item; this only affects the full always-there list.
+let catalogListExpanded = false;
+
+function applyCatalogListExpandedState() {
+  const wrapper = document.getElementById("catalog-items-list-wrapper");
+  const btn = document.getElementById("catalog-list-toggle-btn");
+  if (!wrapper || !btn) return;
+  wrapper.style.display = catalogListExpanded ? "" : "none";
+  btn.textContent = catalogListExpanded ? "Hide catalog items" : "Show catalog items";
+}
+
+function toggleCatalogItemsList() {
+  catalogListExpanded = !catalogListExpanded;
+  applyCatalogListExpandedState();
+}
+
 async function loadCatalogItems() {
   window.allCatalogItems = await window.admin.listCatalogItems();
   const badge = document.getElementById("catalog-count-badge");
   if (badge) badge.textContent = window.allCatalogItems.length ? "(" + window.allCatalogItems.length + ")" : "";
   renderCatalogItemsList();
+  applyCatalogListExpandedState();
   populateInvoiceCatalogPicker();
   populateQuoteCatalogPicker();
   renderBillingOverview();
@@ -5225,8 +5316,15 @@ async function loadCatalogItems() {
 // Typing (or just clicking into) the search box drops down a quick list of
 // matching catalog items right there in the header, without needing to
 // expand the full section first. Clicking a result opens it for editing.
+// Typing an actual search term also auto-expands the full list below so its
+// (now filtered) rows are visible too, without an extra click.
 function onCatalogSearchInput() {
   renderCatalogSearchDropdown();
+  const searchInput = document.getElementById("catalog-search-input");
+  if (searchInput && searchInput.value.trim() && !catalogListExpanded) {
+    catalogListExpanded = true;
+    applyCatalogListExpandedState();
+  }
   renderCatalogItemsList();
 }
 
@@ -5351,7 +5449,7 @@ async function submitCatalogItem() {
     }
     closeCatalogItemModal();
     await loadCatalogItems();
-    showBillingSubtab("catalog");
+    showInventorySubtab("catalog");
   } catch (err) {
     errEl.textContent = err.message || "Couldn't save catalog item.";
     errEl.style.display = "block";
@@ -5370,11 +5468,19 @@ async function deleteCatalogItemConfirm(id) {
 // there's no separate item list to keep in sync. Items view shows only
 // tracked items; Settings view lists every catalog item so tracking can be
 // turned on for a new one.
+// Switches to the Catalog sub-tab (right here in Inventory) and opens the
+// new-item form directly.
+function goToNewCatalogItem() {
+  showInventorySubtab("catalog");
+  openCatalogItemModal();
+}
+
 function showInventorySubtab(name) {
   document.querySelectorAll("[data-inventory-subtab]").forEach(function(b) {
     b.classList.toggle("active", b.dataset.inventorySubtab === name);
   });
   document.getElementById("inventory-subtab-items").style.display = name === "items" ? "" : "none";
+  document.getElementById("inventory-subtab-catalog").style.display = name === "catalog" ? "" : "none";
   document.getElementById("inventory-subtab-settings").style.display = name === "settings" ? "" : "none";
   if (name === "settings") renderInventorySettingsList();
 }
@@ -5388,6 +5494,7 @@ async function loadInventory() {
       renderReportStatCard("Total inventory value", fmtMoney(data.total_value)) +
       renderReportStatCard("Total on hold", fmtMoney(data.total_on_hold_value));
 
+    window.lastInventoryItems = data.items;
     if (data.items.length === 0) {
       bodyEl.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#8A8578; padding:16px;">' +
         'No items are tracked yet -- turn on tracking for a catalog item in the Settings tab above.</td></tr>';
@@ -5395,16 +5502,76 @@ async function loadInventory() {
     }
     bodyEl.innerHTML = data.items.map(function(item) {
       const totalValue = Number(item.quantity_on_hand) * Number(item.unit_cost || 0);
+      const onHoldCell = Number(item.quantity_on_hold) > 0
+        ? '<button style="background:none; border:none; padding:0; color:var(--rust); text-decoration:underline; cursor:pointer; font:inherit;" onclick="showItemHolds(\'' + item.id + '\')">' + item.quantity_on_hold + '</button>'
+        : item.quantity_on_hold;
       return '<tr>' +
         '<td>' + escapeHtml(item.name) + '</td>' +
         '<td>' + item.quantity_available + '</td>' +
-        '<td>' + item.quantity_on_hold + '</td>' +
+        '<td>' + onHoldCell + '</td>' +
         '<td>' + fmtMoney(item.unit_cost || 0) + '</td>' +
         '<td>' + fmtMoney(totalValue) + '</td>' +
       '</tr>';
     }).join("");
   } catch (err) {
     bodyEl.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#8A8578; padding:16px;">Couldn\'t load inventory.</td></tr>';
+  }
+}
+
+// Clicking an "on hold" count opens this -- lists every quote/invoice
+// currently responsible for that reservation (see GET
+// /api/admin/catalog-items/:id/holds), each clickable to jump straight to
+// it. Item name comes from window.lastInventoryItems (set by loadInventory
+// above) rather than being passed through the onclick string, so item names
+// with apostrophes/quotes in them can't break the button's markup.
+async function showItemHolds(itemId) {
+  const item = (window.lastInventoryItems || []).find(function(i) { return i.id === itemId; });
+  document.getElementById("item-holds-modal-title").textContent = (item ? item.name + " -- " : "") + "On hold";
+  document.getElementById("item-holds-modal-error").style.display = "none";
+  document.getElementById("item-holds-list").innerHTML = '<p style="font-size:13px; color:#8A8578;">Loading...</p>';
+  document.getElementById("item-holds-modal").classList.add("visible");
+  try {
+    const holds = await window.admin.getCatalogItemHolds(itemId);
+    renderItemHoldsList(holds);
+  } catch (err) {
+    document.getElementById("item-holds-list").innerHTML = "";
+    const errEl = document.getElementById("item-holds-modal-error");
+    errEl.textContent = err.message || "Couldn't load what's holding this item.";
+    errEl.style.display = "block";
+  }
+}
+
+function closeItemHoldsModal() {
+  document.getElementById("item-holds-modal").classList.remove("visible");
+}
+
+function renderItemHoldsList(holds) {
+  const list = document.getElementById("item-holds-list");
+  if (holds.length === 0) {
+    list.innerHTML = '<p style="font-size:13px; color:#8A8578;">Nothing is currently holding this item.</p>';
+    return;
+  }
+  list.innerHTML = holds.map(function(h) {
+    const label = (h.source_type === "invoice" ? "Invoice #" : "Quote #") + h.number;
+    return '<div class="card" style="margin-bottom:8px; cursor:pointer;" onclick="openItemHoldSource(\'' + h.source_type + '\', \'' + h.id + '\')">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
+        '<strong>' + escapeHtml(label) + '</strong>' +
+        '<span style="font-size:12px; color:#8A8578;">' + h.quantity + ' held</span>' +
+      '</div>' +
+      '<div style="font-size:12px; color:#8A8578;">' + escapeHtml(h.customer_name || "") + '</div>' +
+    '</div>';
+  }).join("");
+}
+
+function openItemHoldSource(sourceType, id) {
+  closeItemHoldsModal();
+  showTab("invoices");
+  if (sourceType === "invoice") {
+    showBillingSubtab("invoices");
+    openInvoiceModal(id);
+  } else {
+    showBillingSubtab("quotes");
+    openQuoteModal(id);
   }
 }
 
@@ -5416,7 +5583,7 @@ function renderInventorySettingsList() {
   const list = document.getElementById("inventory-settings-list");
   const items = window.allCatalogItems || [];
   if (items.length === 0) {
-    list.innerHTML = '<p style="font-size:13px; color:#8A8578;">No catalog items yet -- add one in Billing &rarr; Catalog first.</p>';
+    list.innerHTML = '<p style="font-size:13px; color:#8A8578;">No catalog items yet -- add one in the Catalog tab above first.</p>';
     return;
   }
   list.innerHTML = items.map(function(item) {
@@ -5473,6 +5640,296 @@ async function saveInventorySettingsRow(itemId) {
     errEl.textContent = err.message || "Couldn't save this item's inventory settings.";
     errEl.style.display = "block";
   }
+}
+
+// ---------- Pull sheets ----------
+// A picking list built from a specific quote or invoice's inventory-tracked
+// line items. Building one is just a snapshot (window.admin.buildPullSheet)
+// -- no stock numbers change until it's marked fulfilled, which is the one
+// action that actually removes those quantities from stock.
+let currentPullSheetId = null;
+let manualPullSheetItems = [];
+
+// Opens the modal straight to the detail step for one specific quote/invoice
+// -- used by the Build Pull Sheet button on the quote/invoice modal itself,
+// so building one for the job you're already looking at doesn't require
+// going to the Inventory tab and picking it back out of a list.
+async function buildPullSheetForSource(sourceType, sourceId) {
+  if (!sourceId) return;
+  currentPullSheetId = null;
+  document.getElementById("pull-sheet-modal-title").textContent = "Build pull sheet";
+  document.getElementById("pull-sheet-modal-error").style.display = "none";
+  document.getElementById("pull-sheet-picker-step").style.display = "none";
+  document.getElementById("pull-sheet-manual-step").style.display = "none";
+  document.getElementById("pull-sheet-detail-step").style.display = "none";
+  document.getElementById("pull-sheet-modal").classList.add("visible");
+  await selectPullSheetSource(sourceType, sourceId);
+}
+
+async function loadPullSheets() {
+  const body = document.getElementById("pull-sheets-list-body");
+  if (!body) return;
+  try {
+    const sheets = await window.admin.listPullSheets();
+    if (sheets.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#8A8578; padding:16px;">No pull sheets built yet.</td></tr>';
+      return;
+    }
+    body.innerHTML = sheets.map(function(s) {
+      const statusBadge = s.status === "fulfilled"
+        ? '<span style="color: var(--teal); font-weight:600;">Fulfilled</span>'
+        : s.status === "pulled"
+        ? '<span style="color: var(--amber-deep); font-weight:600;">Reported</span>'
+        : '<span style="color:#8A8578;">Open</span>';
+      const actions = '<button class="save-btn" style="background: var(--teal-deep); margin-right:6px;" onclick="viewPullSheetPdf(\'' + s.id + '\')">Print</button>' +
+        (s.status !== "fulfilled"
+          ? '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="fulfillPullSheetFromList(\'' + s.id + '\')">Fulfill</button>' +
+            '<button class="save-btn" style="background: #C1502E;" onclick="deletePullSheetConfirm(\'' + s.id + '\')">Delete</button>'
+          : '');
+      return '<tr>' +
+        '<td>' + escapeHtml(s.source_label || "") + '</td>' +
+        '<td>' + escapeHtml(s.customer_name || "") + '</td>' +
+        '<td>' + s.item_count + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td>' + fmtDateTime(s.created_at) + '</td>' +
+        '<td style="white-space:nowrap;">' + actions + '</td>' +
+      '</tr>';
+    }).join("");
+  } catch (err) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#8A8578; padding:16px;">Couldn\'t load pull sheets.</td></tr>';
+  }
+}
+
+async function openBuildPullSheetModal() {
+  currentPullSheetId = null;
+  document.getElementById("pull-sheet-modal-title").textContent = "Build pull sheet";
+  document.getElementById("pull-sheet-modal-error").style.display = "none";
+  document.getElementById("pull-sheet-picker-step").style.display = "";
+  document.getElementById("pull-sheet-manual-step").style.display = "none";
+  document.getElementById("pull-sheet-detail-step").style.display = "none";
+  document.getElementById("pull-sheet-modal").classList.add("visible");
+  await renderPullSheetSourceList();
+}
+
+async function renderPullSheetSourceList() {
+  const list = document.getElementById("pull-sheet-source-list");
+  list.innerHTML = '<p style="font-size:12px; color:#8A8578;">Loading...</p>';
+  try {
+    const sources = await window.admin.getPullSheetSources();
+    const rows = [].concat(
+      sources.quotes.map(function(q) { return { source_type: "quote", id: q.id, label: "Quote #" + q.number, customer_name: q.customer_name }; }),
+      sources.invoices.map(function(i) { return { source_type: "invoice", id: i.id, label: "Invoice #" + i.number, customer_name: i.customer_name }; })
+    );
+    if (rows.length === 0) {
+      list.innerHTML = '<p style="font-size:12px; color:#8A8578;">No open quotes or invoices have inventory-tracked items left to pull.</p>';
+      return;
+    }
+    list.innerHTML = rows.map(function(r) {
+      return '<div class="card" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:8px;" ' +
+        'onclick="selectPullSheetSource(\'' + r.source_type + '\', \'' + r.id + '\')">' +
+        '<div><strong>' + escapeHtml(r.label) + '</strong><div style="font-size:12px; color:#8A8578;">' + escapeHtml(r.customer_name) + '</div></div>' +
+        '<span style="color:#8A8578;">&rsaquo;</span>' +
+      '</div>';
+    }).join("");
+  } catch (err) {
+    list.innerHTML = '<p style="font-size:12px; color:#8A8578;">Couldn\'t load quotes/invoices.</p>';
+  }
+}
+
+// ---- Solo / standalone pull sheets (not tied to any quote or invoice) ----
+function openManualPullSheetStep() {
+  manualPullSheetItems = [];
+  document.getElementById("pull-sheet-modal-error").style.display = "none";
+  document.getElementById("pull-sheet-picker-step").style.display = "none";
+  document.getElementById("pull-sheet-manual-step").style.display = "";
+  document.getElementById("pull-sheet-manual-label").value = "";
+  document.getElementById("pull-sheet-manual-qty-input").value = "";
+
+  const picker = document.getElementById("pull-sheet-manual-item-picker");
+  const trackedItems = (window.allCatalogItems || []).filter(function(i) { return i.track_inventory; });
+  if (trackedItems.length === 0) {
+    picker.innerHTML = '<option value="">No inventory-tracked items yet</option>';
+  } else {
+    picker.innerHTML = '<option value="">Pick an item...</option>' +
+      trackedItems.map(function(i) {
+        const available = Number(i.quantity_on_hand) - Number(i.quantity_on_hold);
+        return '<option value="' + i.id + '">' + escapeHtml(i.name) + ' (' + available + ' available)</option>';
+      }).join("");
+  }
+  renderManualPullSheetItemsTable();
+}
+
+function backToPullSheetPicker() {
+  document.getElementById("pull-sheet-manual-step").style.display = "none";
+  document.getElementById("pull-sheet-picker-step").style.display = "";
+}
+
+function addManualPullSheetItem() {
+  const picker = document.getElementById("pull-sheet-manual-item-picker");
+  const qtyInput = document.getElementById("pull-sheet-manual-qty-input");
+  const itemId = picker.value;
+  const quantity = Math.round(Number(qtyInput.value));
+  if (!itemId || !quantity || quantity <= 0) return;
+  const item = (window.allCatalogItems || []).find(function(i) { return i.id === itemId; });
+  if (!item) return;
+
+  const existing = manualPullSheetItems.find(function(i) { return i.catalog_item_id === itemId; });
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
+    manualPullSheetItems.push({ catalog_item_id: itemId, name: item.name, quantity: quantity });
+  }
+  picker.value = "";
+  qtyInput.value = "";
+  renderManualPullSheetItemsTable();
+}
+
+function removeManualPullSheetItem(itemId) {
+  manualPullSheetItems = manualPullSheetItems.filter(function(i) { return i.catalog_item_id !== itemId; });
+  renderManualPullSheetItemsTable();
+}
+
+function renderManualPullSheetItemsTable() {
+  const body = document.getElementById("pull-sheet-manual-items-body");
+  if (manualPullSheetItems.length === 0) {
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#8A8578; padding:10px;">No items added yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = manualPullSheetItems.map(function(item) {
+    return '<tr><td>' + escapeHtml(item.name) + '</td><td>' + item.quantity + '</td>' +
+      '<td><button class="save-btn" style="background: #C1502E;" onclick="removeManualPullSheetItem(\'' + item.catalog_item_id + '\')">Remove</button></td></tr>';
+  }).join("");
+}
+
+async function submitManualPullSheet() {
+  const errEl = document.getElementById("pull-sheet-modal-error");
+  errEl.style.display = "none";
+  if (manualPullSheetItems.length === 0) {
+    errEl.textContent = "Add at least one item first.";
+    errEl.style.display = "block";
+    return;
+  }
+  const label = document.getElementById("pull-sheet-manual-label").value.trim();
+  try {
+    const sheet = await window.admin.buildManualPullSheet(manualPullSheetItems, label);
+    currentPullSheetId = sheet.id;
+    renderPullSheetDetailStep(sheet);
+    loadPullSheets();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't build pull sheet.";
+    errEl.style.display = "block";
+  }
+}
+
+async function selectPullSheetSource(sourceType, sourceId) {
+  const errEl = document.getElementById("pull-sheet-modal-error");
+  errEl.style.display = "none";
+  try {
+    const sheet = await window.admin.buildPullSheet(sourceType, sourceId);
+    currentPullSheetId = sheet.id;
+    renderPullSheetDetailStep(sheet);
+    loadPullSheets();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't build pull sheet.";
+    errEl.style.display = "block";
+    // Fall back to the picker so the modal isn't left showing nothing --
+    // matters when this was reached via buildPullSheetForSource, which skips
+    // the picker on the way in.
+    if (document.getElementById("pull-sheet-detail-step").style.display === "none") {
+      document.getElementById("pull-sheet-picker-step").style.display = "";
+      renderPullSheetSourceList();
+    }
+  }
+}
+
+function renderPullSheetDetailStep(sheet) {
+  document.getElementById("pull-sheet-modal-title").textContent = sheet.source_label || "Pull sheet";
+  document.getElementById("pull-sheet-picker-step").style.display = "none";
+  document.getElementById("pull-sheet-manual-step").style.display = "none";
+  document.getElementById("pull-sheet-detail-step").style.display = "";
+  const statusLabel = sheet.status === "fulfilled" ? " -- fulfilled"
+    : sheet.status === "pulled" ? " -- reported by employee, not yet fulfilled"
+    : " -- not yet fulfilled";
+  document.getElementById("pull-sheet-detail-header").textContent = (sheet.customer_name || "") + statusLabel;
+  document.getElementById("pull-sheet-detail-items").innerHTML = (sheet.items || []).map(function(item) {
+    const pulled = item.quantity_pulled == null ? '<span style="color:#8A8578;">--</span>' : item.quantity_pulled;
+    return '<tr><td>' + escapeHtml(item.name) + '</td><td>' + item.quantity + '</td><td>' + pulled + '</td></tr>';
+  }).join("");
+  const fulfillBtn = document.getElementById("pull-sheet-fulfill-btn");
+  fulfillBtn.style.display = sheet.status === "fulfilled" ? "none" : "";
+  // A fulfilled sheet has already changed real inventory numbers, so (like
+  // the list view's Delete button) cancelling is only offered while it's
+  // still open.
+  const cancelBtn = document.getElementById("pull-sheet-cancel-btn");
+  cancelBtn.style.display = sheet.status === "fulfilled" ? "none" : "";
+}
+
+async function cancelPullSheetFromModal() {
+  if (!currentPullSheetId) return;
+  if (!confirm("Cancel this pull sheet? This only removes the sheet itself -- it hasn't changed any inventory yet.")) return;
+  const errEl = document.getElementById("pull-sheet-modal-error");
+  errEl.style.display = "none";
+  try {
+    await window.admin.deletePullSheet(currentPullSheetId);
+    closePullSheetModal();
+    loadPullSheets();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't cancel this pull sheet.";
+    errEl.style.display = "block";
+  }
+}
+
+async function fulfillPullSheetFromModal() {
+  if (!currentPullSheetId) return;
+  if (!confirm("Mark this pull sheet fulfilled? This removes these quantities from stock.")) return;
+  const errEl = document.getElementById("pull-sheet-modal-error");
+  errEl.style.display = "none";
+  try {
+    const sheet = await window.admin.fulfillPullSheet(currentPullSheetId);
+    const items = await window.admin.getPullSheet(currentPullSheetId);
+    renderPullSheetDetailStep(items);
+    loadPullSheets();
+    if (document.getElementById("inventory-items-body")) loadInventory();
+  } catch (err) {
+    errEl.textContent = err.message || "Couldn't mark this pull sheet fulfilled.";
+    errEl.style.display = "block";
+  }
+}
+
+async function fulfillPullSheetFromList(id) {
+  if (!confirm("Mark this pull sheet fulfilled? This removes these quantities from stock.")) return;
+  try {
+    await window.admin.fulfillPullSheet(id);
+    loadPullSheets();
+    if (document.getElementById("inventory-items-body")) loadInventory();
+  } catch (err) {
+    alert(err.message || "Couldn't mark this pull sheet fulfilled.");
+  }
+}
+
+async function deletePullSheetConfirm(id) {
+  if (!confirm("Delete this pull sheet? This only removes the sheet itself -- it hasn't changed any inventory yet.")) return;
+  try {
+    await window.admin.deletePullSheet(id);
+    loadPullSheets();
+  } catch (err) {
+    alert(err.message || "Couldn't delete this pull sheet.");
+  }
+}
+
+async function viewPullSheetPdf(id) {
+  if (!id) return;
+  try {
+    await window.admin.viewPullSheetPdf(id);
+  } catch (err) {
+    alert(err.message || "Couldn't open that pull sheet's PDF.");
+  }
+}
+
+function closePullSheetModal() {
+  document.getElementById("pull-sheet-modal").classList.remove("visible");
+  currentPullSheetId = null;
+  manualPullSheetItems = [];
 }
 
 // ---------- Catalog import (Excel/CSV) ----------
