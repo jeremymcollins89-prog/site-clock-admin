@@ -308,6 +308,13 @@ contextBridge.exposeInMainWorld("admin", {
   getStripeConnectStatus: () => apiFetch("/api/connect/status"),
   startStripeConnect: async () => {
     const data = await apiFetch("/api/connect/start");
+    // Should always be a real Stripe OAuth URL from the backend -- this is
+    // just a defense-in-depth sanity check before handing anything to the
+    // OS's default browser, in case that response is ever wrong or tampered
+    // with.
+    if (typeof data.url !== "string" || !data.url.startsWith("https://")) {
+      throw new Error("Unexpected Stripe Connect URL");
+    }
     await shell.openExternal(data.url);
     return true;
   },

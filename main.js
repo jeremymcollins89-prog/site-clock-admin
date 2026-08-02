@@ -313,6 +313,19 @@ if (!gotSingleInstanceLock) {
       }
       return { action: "deny" };
     });
+
+    // Blocks this same window from ever navigating away from the packaged
+    // index.html. Electron re-injects preload.js (and its window.admin
+    // bridge) into whatever page a webContents loads next, so without this,
+    // any same-window navigation -- e.g. a raw <a href> with no target that
+    // an XSS bug managed to inject -- could hand a remote, attacker-controlled
+    // page the same admin API access as the real app. setWindowOpenHandler
+    // above only covers new-window/target="_blank" navigations, not this.
+    mainWindow.webContents.on("will-navigate", (event, url) => {
+      if (!url.startsWith("file://")) {
+        event.preventDefault();
+      }
+    });
   }
 
   app.whenReady().then(() => {
