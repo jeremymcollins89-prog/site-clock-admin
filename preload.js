@@ -39,6 +39,11 @@ contextBridge.exposeInMainWorld("admin", {
   },
   hasSession: () => Boolean(store.get("token")),
   logout: () => store.delete("token"),
+  // Fire-and-forget: fed by a global click listener in index.html so any
+  // real interaction while logged in counts as "using the app" for the
+  // platform dashboard's dormant-days figure, not just the moments the app
+  // happens to be loading/saving data on its own.
+  pingActivity: () => apiFetch("/api/admin/activity-ping", { method: "POST" }).catch(() => {}),
 
   forgotPassword: (email) => apiFetch("/api/admin/forgot-password", { method: "POST", body: { email } }),
   changePassword: (currentPassword, newPassword) =>

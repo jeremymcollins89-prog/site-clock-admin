@@ -8673,6 +8673,21 @@ async function submitNewTeamChat() {
   }
 }
 
+// Global click heartbeat: any click anywhere in the app while logged in
+// counts as "using the app" for the platform dashboard's dormant-days figure,
+// not just moments the app happens to be loading/saving data on its own.
+// Throttled client-side to once every 5 minutes so a click-happy session
+// doesn't spam the server -- it's throttled again server-side too, per
+// company, to once an hour (see middleware/requireAdmin.js).
+let lastActivityPingAt = 0;
+document.addEventListener("click", function() {
+  if (!window.admin.hasSession()) return;
+  const now = Date.now();
+  if (now - lastActivityPingAt < 5 * 60 * 1000) return;
+  lastActivityPingAt = now;
+  window.admin.pingActivity();
+});
+
 init();
 </script>
 </body>
