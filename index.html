@@ -1341,8 +1341,9 @@
         <div class="card">
           <h3 style="margin-top:0;">Inventory <span id="inventory-count-badge" style="font-weight:400; color:#8A8578; font-size:13px;"></span></h3>
           <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
-            Items quoted or invoiced show up "on hold" here until that invoice is paid, at which point they're removed
-            from stock for good. Turn tracking on for a catalog item and set its starting quantity/cost in the
+            A quote alone never puts anything "on hold" -- items show up on hold once a pull sheet is built for the job
+            or it's turned into an invoice, and come out of stock for good once that pull sheet is fulfilled or the
+            invoice is paid in full. Turn tracking on for a catalog item and set its starting quantity/cost in the
             Settings tab above.
           </p>
           <button class="btn-secondary" id="inventory-list-toggle-btn" style="width:auto; font-size:12px; padding:4px 12px; margin-bottom:8px;" onclick="toggleInventoryItemsList()">Show inventory items</button>
@@ -1357,8 +1358,9 @@
         <div class="card" style="margin-top:16px;">
           <h3 style="margin-top:0;">Pull sheets</h3>
           <p style="font-size:12px; color:#8A8578; margin-top:-8px;">
-            Picking lists built from a quote or invoice's inventory-tracked items. Marking one fulfilled removes those
-            quantities from stock -- building one on its own doesn't change any numbers yet.
+            Picking lists built from a job's inventory-tracked items. Building one from a quote (or a standalone one)
+            is what puts those items on hold; building one from an invoice doesn't add to the count since the invoice
+            already reserved them. Marking one fulfilled removes those quantities from stock for good.
           </p>
           <table>
             <thead><tr><th>Job</th><th>Customer</th><th>Items</th><th>Status</th><th>Built</th><th></th></tr></thead>
@@ -5606,8 +5608,8 @@ async function loadInventory() {
   }
 }
 
-// Clicking an "on hold" count opens this -- lists every quote/invoice
-// currently responsible for that reservation (see GET
+// Clicking an "on hold" count opens this -- lists every invoice or pull
+// sheet currently responsible for that reservation (see GET
 // /api/admin/catalog-items/:id/holds), each clickable to jump straight to
 // it. Item name comes from window.lastInventoryItems (set by loadInventory
 // above) rather than being passed through the onclick string, so item names
@@ -5640,10 +5642,9 @@ function renderItemHoldsList(holds) {
     return;
   }
   list.innerHTML = holds.map(function(h) {
-    const label = (h.source_type === "invoice" ? "Invoice #" : "Quote #") + h.number;
     return '<div class="card" style="margin-bottom:8px; cursor:pointer;" onclick="openItemHoldSource(\'' + h.source_type + '\', \'' + h.id + '\')">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
-        '<strong>' + escapeHtml(label) + '</strong>' +
+        '<strong>' + escapeHtml(h.label || "") + '</strong>' +
         '<span style="font-size:12px; color:#8A8578;">' + h.quantity + ' held</span>' +
       '</div>' +
       '<div style="font-size:12px; color:#8A8578;">' + escapeHtml(h.customer_name || "") + '</div>' +
@@ -5651,15 +5652,19 @@ function renderItemHoldsList(holds) {
   }).join("");
 }
 
+// A hold now only ever comes from an invoice or a pull sheet (never a quote
+// on its own -- see GET /catalog-items/:id/holds), so this jumps straight to
+// whichever of those it is.
 function openItemHoldSource(sourceType, id) {
   closeItemHoldsModal();
-  showTab("invoices");
   if (sourceType === "invoice") {
+    showTab("invoices");
     showBillingSubtab("invoices");
     openInvoiceModal(id);
   } else {
-    showBillingSubtab("quotes");
-    openQuoteModal(id);
+    showTab("inventory");
+    showInventorySubtab("items");
+    viewPullSheetDetail(id);
   }
 }
 
