@@ -250,6 +250,7 @@ contextBridge.exposeInMainWorld("admin", {
   listCatalogItems: () => apiFetch("/api/admin/catalog-items"),
   addCatalogItem: (item) => apiFetch("/api/admin/catalog-items", { method: "POST", body: item }),
   updateCatalogItem: (id, patch) => apiFetch(`/api/admin/catalog-items/${id}`, { method: "PATCH", body: patch }),
+  lookupBarcode: (barcode) => apiFetch(`/api/admin/catalog-items/lookup-barcode/${encodeURIComponent(barcode)}`),
   getInventory: () => apiFetch("/api/admin/inventory"),
   getCatalogItemHolds: (id) => apiFetch(`/api/admin/catalog-items/${id}/holds`),
   getPullSheetSources: () => apiFetch("/api/admin/pull-sheets/sources"),
