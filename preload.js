@@ -241,6 +241,7 @@ contextBridge.exposeInMainWorld("admin", {
   getLaborBreakdown: (start, end) => apiFetch(`/api/admin/reports/labor-breakdown?start=${start}&end=${end}`),
   getMonthlyProfit: (months) => apiFetch(`/api/admin/reports/monthly-profit?months=${months || 6}`),
   getPaymentBreakdown: () => apiFetch("/api/admin/reports/payment-breakdown"),
+  getPayments: (start, end) => apiFetch(`/api/admin/reports/payments?start=${start}&end=${end}`),
   listExpenses: () => apiFetch("/api/admin/expenses"),
   addExpense: (expense) => apiFetch("/api/admin/expenses", { method: "POST", body: expense }),
   updateExpense: (id, patch) => apiFetch(`/api/admin/expenses/${id}`, { method: "PATCH", body: patch }),
