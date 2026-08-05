@@ -1840,6 +1840,15 @@
         <button class="btn-secondary" style="width:auto; margin-left:8px;" onclick="window.admin.openUpdateLog()">View update log</button>
         <div id="update-settings-status" style="font-size:12px; color:var(--muted); margin-top:10px;"></div>
       </div>
+
+      <div class="card">
+        <h3 style="margin-top:0;">Delete account</h3>
+        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+          Permanently deletes your company's Coll Timeclock account and all its data -- employees,
+          time records, customers, invoices, and everything else. This can't be undone.
+        </p>
+        <button class="btn-secondary" style="width:auto; color:var(--rust);" onclick="requestAccountDeletion()">Request account deletion</button>
+      </div>
       </div>
     </section>
 
@@ -1976,6 +1985,22 @@ function doLogout() {
   window.admin.logout();
   document.getElementById("app").classList.remove("visible");
   document.getElementById("login-screen").classList.add("visible");
+}
+
+// Google Play requires a visible, in-app way to request account/data
+// deletion (not just a mention in the privacy policy) -- an email request
+// is an accepted method as long as it's easy to find in the app itself.
+// See privacy.html#delete-account for the matching policy language.
+function requestAccountDeletion() {
+  var companyNameEl = document.getElementById("company-name-input");
+  var companyName = companyNameEl ? companyNameEl.value.trim() : "";
+  var subject = encodeURIComponent("Delete my Coll Timeclock company account");
+  var body = encodeURIComponent(
+    "Please delete our company's Coll Timeclock account and all its data.\n\n" +
+    "Company: " + companyName + "\n" +
+    "(Please reply from the email address on your admin account so we can verify it's you.)"
+  );
+  window.location.href = "mailto:jeremymcollins89@gmail.com?subject=" + subject + "&body=" + body;
 }
 
 async function doForgotPassword() {
