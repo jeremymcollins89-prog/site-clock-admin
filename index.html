@@ -2326,6 +2326,31 @@ async function renderEmployeeDetail(start, end) {
   // just scrolling/reading the time card, which was too easy when every
   // field was editable by default.
   const rowsHtml = rows.map(function(r) {
+    // Each break gets its own Start/End pair in a second, indented row under
+    // the shift -- tagged with data-break-id (rather than data-id) so
+    // saveEmployeeDetailRow can tell "this shift's own fields" apart from
+    // "one of its breaks" and send each to the right endpoint. An open break
+    // (forgot to punch back in) shows a blank End that an admin can now
+    // actually fill in, instead of only ever seeing a read-only, ever-growing
+    // "Break" total with no way to fix it.
+    const breaks = Array.isArray(r.breaks) ? r.breaks : [];
+    const breaksRowHtml = breaks.length === 0 ? "" :
+      '<tr><td colspan="7" style="padding-top:0; padding-bottom:10px;">' +
+        '<div style="display:flex; flex-direction:column; gap:6px; padding-left:8px; border-left:2px solid var(--line);">' +
+        breaks.map(function(b) {
+          return '<div style="display:flex; gap:10px; align-items:end;">' +
+            '<div>' +
+              '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:2px;">Break start</label>' +
+              '<input type="datetime-local" value="' + (b.break_start ? toLocalDatetimeInputValue(b.break_start) : "") + '" data-break-field="break_start" data-break-id="' + b.id + '" data-id="' + r.time_entry_id + '" disabled style="margin-bottom:0;" />' +
+            '</div>' +
+            '<div>' +
+              '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:2px;">Break end' + (!b.break_end ? ' <span style="color:#C1502E;">(never ended)</span>' : '') + '</label>' +
+              '<input type="datetime-local" value="' + (b.break_end ? toLocalDatetimeInputValue(b.break_end) : "") + '" data-break-field="break_end" data-break-id="' + b.id + '" data-id="' + r.time_entry_id + '" disabled style="margin-bottom:0;" />' +
+            '</div>' +
+          '</div>';
+        }).join("") +
+        '</div>' +
+      '</td></tr>';
     return '<tr>' +
       '<td><input value="' + (r.job_name || "") + '" data-field="job_name" data-id="' + r.time_entry_id + '" disabled /></td>' +
       '<td><select data-field="location_type" data-id="' + r.time_entry_id + '" disabled>' +
@@ -2337,7 +2362,7 @@ async function renderEmployeeDetail(start, end) {
       '<td>' + fmtDuration(r.worked_seconds) + '</td>' +
       '<td>' + fmtDuration(r.break_seconds) + '</td>' +
       '<td><button class="save-btn" onclick="toggleEmployeeRowEdit(\'' + r.time_entry_id + '\', this)">Edit</button></td>' +
-    '</tr>';
+    '</tr>' + breaksRowHtml;
   }).join("");
 
   const fullAddress = formatAddressParts(ed.street, ed.city, ed.state, ed.zip);
@@ -2433,9 +2458,21 @@ function toggleEmployeeRowEdit(id, btn) {
 async function saveEmployeeDetailRow(id, btn) {
   const inputs = document.querySelectorAll('#employee-modal-content [data-id="' + id + '"]');
   const patch = {};
+  const breakPatches = {}; // break id -> { break_start?, break_end? }
   inputs.forEach(function(el) {
-    const field = el.dataset.field;
     let val = el.value;
+    if (el.dataset.breakId) {
+      // A break input (Start/End in one of this shift's break rows) -- save
+      // it to that break, not to the shift itself. An empty End is sent
+      // through as null (still open), not skipped, so an admin can clear a
+      // mistaken end time back to "never ended" if needed.
+      if (val) val = new Date(val).toISOString();
+      const breakId = el.dataset.breakId;
+      if (!breakPatches[breakId]) breakPatches[breakId] = {};
+      breakPatches[breakId][el.dataset.breakField] = val || null;
+      return;
+    }
+    const field = el.dataset.field;
     if ((field === "clock_in" || field === "clock_out") && val) {
       val = new Date(val).toISOString();
     }
@@ -2444,6 +2481,9 @@ async function saveEmployeeDetailRow(id, btn) {
   if (btn) { btn.disabled = true; btn.textContent = "Saving..."; }
   try {
     await window.admin.updateTimeEntry(id, patch);
+    for (const breakId in breakPatches) {
+      await window.admin.updateBreak(id, breakId, breakPatches[breakId]);
+    }
     const start = document.getElementById("emp-detail-start").value;
     const end = document.getElementById("emp-detail-end").value;
     // Re-renders the whole time card fresh from the server, so this row

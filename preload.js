@@ -66,6 +66,7 @@ contextBridge.exposeInMainWorld("admin", {
     return apiFetch(`/api/admin/time-entries?${qs}`);
   },
   updateTimeEntry: (id, patch) => apiFetch(`/api/admin/time-entries/${id}`, { method: "PATCH", body: patch }),
+  updateBreak: (timeEntryId, breakId, patch) => apiFetch(`/api/admin/time-entries/${timeEntryId}/breaks/${breakId}`, { method: "PATCH", body: patch }),
 
   getOverview: () => apiFetch("/api/admin/overview"),
   requestPing: (employeeId) => apiFetch(`/api/admin/employees/${employeeId}/request-ping`, { method: "POST" }),
