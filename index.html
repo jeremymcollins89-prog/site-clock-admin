@@ -142,42 +142,58 @@
   .report-stat-change.flat { color: var(--muted); background: rgba(138,133,120,0.14); }
   .error { color: var(--rust); font-size: 12px; margin-bottom: 10px; }
 
-  header {
+  .app-shell { display: flex; align-items: stretch; min-height: 100vh; }
+  .sidebar {
+    width: 232px; flex-shrink: 0;
     background: linear-gradient(165deg, #2b322e 0%, var(--charcoal) 65%);
     color: var(--paper);
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; align-self: flex-start; height: 100vh; overflow-y: auto;
   }
-  header h1 { font-size: 18px; margin: 0; }
-  header button {
-    background: rgba(244,242,237,0.12); color: var(--paper); border: none;
-    border-radius: 10px;
+  .sidebar-header { display: flex; align-items: center; gap: 10px; padding: 20px 18px; flex-shrink: 0; }
+  .sidebar-header img#header-logo {
+    max-height: 32px; max-width: 150px; border-radius: 6px;
+    background: var(--surface); padding: 3px; object-fit: contain;
   }
+  .sidebar-header h1 { font-size: 15px; margin: 0; font-weight: 700; line-height: 1.3; }
 
   nav {
+    flex: 1;
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 12px 24px 0;
-    border-bottom: 1.5px solid var(--line);
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 10px;
   }
   nav button {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
     background: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: var(--muted);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px; font-weight: 600;
+    color: rgba(244,242,237,0.65);
   }
+  nav button:hover { background: rgba(244,242,237,0.08); color: var(--paper); }
+  nav button .chat-nav-badge { margin-left: auto; }
   nav button.active {
-    color: var(--ink);
-    border-bottom-color: var(--amber);
+    background: linear-gradient(135deg, #E4794F, var(--rust));
+    color: #fff;
     font-weight: 600;
+    box-shadow: 0 3px 10px rgba(211,90,52,0.35);
   }
 
-  main { padding: 24px; }
+  .sidebar-footer {
+    flex-shrink: 0; padding: 10px;
+    border-top: 1px solid rgba(244,242,237,0.1);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sidebar-footer button {
+    background: rgba(244,242,237,0.12); color: var(--paper); border: none;
+    border-radius: 10px; width: 100%; text-align: left;
+    padding: 9px 12px; font-size: 12.5px; font-weight: 600;
+  }
+
+  main { flex: 1; min-width: 0; padding: 24px; }
   .tab { display: none; }
   .tab.active { display: block; }
 
@@ -1145,16 +1161,6 @@
       <button class="btn-primary" onclick="submitChangePassword()">Update password</button>
     </div>
   </div>
-  <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <img id="header-logo" src="" style="display:none; max-height:32px; max-width:150px; border-radius:6px; background:var(--surface); padding:3px; object-fit:contain;" />
-      <h1>Coll Timeclock — Admin</h1>
-    </div>
-    <div>
-      <button onclick="openPasswordModal()" style="margin-right:8px;">Change password</button>
-      <button onclick="doLogout()">Log out</button>
-    </div>
-  </header>
   <div id="update-banner" style="display:none; flex-direction:column; gap:6px; background: var(--teal-deep); color:#fff; padding:8px 20px; font-size:13px;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
       <span id="update-banner-text">Checking for updates&hellip;</span>
@@ -1164,17 +1170,55 @@
       <div id="update-progress-bar" style="width:0%; height:100%; background:var(--surface); border-radius:3px; transition: width 0.2s ease;"></div>
     </div>
   </div>
-  <nav>
-    <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
-    <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">Employees</button>
-    <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">Schedule</button>
-    <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">Customers</button>
-    <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">Billing</button>
-    <button class="tab-btn" data-tab="inventory" onclick="showTab('inventory')">Inventory<span id="pull-sheets-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
-    <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">Reports</button>
-    <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">Chat<span id="chat-nav-badge" class="chat-nav-badge" style="display:none;"></span></button>
-    <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">Settings</button>
-  </nav>
+  <div class="app-shell">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <img id="header-logo" src="" style="display:none;" />
+      <h1>Coll Timeclock — Admin</h1>
+    </div>
+    <nav>
+      <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></span>
+        Overview
+      </button>
+      <button class="tab-btn" data-tab="employees" onclick="showTab('employees')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="7.5" r="3"/><path d="M2.5 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="7" r="2.6"/><path d="M15.3 12.9c2.9.5 5 3 5 6.1"/></svg></span>
+        Employees
+      </button>
+      <button class="tab-btn" data-tab="schedule" onclick="showTab('schedule')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg></span>
+        Schedule
+      </button>
+      <button class="tab-btn" data-tab="customers" onclick="showTab('customers')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-4.5L20 8v13"/><path d="M9.5 21v-6.5h5V21"/><path d="M4 21h16"/></svg></span>
+        Customers
+      </button>
+      <button class="tab-btn" data-tab="invoices" onclick="showTab('invoices')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M16.5 7.3c0-1.7-1.7-2.9-4-2.9s-4.5 1.2-4.5 3.1c0 3.5 8.5 1.6 8.5 5.4 0 1.9-2 3.1-4.5 3.1s-4.5-1.2-4.5-3.1"/></svg></span>
+        Billing
+      </button>
+      <button class="tab-btn" data-tab="inventory" onclick="showTab('inventory')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7.5l-9-5-9 5 9 5 9-5z"/><path d="M3 7.5v9l9 5 9-5v-9"/><path d="M12 12.5V21"/></svg></span>
+        Inventory<span id="pull-sheets-nav-badge" class="chat-nav-badge" style="display:none;"></span>
+      </button>
+      <button class="tab-btn" data-tab="reports" onclick="showTab('reports')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V10.5"/><path d="M12 21V4"/><path d="M20 21v-7.5"/><path d="M2.5 21h19"/></svg></span>
+        Reports
+      </button>
+      <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h17v12h-9.5l-4.5 4v-4h-3v-12z"/></svg></span>
+        Chat<span id="chat-nav-badge" class="chat-nav-badge" style="display:none;"></span>
+      </button>
+      <button class="tab-btn" data-tab="settings" onclick="showTab('settings')">
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h9M17.5 6.5h2"/><circle cx="14" cy="6.5" r="2"/><path d="M4 12h3M11 12h9"/><circle cx="8" cy="12" r="2"/><path d="M4 17.5h9M17.5 17.5h2"/><circle cx="14" cy="17.5" r="2"/></svg></span>
+        Settings
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button onclick="openPasswordModal()">Change password</button>
+      <button onclick="doLogout()">Log out</button>
+    </div>
+  </div>
   <main>
 
     <section id="tab-overview" class="tab active">
@@ -1684,7 +1728,7 @@
       <div class="card">
         <h3 style="margin-top:0;">Company logo</h3>
         <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
-          Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the header up above. PNG, JPEG, or WebP, up to 3MB.
+          Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the sidebar. PNG, JPEG, or WebP, up to 3MB.
         </p>
         <div id="company-logo-preview-wrap" style="display:none; margin-bottom:10px;">
           <img id="company-logo-preview" style="max-width:180px; max-height:80px; display:block; border:1px solid var(--line); border-radius:10px; padding:6px; background:var(--surface);" />
@@ -1853,6 +1897,7 @@
     </section>
 
   </main>
+  </div>
 </div>
 
 <!-- SheetJS: parses .xlsx/.xls files client-side for the Catalog "Import
