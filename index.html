@@ -416,8 +416,15 @@
   .chat-bubble-admin { align-self: flex-end; background: linear-gradient(135deg, #F9C978, var(--amber)); color: var(--charcoal); border-bottom-right-radius: 4px; }
   .chat-bubble-employee { align-self: flex-start; background: var(--surface); color: var(--ink); border-bottom-left-radius: 4px; }
   .chat-bubble-time { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
-  .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; }
-  .chat-thread-composer input { flex: 1; margin-bottom: 0; font-weight: 500; }
+  .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
+  /* Textarea instead of a single-line input so a long message wraps and
+     stays fully visible while typing instead of scrolling sideways as one
+     long line -- auto-grows with content (see resizeChatComposer()) up to
+     this max-height, then scrolls internally. */
+  .chat-thread-composer textarea {
+    flex: 1; margin-bottom: 0; font-weight: 500; font-family: inherit;
+    resize: none; overflow-y: auto; max-height: 140px; line-height: 1.4;
+  }
   .chat-nav-badge {
     display: inline-block; background: var(--rust); color: #fff; font-size: 10px; font-weight: 800;
     border-radius: 20px; padding: 1px 6px; margin-left: 6px; vertical-align: middle;
@@ -1655,7 +1662,9 @@
             </div>
             <div id="chat-thread-messages" class="chat-thread-messages"></div>
             <div id="chat-thread-composer" class="chat-thread-composer" style="display:none;">
-              <input id="chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendChatMessage();}" />
+              <textarea id="chat-message-input" placeholder="Type a message..." rows="1"
+                onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendChatMessage();}"
+                oninput="resizeChatComposer(this)"></textarea>
               <button class="btn-primary" style="width:auto;" onclick="sendChatMessage()">Send</button>
             </div>
             <div id="chat-thread-offline-note" style="display:none; font-size:13px; color:var(--muted); margin-top:12px;">
@@ -1679,7 +1688,9 @@
             </div>
             <div id="team-chat-thread-messages" class="chat-thread-messages"></div>
             <div id="team-chat-thread-composer" class="chat-thread-composer" style="display:none;">
-              <input id="team-chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendTeamChatMessage();}" />
+              <textarea id="team-chat-message-input" placeholder="Type a message..." rows="1"
+                onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendTeamChatMessage();}"
+                oninput="resizeChatComposer(this)"></textarea>
               <button class="btn-primary" style="width:auto;" onclick="sendTeamChatMessage()">Send</button>
             </div>
           </div>
@@ -8879,12 +8890,23 @@ async function openChatThread(employeeId) {
   renderChatThreads();
 }
 
+// Grows a composer textarea to fit its content (up to the CSS max-height,
+// after which it scrolls internally instead of growing forever) -- called on
+// every keystroke and again after a send clears the box, so it always
+// matches what's actually typed instead of staying stretched or clipped.
+function resizeChatComposer(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
 async function sendChatMessage() {
   if (!openChatEmployeeId) return;
   const input = document.getElementById("chat-message-input");
   const body = input.value.trim();
   if (!body) return;
   input.value = "";
+  resizeChatComposer(input);
   try {
     await window.admin.sendChatMessage(openChatEmployeeId, body);
     await openChatThread(openChatEmployeeId);
@@ -9006,6 +9028,7 @@ async function sendTeamChatMessage() {
   const body = input.value.trim();
   if (!body) return;
   input.value = "";
+  resizeChatComposer(input);
   try {
     await window.admin.sendTeamChatMessage(openTeamChatThreadId, body);
     await openTeamChatThread(openTeamChatThreadId);
