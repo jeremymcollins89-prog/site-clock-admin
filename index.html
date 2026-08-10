@@ -8796,9 +8796,9 @@ async function openChatThread(employeeId) {
   }).join("") || '<p style="color:var(--muted); font-size:12px;">No messages yet.</p>';
   document.getElementById("chat-thread-messages").scrollTop = document.getElementById("chat-thread-messages").scrollHeight;
 
-  const onClock = thread ? thread.on_clock : false;
-  document.getElementById("chat-thread-composer").style.display = onClock ? "flex" : "none";
-  document.getElementById("chat-thread-offline-note").style.display = onClock ? "none" : "block";
+  // Messaging isn't gated by clock status -- the composer is always available.
+  document.getElementById("chat-thread-composer").style.display = "flex";
+  document.getElementById("chat-thread-offline-note").style.display = "none";
 
   // Opening the thread just marked its messages read server-side -- reflect
   // that in the local badge counts right away instead of waiting for the
