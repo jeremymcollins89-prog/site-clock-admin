@@ -135,12 +135,12 @@
   }
   .report-stat-change {
     flex-shrink: 0;
-    font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+    font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
   }
   .report-stat-change.up { color: #1E8E5A; background: rgba(30,142,90,0.14); }
   .report-stat-change.down { color: #C1502E; background: rgba(193,80,46,0.14); }
   .report-stat-change.flat { color: var(--muted); background: rgba(138,133,120,0.14); }
-  .error { color: var(--rust); font-size: 12px; margin-bottom: 10px; }
+  .error { color: var(--rust); font-size: 13px; margin-bottom: 10px; }
 
   .app-shell { display: flex; align-items: stretch; min-height: 100vh; }
   .sidebar {
@@ -202,12 +202,12 @@
     box-shadow: 0 8px 20px rgba(31,36,33,0.06), 0 1px 3px rgba(31,36,33,0.05);
   }
   th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  th { background: var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  th { background: var(--line); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
   tr:last-child td { border-bottom: none; }
-  td input, td select { margin-bottom: 0; padding: 6px 8px; font-size: 12px; }
+  td input, td select { margin-bottom: 0; padding: 6px 8px; font-size: 13px; }
 
   .toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: end; flex-wrap: wrap; }
-  .toolbar label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .toolbar label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
   .toolbar > div { display: flex; flex-direction: column; }
   .toolbar input { margin-bottom: 0; }
 
@@ -223,12 +223,12 @@
     align-items: start;
   }
   .settings-grid .card { margin-bottom: 0; }
-  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
   .badge-in-town { color: #fff; background: linear-gradient(135deg, #5C9481, var(--teal-deep)); box-shadow: 0 3px 8px rgba(43,69,60,0.35); }
   .badge-traveling { color: #fff; background: linear-gradient(135deg, #E4794F, var(--rust-deep)); box-shadow: 0 3px 8px rgba(166,61,32,0.35); }
 
   .save-btn {
-    background: linear-gradient(135deg, #5C9481, var(--teal-deep)); color: #fff; padding: 5px 11px; font-size: 11px;
+    background: linear-gradient(135deg, #5C9481, var(--teal-deep)); color: #fff; padding: 5px 11px; font-size: 12px;
     border-radius: 8px; box-shadow: 0 2px 6px rgba(43,69,60,0.3);
   }
 
@@ -307,7 +307,7 @@
   .checkbox-list input { width: auto; margin: 0; }
   .chip {
     display: inline-block; padding: 2px 8px; border-radius: 3px;
-    font-size: 11px; background: var(--line); margin: 2px 4px 2px 0;
+    font-size: 12px; background: var(--line); margin: 2px 4px 2px 0;
   }
 
   .day-untimed-section { margin-bottom: 14px; }
@@ -331,7 +331,7 @@
     border-left: 4px solid var(--rust);
     border-radius: 8px;
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(31,36,33,0.06);
   }
@@ -373,7 +373,7 @@
     background: transparent; border: none; cursor: default; box-shadow: none;
   }
   .cal-day.cal-day-today { border-color: var(--amber); border-width: 2px; box-shadow: 0 0 0 3px rgba(244,176,76,0.18); }
-  .cal-day-num { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  .cal-day-num { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
   .cal-job-pill {
     display: block; font-size: 10px; color: #fff; padding: 1px 5px;
     border-radius: 3px; margin-bottom: 2px; overflow: hidden;
@@ -400,24 +400,24 @@
   .chat-thread-row:hover { background: var(--surface); }
   .chat-thread-row.active { background: var(--charcoal); color: #fff; }
   .chat-thread-row.active .chat-thread-preview { color: rgba(255,255,255,0.7); }
-  .chat-thread-name { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-  .chat-thread-preview { font-size: 11.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-thread-name { font-size: 14.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .chat-thread-preview { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-on-clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #1E8E5A; flex-shrink: 0; }
   .chat-unread-pill {
-    background: var(--rust); color: #fff; font-size: 10px; font-weight: 800;
+    background: var(--rust); color: #fff; font-size: 10.5px; font-weight: 800;
     border-radius: 20px; padding: 1px 7px; margin-left: auto; flex-shrink: 0;
   }
   .chat-thread-col { flex: 1; display: flex; flex-direction: column; padding-left: 20px; min-width: 0; }
-  .chat-thread-header { font-size: 15px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
+  .chat-thread-header { font-size: 16px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
   .chat-thread-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
   .chat-bubble {
-    max-width: 70%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
+    max-width: 70%; padding: 9px 13px; border-radius: 14px; font-size: 14.5px; font-weight: 500; line-height: 1.45;
   }
   .chat-bubble-admin { align-self: flex-end; background: linear-gradient(135deg, #F9C978, var(--amber)); color: var(--charcoal); border-bottom-right-radius: 4px; }
   .chat-bubble-employee { align-self: flex-start; background: var(--surface); color: var(--ink); border-bottom-left-radius: 4px; }
-  .chat-bubble-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .chat-bubble-time { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
   .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; }
-  .chat-thread-composer input { flex: 1; margin-bottom: 0; }
+  .chat-thread-composer input { flex: 1; margin-bottom: 0; font-weight: 500; }
   .chat-nav-badge {
     display: inline-block; background: var(--rust); color: #fff; font-size: 10px; font-weight: 800;
     border-radius: 20px; padding: 1px 6px; margin-left: 6px; vertical-align: middle;
@@ -488,7 +488,7 @@
   }
   .route-stop-num {
     width: 22px; height: 22px; border-radius: 50%; background: var(--charcoal); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
   }
 </style>
 <!-- Leaflet: free, no-API-key map rendering on top of OpenStreetMap tiles,
@@ -504,7 +504,7 @@
     <h1>Coll Timeclock</h1>
     <p>Employer dashboard</p>
     <div id="login-error" class="error" style="display:none;"></div>
-    <div id="login-info" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
+    <div id="login-info" style="display:none; color: var(--teal); font-size:13px; margin-bottom:10px;"></div>
     <input id="admin-email-input" type="text" placeholder="Email" />
     <input id="admin-key-input" type="password" placeholder="Password" />
     <button class="btn-primary" onclick="doLogin()">Sign in</button>
@@ -526,36 +526,36 @@
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; padding-bottom:14px; border-bottom:1.5px solid var(--line);">
         <div style="min-width:0;">
           <div id="edit-emp-name" style="font-size:16px; font-weight:700;"></div>
-          <div id="edit-emp-email-display" style="font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+          <div id="edit-emp-email-display" style="font-size:13px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
         </div>
-        <span id="edit-emp-status-badge" style="flex-shrink:0; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;"></span>
+        <span id="edit-emp-status-badge" style="flex-shrink:0; font-size:12px; font-weight:700; padding:4px 10px; border-radius:20px;"></span>
       </div>
       <div id="edit-emp-error" class="error" style="display:none;"></div>
-      <div id="edit-emp-success" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Email</label>
+      <div id="edit-emp-success" style="display:none; color: var(--teal); font-size:13px; margin-bottom:10px;"></div>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Email</label>
       <input id="edit-emp-email" type="email" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">New PIN (leave blank to keep current)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">New PIN (leave blank to keep current)</label>
       <input id="edit-emp-pin" placeholder="4-digit PIN" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Hourly rate (used for profit reports)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Hourly rate (used for profit reports)</label>
       <input id="edit-emp-hourly-rate" type="number" step="0.01" min="0" placeholder="e.g. 22.50" style="margin-bottom:16px;" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Break length (for the 5-min-left reminder)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Break length (for the 5-min-left reminder)</label>
       <select id="edit-emp-break-minutes" style="margin-bottom:16px;">
         <option value="30">30 minutes</option>
         <option value="60">60 minutes</option>
       </select>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Phone</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Phone</label>
       <input id="edit-emp-phone" placeholder="(555) 555-5555" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Street address</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Street address</label>
       <input id="edit-emp-street" placeholder="123 Main St" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">City</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">City</label>
       <input id="edit-emp-city" placeholder="Denver" />
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">State</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">State</label>
           <input id="edit-emp-state" placeholder="CO" />
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Zip</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Zip</label>
           <input id="edit-emp-zip" placeholder="80202" style="margin-bottom:16px;" />
         </div>
       </div>
@@ -567,7 +567,7 @@
     </div>
   </div>
   <div class="anim-popover" id="anim-popover">
-    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; margin-bottom:10px;">Clock-in animations</div>
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; margin-bottom:10px;">Clock-in animations</div>
     <label style="font-size:13px; color:var(--ink); display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px;">
       <input type="radio" name="anim-popover-choice" value="none" style="width:16px; height:16px; margin:0;" onchange="submitAnimationsPopover()" />
       No animation
@@ -596,22 +596,22 @@
       <input type="radio" name="anim-popover-choice" value="christmas" style="width:16px; height:16px; margin:0;" onchange="submitAnimationsPopover()" />
       Christmas / Winter
     </label>
-    <div id="anim-popover-status" style="font-size:11px; margin-top:8px; display:none;"></div>
+    <div id="anim-popover-status" style="font-size:12px; margin-top:8px; display:none;"></div>
   </div>
   <div class="anim-popover" id="rate-popover">
-    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; margin-bottom:10px;">Hourly rate</div>
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; margin-bottom:10px;">Hourly rate</div>
     <input id="rate-popover-input" type="number" min="0" step="0.01" placeholder="e.g. 22.50" style="margin-bottom:8px;" />
     <button class="btn-primary" style="width:auto;" onclick="submitRatePopover()">Save</button>
-    <div id="rate-popover-status" style="font-size:11px; margin-top:8px; display:none;"></div>
+    <div id="rate-popover-status" style="font-size:12px; margin-top:8px; display:none;"></div>
   </div>
   <div class="modal-overlay" id="crew-modal" onclick="if(event.target===this) closeCrewModal();">
     <div class="modal-box" style="width:380px;">
       <button class="modal-close" onclick="closeCrewModal()">&times;</button>
       <h2 id="crew-modal-title" style="margin-top:0;">New team</h2>
       <div id="crew-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Team name</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Team name</label>
       <input id="crew-name-input" placeholder="e.g. Roofing team A" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Members</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Members</label>
       <div id="crew-members-list" class="checkbox-list"></div>
       <button class="btn-primary" style="width:auto;" onclick="submitCrew()">Save team</button>
     </div>
@@ -621,16 +621,16 @@
     <div class="modal-box" style="width:640px; max-width:95vw;">
       <button class="modal-close" onclick="closeRouteModal()">&times;</button>
       <h2 style="margin-top:0;">Build a Route</h2>
-      <p style="font-size:12px; color:var(--muted); margin:0 0 14px;">
+      <p style="font-size:13px; color:var(--muted); margin:0 0 14px;">
         Pulls in a day's scheduled jobs for one employee or a whole team, and orders the stops for the fastest round trip starting and ending back at the shop. Free to build -- no cost per route.
       </p>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
         <div style="flex:1; min-width:140px;">
-          <label style="font-size:12px; color:var(--muted);">Date</label>
+          <label style="font-size:13px; color:var(--muted);">Date</label>
           <input type="date" id="route-date-input" onchange="loadRouteCandidates()" />
         </div>
         <div style="flex:2; min-width:200px;">
-          <label style="font-size:12px; color:var(--muted);">Employee or team</label>
+          <label style="font-size:13px; color:var(--muted);">Employee or team</label>
           <select id="route-target-select" onchange="loadRouteCandidates()">
             <option value="">Select...</option>
           </select>
@@ -638,7 +638,7 @@
       </div>
 
       <div id="route-candidates-section" style="display:none;">
-        <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Stops scheduled that day (uncheck any to leave out):</div>
+        <div style="font-size:13px; color:var(--muted); margin-bottom:6px;">Stops scheduled that day (uncheck any to leave out):</div>
         <div id="route-candidates-list"></div>
         <div id="route-geocode-retry-wrap" style="display:none; margin-top:8px;">
           <button id="route-geocode-retry-btn" class="btn-secondary" style="width:auto;" onclick="retryGeocodeCandidates()">Retry locating addresses</button>
@@ -660,7 +660,7 @@
         <div id="route-stops-list"></div>
       </div>
 
-      <p style="font-size:11px; color:var(--muted); margin:14px 0 4px;">
+      <p style="font-size:12px; color:var(--muted); margin:14px 0 4px;">
         <span style="color:#1E88FF;">&#9679;</span> on-the-clock employees &nbsp;
         <span style="color:var(--success);">&#9679;</span> shop &nbsp;
         <span style="color:#C1502E;">&#9679;</span> route stops
@@ -674,26 +674,26 @@
       <button class="modal-close" onclick="cancelJobModal()">&times;</button>
       <h2 id="job-modal-title" style="margin-top:0;">New event</h2>
       <div id="job-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Customer (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Customer (optional)</label>
       <div style="position:relative; margin-bottom:14px;">
         <input id="job-customer-search-input" placeholder="Type a customer name..." autocomplete="off"
           oninput="onJobCustomerSearchInput()" onfocus="showJobCustomerDropdown()" style="margin-bottom:0;" />
         <div id="job-customer-dropdown" style="display:none; position:absolute; z-index:20; top:100%; left:0; right:0; margin-top:2px; background:var(--surface); border:1.5px solid var(--line); border-radius:8px; max-height:220px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.14);"></div>
       </div>
       <input type="hidden" id="job-customer-input" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Event title</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Event title</label>
       <input id="job-title-input" placeholder="e.g. Smith residence re-roof, team meeting" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Type</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Type</label>
       <select id="job-type-input">
         <option value="job">Job</option>
         <option value="personal">Personal</option>
         <option value="other">Other</option>
       </select>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="job-notes-input" placeholder="Any details the team should know" />
 
       <div id="job-attachments-section" style="display:none; margin:14px 0;">
-        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Attachments</label>
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Attachments</label>
         <div id="job-attachments-list" style="margin-bottom:8px;"></div>
         <input type="file" id="job-attachment-file-input" style="display:none;" onchange="onJobAttachmentFileSelected(event)" />
         <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('job-attachment-file-input').click()">+ Add attachment</button>
@@ -701,27 +701,27 @@
 
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Start date</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Start date</label>
           <input id="job-start-input" type="date" />
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">End date</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">End date</label>
           <input id="job-end-input" type="date" />
         </div>
       </div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Time</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Time</label>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
         <input id="job-time-input" type="time" style="flex:1; margin-bottom:0;" />
-        <label style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer;">
+        <label style="font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer;">
           <input id="job-no-time-input" type="checkbox" style="width:15px; height:15px; margin:0;" onchange="toggleJobTimeInput()" />
           No specific time
         </label>
       </div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Color</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Color</label>
       <div class="color-swatches" id="job-color-swatches"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Assign a team (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Assign a team (optional)</label>
       <div id="job-crews-list" class="checkbox-list"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Assign individual employees (optional)</label>
       <div id="job-employees-list" class="checkbox-list"></div>
 
       <button class="btn-primary" style="width:auto;" onclick="submitJob()">Save event</button>
@@ -740,15 +740,15 @@
       <button class="modal-close" onclick="closeCustomerModal()">&times;</button>
       <h2 id="customer-modal-title" style="margin-top:0;">New customer</h2>
       <div id="customer-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Name</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Name</label>
       <input id="customer-name-input" placeholder="e.g. Smith" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Company name (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Company name (optional)</label>
       <input id="customer-company-name-input" placeholder="e.g. Smith Roofing LLC" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Phone</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Phone</label>
       <input id="customer-phone-input" placeholder="(555) 555-5555" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Email</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Email</label>
       <input id="customer-email-input" type="email" placeholder="customer@email.com" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Street address</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Street address</label>
       <div style="position:relative;">
         <input id="customer-street-input" placeholder="Start typing an address..." autocomplete="off"
           oninput="onCustomerAddressInput()" onfocus="onCustomerAddressInput()"
@@ -757,19 +757,19 @@
       </div>
       <div style="display:flex; gap:10px;">
         <div style="flex:2;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">City</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">City</label>
           <input id="customer-city-input" placeholder="Denver" oninput="clearCustomerGeocodeStash()" />
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">State</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">State</label>
           <input id="customer-state-input" placeholder="CO" oninput="clearCustomerGeocodeStash()" />
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Zip</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Zip</label>
           <input id="customer-zip-input" placeholder="80202" oninput="clearCustomerGeocodeStash()" />
         </div>
       </div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="customer-notes-input" placeholder="Any details worth remembering" />
       <button class="btn-primary" style="width:auto;" onclick="submitCustomer()">Save customer</button>
     </div>
@@ -790,12 +790,12 @@
       <div id="invoice-payment-history" style="display:none; margin-bottom:14px;"></div>
       <div id="invoice-modal-error" class="error" style="display:none;"></div>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Customer</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Customer</label>
       <select id="invoice-customer-input" onchange="recalcInvoiceTotals()"></select>
 
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Payment terms</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Payment terms</label>
           <select id="invoice-terms-input" onchange="renderInvoiceDueDatePreview()">
             <option value="due_on_receipt">Due on receipt</option>
             <option value="net_15">Net 15</option>
@@ -805,21 +805,21 @@
           </select>
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
           <input id="invoice-issue-date-input" type="date" onchange="renderInvoiceDueDatePreview()" />
         </div>
       </div>
-      <p id="invoice-due-date-preview" style="font-size:12px; color:var(--muted); margin-top:-6px;"></p>
+      <p id="invoice-due-date-preview" style="font-size:13px; color:var(--muted); margin-top:-6px;"></p>
 
       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin: 4px 0 12px;">
         <input type="checkbox" id="invoice-allow-partial-input" style="width:16px; height:16px; margin:0; flex-shrink:0;" />
         <span style="font-size:13px;">Allow partial payments (up to 4)</span>
       </label>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
       <input id="invoice-notes-input" placeholder="Payment instructions, job reference, etc." />
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Line items</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Line items</label>
       <div id="invoice-line-items-list"></div>
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <select id="invoice-catalog-picker" onchange="addLineItemFromCatalog()" style="flex:1;">
@@ -828,7 +828,7 @@
         <button class="btn-secondary" style="width:auto; white-space:nowrap;" onclick="addInvoiceLineItemRow()">+ Blank line item</button>
       </div>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Tax rate (%, optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Tax rate (%, optional)</label>
       <input id="invoice-tax-rate-input" type="number" min="0" step="0.01" placeholder="0" oninput="recalcInvoiceTotals()" style="max-width:140px;" />
 
       <div class="invoice-totals">
@@ -838,13 +838,13 @@
       </div>
 
       <div id="invoice-attachments-section" style="display:none; margin:14px 0;">
-        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Attachments</label>
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Attachments</label>
         <div id="invoice-attachments-list" style="margin-bottom:8px;"></div>
         <input type="file" id="invoice-attachment-file-input" style="display:none;" onchange="onInvoiceAttachmentFileSelected(event)" />
         <button class="btn-secondary" style="width:auto;" onclick="document.getElementById('invoice-attachment-file-input').click()">+ Add attachment</button>
       </div>
 
-      <p id="invoice-save-hint" style="font-size:11px; color:var(--muted); margin:2px 0 0;">Saving emails this invoice to the customer right away, unless they don't have an email on file.</p>
+      <p id="invoice-save-hint" style="font-size:12px; color:var(--muted); margin:2px 0 0;">Saving emails this invoice to the customer right away, unless they don't have an email on file.</p>
       <div id="invoice-modal-actions" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn-primary" id="invoice-save-btn" style="width:auto;" onclick="submitInvoice()">Save &amp; send to customer</button>
         <button class="save-btn" id="invoice-viewpdf-btn" style="display:none;" onclick="viewInvoicePdf(editingInvoiceId)">View PDF</button>
@@ -864,24 +864,24 @@
       <div id="barcode-scan-error" class="error" style="display:none;"></div>
       <input type="file" id="barcode-scan-file-input" accept="image/*" capture="environment" style="display:none;" onchange="handleBarcodeFileCapture(event)" />
       <button class="btn-primary" style="width:100%; margin-bottom:4px;" onclick="document.getElementById('barcode-scan-file-input').click()">Use camera app for a sharper photo</button>
-      <p style="font-size:11px; color:var(--muted); text-align:center; margin:0 0 10px;">Recommended -- opens your phone's real camera app instead of the in-app preview. Back off enough that the WHOLE barcode, plus a little white space around it, fits in the photo -- getting too close can crop the barcode or cut off the blank margin it needs to be readable.</p>
-      <p style="font-size:11px; color:var(--muted); text-align:center; margin:0 0 6px; text-transform:uppercase; letter-spacing:0.05em;">or use the live scanner</p>
+      <p style="font-size:12px; color:var(--muted); text-align:center; margin:0 0 10px;">Recommended -- opens your phone's real camera app instead of the in-app preview. Back off enough that the WHOLE barcode, plus a little white space around it, fits in the photo -- getting too close can crop the barcode or cut off the blank margin it needs to be readable.</p>
+      <p style="font-size:12px; color:var(--muted); text-align:center; margin:0 0 6px; text-transform:uppercase; letter-spacing:0.05em;">or use the live scanner</p>
       <div id="barcode-scan-camera-wrap" style="position:relative; background:#000; border-radius:8px; overflow:hidden; margin-bottom:8px; cursor:pointer; height:38vh; max-height:320px;" onclick="handleBarcodeScanTap(event)" title="Tap to refocus">
         <video id="barcode-scan-video" style="width:100%; height:100%; display:block; object-fit:cover;" muted playsinline></video>
-        <button id="barcode-scan-torch-btn" onclick="event.stopPropagation(); toggleBarcodeScanTorch()" style="display:none; position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.55); color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer;">Flashlight on</button>
+        <button id="barcode-scan-torch-btn" onclick="event.stopPropagation(); toggleBarcodeScanTorch()" style="display:none; position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.55); color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Flashlight on</button>
       </div>
       <div id="barcode-scan-zoom-wrap" style="display:none; align-items:center; gap:8px; margin-bottom:8px;">
-        <span style="font-size:11px; color:var(--muted); white-space:nowrap;">Zoom</span>
+        <span style="font-size:12px; color:var(--muted); white-space:nowrap;">Zoom</span>
         <input id="barcode-scan-zoom-input" type="range" style="flex:1;" oninput="handleBarcodeScanZoom(this.value)" />
       </div>
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-        <span style="font-size:11px; color:var(--muted); white-space:nowrap;">Focus</span>
+        <span style="font-size:12px; color:var(--muted); white-space:nowrap;">Focus</span>
         <div style="flex:1; height:6px; background:var(--line); border-radius:3px; overflow:hidden;">
           <div id="barcode-scan-sharpness-bar" style="height:100%; width:0%; background:var(--teal); transition:width 0.15s linear;"></div>
         </div>
       </div>
       <button class="btn-secondary" id="barcode-scan-capture-btn" style="width:100%; margin-bottom:8px;" onclick="captureBarcodeStill()">Capture photo</button>
-      <p id="barcode-scan-status" style="font-size:12px; color:var(--muted);">Point the camera at a barcode and hold steady. Tap the video to refocus, or tap Capture photo to grab a sharp still -- the Focus bar fills in as it sharpens and will auto-capture once it's high.</p>
+      <p id="barcode-scan-status" style="font-size:13px; color:var(--muted);">Point the camera at a barcode and hold steady. Tap the video to refocus, or tap Capture photo to grab a sharp still -- the Focus bar fills in as it sharpens and will auto-capture once it's high.</p>
       <div id="barcode-scan-result" style="display:none;"></div>
     </div>
   </div>
@@ -891,9 +891,9 @@
       <button class="modal-close" onclick="closeCatalogItemModal()">&times;</button>
       <h2 id="catalog-item-modal-title" style="margin-top:0;">New catalog item</h2>
       <div id="catalog-item-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Name / description</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Name / description</label>
       <input id="catalog-item-name-input" placeholder="e.g. Service call fee" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Default unit price</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Default unit price</label>
       <input id="catalog-item-price-input" type="number" min="0" step="0.01" placeholder="0.00" />
       <button class="btn-primary" style="width:auto;" onclick="submitCatalogItem()">Save item</button>
     </div>
@@ -916,12 +916,12 @@
 
       <div id="pull-sheet-picker-step">
         <button class="btn-secondary" style="width:auto; margin-bottom:12px;" onclick="openManualPullSheetStep()">Start a blank pull sheet</button>
-        <p style="font-size:12px; color:var(--muted);">Or choose the quote or invoice this pull sheet is for. Only jobs with inventory-tracked items still left to pull are listed.</p>
+        <p style="font-size:13px; color:var(--muted);">Or choose the quote or invoice this pull sheet is for. Only jobs with inventory-tracked items still left to pull are listed.</p>
         <div id="pull-sheet-source-list"></div>
       </div>
 
       <div id="pull-sheet-manual-step" style="display:none;">
-        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">What's this for? (optional)</label>
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">What's this for? (optional)</label>
         <input id="pull-sheet-manual-label" placeholder="e.g. Restocking the van" style="margin-bottom:10px;" />
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <select id="pull-sheet-manual-item-picker" style="flex:1;"></select>
@@ -958,13 +958,13 @@
       <button class="modal-close" onclick="closeExpenseModal()">&times;</button>
       <h2 id="expense-modal-title" style="margin-top:0;">New expense</h2>
       <div id="expense-modal-error" class="error" style="display:none;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
       <input id="expense-date-input" type="date" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Amount</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Amount</label>
       <input id="expense-amount-input" type="number" min="0" step="0.01" placeholder="0.00" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Description (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Description (optional)</label>
       <input id="expense-description-input" placeholder="e.g. Cleaning supplies" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Job (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Job (optional)</label>
       <select id="expense-job-input" style="margin-bottom:16px;">
         <option value="">— general expense, no job —</option>
       </select>
@@ -976,10 +976,10 @@
     <div class="modal-box" style="width:320px;">
       <button class="modal-close" onclick="closeMarkPaidModal()">&times;</button>
       <h2 style="margin-top:0;">Mark as paid</h2>
-      <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+      <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
         This doesn't process a payment -- it just records how the customer paid.
       </p>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Payment method</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Payment method</label>
       <select id="mark-paid-method-input" onchange="toggleMarkPaidCheckNumberField()">
         <option value="check">Check</option>
         <option value="cash">Cash</option>
@@ -987,7 +987,7 @@
         <option value="other">Other</option>
       </select>
       <div id="mark-paid-check-number-wrap">
-        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Check number (optional)</label>
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Check number (optional)</label>
         <input id="mark-paid-check-number-input" placeholder="e.g. 1042" style="margin-bottom:16px;" />
       </div>
       <button class="btn-primary" style="width:auto;" onclick="submitMarkPaid()">Confirm</button>
@@ -999,10 +999,10 @@
     <div class="modal-box" style="width:320px;">
       <button class="modal-close" onclick="closeRecordPaymentModal()">&times;</button>
       <h2 style="margin-top:0;">Record a payment</h2>
-      <p id="record-payment-balance-hint" style="font-size:12px; color:var(--muted); margin-top:-8px;"></p>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Amount</label>
+      <p id="record-payment-balance-hint" style="font-size:13px; color:var(--muted); margin-top:-8px;"></p>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Amount</label>
       <input id="record-payment-amount-input" type="number" min="0.01" step="0.01" placeholder="0.00" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Payment method</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Payment method</label>
       <select id="record-payment-method-input" onchange="toggleRecordPaymentCheckNumberField()">
         <option value="check">Check</option>
         <option value="cash">Cash</option>
@@ -1010,7 +1010,7 @@
         <option value="other">Other</option>
       </select>
       <div id="record-payment-check-number-wrap">
-        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Check number (optional)</label>
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Check number (optional)</label>
         <input id="record-payment-check-number-input" placeholder="e.g. 1042" style="margin-bottom:16px;" />
       </div>
       <button class="btn-primary" style="width:auto;" onclick="submitRecordPayment()">Record payment</button>
@@ -1022,7 +1022,7 @@
     <div class="modal-box" style="width:360px;">
       <button class="modal-close" onclick="closeResendReceiptModal()">&times;</button>
       <h2 style="margin-top:0;">Resend receipt</h2>
-      <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+      <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
         Sends the same payment confirmation email for this invoice again.
       </p>
       <label style="font-size:13px; color:var(--ink); display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:8px;">
@@ -1037,7 +1037,7 @@
       <input id="resend-receipt-email-input" type="email" placeholder="name@example.com" disabled style="margin-bottom:16px;" />
       <button class="btn-primary" style="width:auto;" onclick="submitResendReceipt()">Send</button>
       <div id="resend-receipt-error" class="error" style="display:none; margin-top:10px;"></div>
-      <div id="resend-receipt-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+      <div id="resend-receipt-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
     </div>
   </div>
 
@@ -1045,7 +1045,7 @@
     <div class="modal-box" style="width:520px; max-height:80vh; overflow-y:auto;">
       <button class="modal-close" onclick="closeReportBreakdownModal()">&times;</button>
       <h2 id="report-breakdown-modal-title" style="margin-top:0;">Breakdown</h2>
-      <div id="report-breakdown-modal-subtitle" style="font-size:12px; color:var(--muted); margin-top:-8px; margin-bottom:12px;"></div>
+      <div id="report-breakdown-modal-subtitle" style="font-size:13px; color:var(--muted); margin-top:-8px; margin-bottom:12px;"></div>
       <div id="report-breakdown-modal-body"></div>
     </div>
   </div>
@@ -1057,16 +1057,16 @@
       <div id="quote-modal-status" style="display:none; margin-bottom:10px;"></div>
       <div id="quote-modal-error" class="error" style="display:none;"></div>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Customer</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Customer</label>
       <select id="quote-customer-input"></select>
 
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
           <input id="quote-issue-date-input" type="date" onchange="renderQuoteExpirationPreview()" />
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Valid for</label>
+          <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Valid for</label>
           <select id="quote-validity-input" onchange="renderQuoteExpirationPreview()">
             <option value="">No expiration</option>
             <option value="30">30 days</option>
@@ -1077,12 +1077,12 @@
           </select>
         </div>
       </div>
-      <p id="quote-expiration-preview" style="font-size:12px; color:var(--muted); margin-top:-6px;"></p>
+      <p id="quote-expiration-preview" style="font-size:13px; color:var(--muted); margin-top:-6px;"></p>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Notes (optional)</label>
       <textarea id="quote-notes-input" placeholder="Scope of work, exclusions, etc." rows="2" style="width:100%; resize:vertical; font-family:inherit;"></textarea>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Line items</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Line items</label>
       <div id="quote-line-items-list"></div>
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <select id="quote-catalog-picker" onchange="addLineItemFromCatalogToQuote()" style="flex:1;">
@@ -1091,7 +1091,7 @@
         <button class="btn-secondary" style="width:auto; white-space:nowrap;" onclick="addQuoteLineItemRow()">+ Blank line item</button>
       </div>
 
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Tax rate (%, optional)</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Tax rate (%, optional)</label>
       <input id="quote-tax-rate-input" type="number" min="0" step="0.01" placeholder="0" oninput="recalcQuoteTotals()" style="max-width:140px;" />
 
       <div class="invoice-totals">
@@ -1110,12 +1110,12 @@
         <button class="save-btn" id="quote-delete-btn" style="display:none; background: #C1502E;" onclick="deleteQuoteConfirm(editingQuoteId)">Delete</button>
       </div>
       <div id="quote-convert-actions" style="display:none; margin-top:14px; padding-top:14px; border-top:1.5px solid var(--line);">
-        <p style="font-size:12px; color:var(--muted); margin:0 0 8px;">Once the customer's on board:</p>
+        <p style="font-size:13px; color:var(--muted); margin:0 0 8px;">Once the customer's on board:</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="save-btn" style="background: var(--teal-deep);" onclick="openConvertQuoteToJobModal(editingQuoteId)">Convert to scheduled job&hellip;</button>
           <button class="save-btn" style="background: var(--teal-deep);" onclick="openConvertQuoteToInvoiceModal(editingQuoteId)">Convert to invoice&hellip;</button>
         </div>
-        <div id="quote-converted-note" style="font-size:12px; color:var(--muted); margin-top:8px;"></div>
+        <div id="quote-converted-note" style="font-size:13px; color:var(--muted); margin-top:8px;"></div>
       </div>
     </div>
   </div>
@@ -1124,10 +1124,10 @@
     <div class="modal-box" style="width:340px;">
       <button class="modal-close" onclick="closeConvertQuoteToInvoiceModal()">&times;</button>
       <h2 style="margin-top:0;">Convert to invoice</h2>
-      <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+      <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
         Creates a draft invoice with the same customer and line items. You'll review and send it from the Invoices tab.
       </p>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Payment terms</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Payment terms</label>
       <select id="convert-invoice-terms-input">
         <option value="due_on_receipt">Due on receipt</option>
         <option value="net_15">Net 15</option>
@@ -1135,7 +1135,7 @@
         <option value="net_60">Net 60</option>
         <option value="net_90">Net 90</option>
       </select>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Issue date</label>
       <input id="convert-invoice-issue-date-input" type="date" />
       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin: 4px 0 12px;">
         <input type="checkbox" id="convert-invoice-allow-partial-input" style="width:16px; height:16px; margin:0; flex-shrink:0;" />
@@ -1151,12 +1151,12 @@
       <button class="modal-close" onclick="closePasswordModal()">&times;</button>
       <h2 style="margin-top:0;">Change password</h2>
       <div id="password-modal-error" class="error" style="display:none;"></div>
-      <div id="password-modal-success" style="display:none; color: var(--teal); font-size:12px; margin-bottom:10px;"></div>
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Current password</label>
+      <div id="password-modal-success" style="display:none; color: var(--teal); font-size:13px; margin-bottom:10px;"></div>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Current password</label>
       <input id="current-password-input" type="password" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">New password</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">New password</label>
       <input id="new-password-input" type="password" placeholder="At least 8 characters" />
-      <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Confirm new password</label>
+      <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Confirm new password</label>
       <input id="confirm-password-input" type="password" />
       <button class="btn-primary" onclick="submitChangePassword()">Update password</button>
     </div>
@@ -1228,7 +1228,7 @@
           <div class="cal-toolbar">
             <div class="cal-nav">
               <button class="cal-nav-btn" onclick="navigateOverviewCal(-1)">&larr;</button>
-              <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:12px;" onclick="goToOverviewToday()">Today</button>
+              <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="goToOverviewToday()">Today</button>
               <button class="cal-nav-btn" onclick="navigateOverviewCal(1)">&rarr;</button>
             </div>
           </div>
@@ -1262,13 +1262,13 @@
         </div>
         <button class="btn-secondary" onclick="exportQuickBooksCsv()">Export to QuickBooks (CSV)</button>
       </div>
-      <p style="font-size:12px; color:var(--muted); margin-top:-8px;">Click an employee below to view or edit their hours.</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:-8px;">Click an employee below to view or edit their hours.</p>
       <table>
         <thead><tr><th>Name</th><th>Email</th><th>Clock-in Animations</th><th>Pay Rate</th><th>Status</th><th></th></tr></thead>
         <tbody id="employees-body"></tbody>
       </table>
       <h3 style="margin:16px 0 0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleInactiveEmployeesSection()">
-        <span id="inactive-employees-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+        <span id="inactive-employees-toggle-icon" style="display:inline-block; font-size:13px; transition: transform 0.15s ease;">&#9656;</span>
         Inactive employees <span id="inactive-employees-count-badge" style="font-weight:400; color:var(--muted); font-size:13px;"></span>
       </h3>
       <div id="inactive-employees-section-body" style="display:none; margin-top:10px;">
@@ -1283,7 +1283,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleCrewsSection()">
-            <span id="crews-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+            <span id="crews-toggle-icon" style="display:inline-block; font-size:13px; transition: transform 0.15s ease;">&#9656;</span>
             Teams <span id="crews-count-badge" style="font-weight:400; color:var(--muted); font-size:13px;"></span>
           </h3>
           <div style="position:relative; flex:1; min-width:180px; max-width:320px;">
@@ -1294,7 +1294,7 @@
           <button class="btn-primary" style="width:auto;" onclick="openCrewModal()">New team</button>
         </div>
         <div id="crews-section-body" style="display:none; margin-top:10px;">
-          <p style="font-size:12px; color:var(--muted);">A team is a reusable group of employees you can assign to an event all at once.</p>
+          <p style="font-size:13px; color:var(--muted);">A team is a reusable group of employees you can assign to an event all at once.</p>
           <div id="crews-list"></div>
         </div>
       </div>
@@ -1302,7 +1302,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
           <h3 style="margin:0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleTimeOffSection()">
-            <span id="timeoff-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+            <span id="timeoff-toggle-icon" style="display:inline-block; font-size:13px; transition: transform 0.15s ease;">&#9656;</span>
             Time Off Requests <span id="timeoff-pending-badge" style="font-weight:400; color:var(--muted); font-size:13px;"></span>
           </h3>
         </div>
@@ -1312,7 +1312,7 @@
               <span id="timeoff-history-toggle-label">Show history</span>
             </button>
           </div>
-          <p style="font-size:12px; color:var(--muted);">
+          <p style="font-size:13px; color:var(--muted);">
             Approving adds it to the calendar below in bright yellow and notifies the employee. Denying just notifies them -- nothing gets scheduled.
           </p>
           <div id="timeoff-pending-list"></div>
@@ -1326,7 +1326,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <h3 style="margin:0;">Routes</h3>
-            <p style="font-size:12px; color:var(--muted); margin:6px 0 0;">
+            <p style="font-size:13px; color:var(--muted); margin:6px 0 0;">
               Optimized stop order for an employee or team's day, starting and ending back at the shop. Free to build -- no cost per route.
             </p>
           </div>
@@ -1342,12 +1342,12 @@
         <div class="cal-toolbar">
           <div class="cal-nav">
             <button class="cal-nav-btn" onclick="navigateSchedule(-1)">&larr;</button>
-            <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:12px;" onclick="goToToday()">Today</button>
+            <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="goToToday()">Today</button>
             <button class="cal-nav-btn" onclick="navigateSchedule(1)">&rarr;</button>
           </div>
           <div class="cal-range-select">
-            <label style="font-size:11px; color:var(--muted); margin-right:6px;">Show</label>
-            <select id="schedule-months-select" onchange="changeScheduleMonths()" style="padding:6px 8px; border-radius:4px; border:1.5px solid var(--line); font-size:12px;">
+            <label style="font-size:12px; color:var(--muted); margin-right:6px;">Show</label>
+            <select id="schedule-months-select" onchange="changeScheduleMonths()" style="padding:6px 8px; border-radius:4px; border:1.5px solid var(--line); font-size:13px;">
               <option value="1">1 month</option>
               <option value="3">3 months</option>
               <option value="6">6 months</option>
@@ -1370,8 +1370,8 @@
           </div>
         </div>
         <input type="file" id="customer-import-input" accept=".csv,text/csv" style="display:none;" onchange="handleCustomerImportFile(event)" />
-        <p style="font-size:12px; color:var(--muted);">Your customer directory. Add customers here, then pick them when creating an event.</p>
-        <p style="font-size:11px; color:var(--muted); margin-top:-6px;">
+        <p style="font-size:13px; color:var(--muted);">Your customer directory. Add customers here, then pick them when creating an event.</p>
+        <p style="font-size:12px; color:var(--muted); margin-top:-6px;">
           Import expects a CSV with a Name column (Company Name, Phone, Email, Street, City, State, Zip, Notes are optional). Rows matching an existing customer's name are skipped.
         </p>
         <input id="customer-search-input" placeholder="Search by name..." style="margin-bottom:10px;" oninput="renderCustomersList()" />
@@ -1393,19 +1393,19 @@
           <h3 style="margin-top:0;">Billing overview</h3>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('invoices')">
-              <div style="font-size:12px; color:var(--muted);">Paid invoices</div>
+              <div style="font-size:13px; color:var(--muted);">Paid invoices</div>
               <div class="stat-value" style="font-size:22px;" id="billing-overview-paid-total"></div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;" id="billing-overview-paid-count"></div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;" id="billing-overview-paid-count"></div>
             </div>
             <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('invoices')">
-              <div style="font-size:12px; color:var(--muted);">Unpaid invoices</div>
+              <div style="font-size:13px; color:var(--muted);">Unpaid invoices</div>
               <div class="stat-value" style="font-size:22px;" id="billing-overview-unpaid-total"></div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;" id="billing-overview-unpaid-count"></div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;" id="billing-overview-unpaid-count"></div>
             </div>
             <div class="report-stat-card" style="cursor:pointer;" onclick="showBillingSubtab('quotes')">
-              <div style="font-size:12px; color:var(--muted);">Pending quotes</div>
+              <div style="font-size:13px; color:var(--muted);">Pending quotes</div>
               <div class="stat-value" style="font-size:22px;" id="billing-overview-pending-total"></div>
-              <div style="font-size:11px; color:var(--muted); margin-top:2px;" id="billing-overview-pending-count"></div>
+              <div style="font-size:12px; color:var(--muted); margin-top:2px;" id="billing-overview-pending-count"></div>
             </div>
           </div>
         </div>
@@ -1418,7 +1418,7 @@
         <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('quotes')">
           <div>
             <h3 style="margin:0;">Quotes</h3>
-            <p style="font-size:12px; color:var(--muted); margin:4px 0 0;" id="billing-overview-quotes-summary">Estimates for work that hasn't been booked yet.</p>
+            <p style="font-size:13px; color:var(--muted); margin:4px 0 0;" id="billing-overview-quotes-summary">Estimates for work that hasn't been booked yet.</p>
           </div>
           <span style="color:var(--muted); font-size:22px;">&#8250;</span>
         </div>
@@ -1426,7 +1426,7 @@
         <div class="card" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="showBillingSubtab('invoices')">
           <div>
             <h3 style="margin:0;">Invoices</h3>
-            <p style="font-size:12px; color:var(--muted); margin:4px 0 0;" id="billing-overview-invoices-summary">Billed work, emailed to the customer once sent.</p>
+            <p style="font-size:13px; color:var(--muted); margin:4px 0 0;" id="billing-overview-invoices-summary">Billed work, emailed to the customer once sent.</p>
           </div>
           <span style="color:var(--muted); font-size:22px;">&#8250;</span>
         </div>
@@ -1444,7 +1444,7 @@
             <button class="btn-primary" style="width:auto;" onclick="openQuoteModal()">New quote</button>
           </div>
           <div style="margin-top:10px;">
-            <p style="font-size:12px; color:var(--muted);">
+            <p style="font-size:13px; color:var(--muted);">
               Quotes are estimates for work that hasn't been booked yet, emailed to the customer automatically as soon as
               you save one. Once a customer accepts, convert the quote into a scheduled job and/or an invoice -- no need
               to retype anything.
@@ -1466,7 +1466,7 @@
             <button class="btn-primary" style="width:auto;" onclick="openInvoiceModal()">New invoice</button>
           </div>
           <div style="margin-top:10px;">
-            <p style="font-size:12px; color:var(--muted);">
+            <p style="font-size:13px; color:var(--muted);">
               Invoices are created as drafts, then emailed to the customer once you click Send. The email includes a
               Pay now button for online card/bank payments, which marks the invoice paid automatically. Use Mark Paid
               yourself only for payments that came in another way (cash, check, a card run elsewhere).
@@ -1479,7 +1479,7 @@
       <div id="billing-subtab-transactions" class="billing-subtab-panel" style="display:none;">
         <div class="card">
           <h3 style="margin-top:0;">Transactions</h3>
-          <p style="font-size:12px; color:var(--muted);">
+          <p style="font-size:13px; color:var(--muted);">
             Every paid invoice -- in-person/phone payments you recorded yourself, and online payments collected
             automatically through Stripe.
           </p>
@@ -1491,7 +1491,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
             <button class="cal-nav-btn" onclick="navigateTransactions(-1)">&larr;</button>
-            <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:12px;" onclick="goToTransactionsToday()">Today</button>
+            <button class="btn-secondary" style="width:auto; padding:6px 12px; font-size:13px;" onclick="goToTransactionsToday()">Today</button>
             <button class="cal-nav-btn" onclick="navigateTransactions(1)">&rarr;</button>
             <strong id="transactions-period-label" style="margin-left:6px;"></strong>
           </div>
@@ -1509,7 +1509,7 @@
             <button class="btn-primary" style="width:auto;" onclick="openExpenseModal()">New expense</button>
           </div>
           <div style="margin-top:10px;">
-            <p style="font-size:12px; color:var(--muted);">
+            <p style="font-size:13px; color:var(--muted);">
               Materials, insurance, rent, or any other business cost -- logged here so Net Profit on the Reports tab
               reflects what you actually spent, not just labor.
             </p>
@@ -1527,9 +1527,9 @@
           <button class="billing-subtab-btn" data-inventory-subtab="settings" onclick="showInventorySubtab('settings')">Settings</button>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-secondary" style="width:auto; font-size:11px; padding:3px 12px; border-radius:999px;" onclick="openBuildPullSheetModal()">Build Pull Sheet</button>
-          <button class="btn-secondary" style="width:auto; font-size:11px; padding:3px 12px; border-radius:999px;" onclick="openBarcodeScanModal()">Scan barcode</button>
-          <button class="btn-secondary" style="width:auto; font-size:11px; padding:3px 12px; border-radius:999px;" onclick="goToNewCatalogItem()">+ New item</button>
+          <button class="btn-secondary" style="width:auto; font-size:12px; padding:3px 12px; border-radius:999px;" onclick="openBuildPullSheetModal()">Build Pull Sheet</button>
+          <button class="btn-secondary" style="width:auto; font-size:12px; padding:3px 12px; border-radius:999px;" onclick="openBarcodeScanModal()">Scan barcode</button>
+          <button class="btn-secondary" style="width:auto; font-size:12px; padding:3px 12px; border-radius:999px;" onclick="goToNewCatalogItem()">+ New item</button>
         </div>
       </div>
 
@@ -1537,13 +1537,13 @@
         <div id="inventory-summary-bubbles" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;"></div>
         <div class="card">
           <h3 style="margin-top:0;">Inventory <span id="inventory-count-badge" style="font-weight:400; color:var(--muted); font-size:13px;"></span></h3>
-          <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+          <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
             A quote alone never puts anything "on hold" -- items show up on hold once a pull sheet is built for the job
             or it's turned into an invoice, and come out of stock for good once that pull sheet is fulfilled or the
             invoice is paid in full. Turn tracking on for a catalog item and set its starting quantity/cost in the
             Settings tab above.
           </p>
-          <button class="btn-secondary" id="inventory-list-toggle-btn" style="width:auto; font-size:12px; padding:4px 12px; margin-bottom:8px;" onclick="toggleInventoryItemsList()">Show inventory items</button>
+          <button class="btn-secondary" id="inventory-list-toggle-btn" style="width:auto; font-size:13px; padding:4px 12px; margin-bottom:8px;" onclick="toggleInventoryItemsList()">Show inventory items</button>
           <div id="inventory-items-list-wrapper" style="display:none;">
             <table>
               <thead><tr><th>Item</th><th>Available</th><th>On hold</th><th>Unit cost</th><th>Total value</th></tr></thead>
@@ -1554,7 +1554,7 @@
 
         <div class="card" style="margin-top:16px;">
           <h3 style="margin-top:0;">Pull sheets</h3>
-          <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+          <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
             Picking lists built from a job's inventory-tracked items. Building one from a quote (or a standalone one)
             is what puts those items on hold; building one from an invoice doesn't add to the count since the invoice
             already reserved them. Marking one fulfilled removes those quantities from stock for good.
@@ -1565,7 +1565,7 @@
           </table>
 
           <h3 style="margin:16px 0 0; display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleFulfilledPullSheetsSection()">
-            <span id="fulfilled-pull-sheets-toggle-icon" style="display:inline-block; font-size:12px; transition: transform 0.15s ease;">&#9656;</span>
+            <span id="fulfilled-pull-sheets-toggle-icon" style="display:inline-block; font-size:13px; transition: transform 0.15s ease;">&#9656;</span>
             Fulfilled pull sheets <span id="fulfilled-pull-sheets-count-badge" style="font-weight:400; color:var(--muted); font-size:13px;"></span>
           </h3>
           <div id="fulfilled-pull-sheets-section-body" style="display:none; margin-top:10px;">
@@ -1591,13 +1591,13 @@
           </div>
           <input type="file" id="catalog-import-input" accept=".xlsx,.xls,.csv,text/csv" style="display:none;" onchange="handleCatalogImportFile(event)" />
           <div style="margin-top:10px;">
-            <p style="font-size:12px; color:var(--muted);">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
-            <p style="font-size:11px; color:var(--muted); margin-top:-6px;">
+            <p style="font-size:13px; color:var(--muted);">Recurring charges you can drop into a quote or invoice's line items with one click, instead of retyping them.</p>
+            <p style="font-size:12px; color:var(--muted); margin-top:-6px;">
               Import an Excel (.xlsx) or CSV file with a Name column. Unit Price, Quantity (on hand), and Unit Cost columns are
               all optional -- if a row has a Quantity or Cost, inventory tracking turns on for that item automatically. Rows
               matching an existing item's name are skipped.
             </p>
-            <button class="btn-secondary" id="catalog-list-toggle-btn" style="width:auto; font-size:12px; padding:4px 12px; margin-top:4px;" onclick="toggleCatalogItemsList()">Show catalog items</button>
+            <button class="btn-secondary" id="catalog-list-toggle-btn" style="width:auto; font-size:13px; padding:4px 12px; margin-top:4px;" onclick="toggleCatalogItemsList()">Show catalog items</button>
             <div id="catalog-items-list-wrapper" style="display:none; margin-top:10px;">
               <div id="catalog-items-list"></div>
             </div>
@@ -1608,7 +1608,7 @@
       <div id="inventory-subtab-settings" style="display:none;">
         <div class="card">
           <h3 style="margin-top:0;">Inventory settings</h3>
-          <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+          <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
             Turn on tracking for any catalog item, set its quantity on hand and cost, and set the low inventory
             level that triggers an alert. Editing quantity on hand here is also how you record a restock.
           </p>
@@ -1620,7 +1620,7 @@
     <section id="tab-reports" class="tab">
       <div class="card">
         <h3 style="margin-top:0;">Reports</h3>
-        <p style="font-size:12px; color:var(--muted);">Labor hours, invoiced totals, paid totals, and profit for a time range.</p>
+        <p style="font-size:13px; color:var(--muted);">Labor hours, invoiced totals, paid totals, and profit for a time range.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
           <button class="range-btn" data-range="1w" onclick="selectReportRange('1w')">1 Week</button>
           <button class="range-btn active" data-range="1m" onclick="selectReportRange('1m')">1 Month</button>
@@ -1633,7 +1633,7 @@
       </div>
       <div class="card" style="margin-top:16px;">
         <h3 style="margin:0 0 4px;">Gross &amp; Net Profit by Month</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:0;">Trailing 6 months, regardless of the range picker above.</p>
+        <p style="font-size:13px; color:var(--muted); margin-top:0;">Trailing 6 months, regardless of the range picker above.</p>
         <div id="monthly-profit-chart"></div>
       </div>
     </section>
@@ -1647,7 +1647,7 @@
       <div id="chat-subtab-direct" class="chat-subtab-panel">
         <div class="chat-split">
           <div class="chat-threads-col" id="chat-threads-list">
-            <p style="color:var(--muted); font-size:12px;">No chats yet.</p>
+            <p style="color:var(--muted); font-size:13px;">No chats yet.</p>
           </div>
           <div class="chat-thread-col">
             <div id="chat-thread-header" class="chat-thread-header" style="color:var(--muted); font-weight:400;">
@@ -1658,7 +1658,7 @@
               <input id="chat-message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault(); sendChatMessage();}" />
               <button class="btn-primary" style="width:auto;" onclick="sendChatMessage()">Send</button>
             </div>
-            <div id="chat-thread-offline-note" style="display:none; font-size:12px; color:var(--muted); margin-top:12px;">
+            <div id="chat-thread-offline-note" style="display:none; font-size:13px; color:var(--muted); margin-top:12px;">
               This employee isn't clocked in right now, so new messages can't be sent -- you can still see the conversation history above.
             </div>
           </div>
@@ -1671,7 +1671,7 @@
         </div>
         <div class="chat-split">
           <div class="chat-threads-col" id="team-chat-threads-list">
-            <p style="color:var(--muted); font-size:12px;">No team chats yet.</p>
+            <p style="color:var(--muted); font-size:13px;">No team chats yet.</p>
           </div>
           <div class="chat-thread-col">
             <div id="team-chat-thread-header" class="chat-thread-header" style="color:var(--muted); font-weight:400;">
@@ -1706,7 +1706,7 @@
       <div class="settings-grid">
       <div class="card">
         <h3 style="margin-top:0;">Appearance</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">Saved on this computer only -- other computers/phones keep their own setting.</p>
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">Saved on this computer only -- other computers/phones keep their own setting.</p>
         <div style="display:flex; gap:8px;">
           <button type="button" class="range-btn" id="theme-btn-day" onclick="setTheme('day')">&#9728;&#65039; Day</button>
           <button type="button" class="range-btn" id="theme-btn-night" onclick="setTheme('night')">&#127769; Night</button>
@@ -1715,19 +1715,19 @@
 
       <div class="card">
         <h3 style="margin-top:0;">Business name</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Shown on invoice/quote PDFs, and as the sender name your customers see on invoice and quote emails.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Business name</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Business name</label>
         <input id="company-name-input" placeholder="e.g. Modular Cleanrooms" style="margin-bottom:10px;" />
         <button class="btn-primary" style="width:auto;" onclick="saveCompanyName()">Save</button>
         <div id="company-name-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="company-name-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="company-name-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Company logo</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Shown at the top of every invoice PDF, and next to "Coll Timeclock" in the sidebar. PNG, JPEG, or WebP, up to 3MB.
         </p>
         <div id="company-logo-preview-wrap" style="display:none; margin-bottom:10px;">
@@ -1736,52 +1736,52 @@
         <input id="company-logo-input" type="file" accept="image/png,image/jpeg,image/webp" style="margin-bottom:10px;" onchange="handleLogoFileSelected(event)" />
         <button class="btn-secondary" id="remove-logo-btn" style="width:auto; display:none;" onclick="removeCompanyLogo()">Remove logo</button>
         <div id="company-logo-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="company-logo-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="company-logo-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card" id="stripe-connect-card">
         <h3 style="margin-top:0;">Get paid online</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Connect your own Stripe account so customer payments on your invoices go straight to your bank account, not ours. Stripe's own processing fees apply (2.9%+30&cent; card / 0.8% bank transfer), plus a 0.5% platform fee per payment.
         </p>
         <div id="stripe-connect-connected-row" style="display:none; align-items:center; gap:8px; margin-bottom:4px;">
           <span class="badge badge-paid">Connected</span>
-          <span style="font-size:12px; color:var(--muted);">Payments go directly to your Stripe account.</span>
+          <span style="font-size:13px; color:var(--muted);">Payments go directly to your Stripe account.</span>
         </div>
         <button id="stripe-connect-btn" class="btn-primary" style="width:auto; display:none;" onclick="startStripeConnect()">Connect Stripe</button>
-        <div id="stripe-connect-hint" style="display:none; font-size:12px; color:var(--muted); margin-top:8px;">Finish connecting in the browser tab that just opened, then come back and reopen Settings to see it marked as connected.</div>
+        <div id="stripe-connect-hint" style="display:none; font-size:13px; color:var(--muted); margin-top:8px;">Finish connecting in the browser tab that just opened, then come back and reopen Settings to see it marked as connected.</div>
         <div id="stripe-connect-error" class="error" style="display:none; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Payroll email</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Where "Submit Hours for Payroll" sends timesheet emails from your employees. Required before employees can submit hours.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Payroll email</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Payroll email</label>
         <input id="payroll-email-input" type="email" placeholder="payroll@company.com" style="margin-bottom:10px;" />
         <button class="btn-primary" style="width:auto;" onclick="savePayrollEmail()">Save</button>
         <div id="payroll-email-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="payroll-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="payroll-email-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Long shift alert</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Get a notification if an employee is still clocked in past this many hours -- handy for catching a forgotten clock-out.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Alert me after</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Alert me after</label>
         <select id="long-shift-alert-select" style="margin-bottom:10px; width:100%; padding:8px; border-radius:4px; border:1.5px solid var(--line);">
           <option value="">Off</option>
         </select>
         <button class="btn-primary" style="width:auto;" onclick="saveLongShiftAlert()">Save</button>
         <div id="long-shift-alert-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="long-shift-alert-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="long-shift-alert-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Overview profit bubbles</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Show the Gross Profit and Net Profit bubbles for the current month at the top of the Overview tab.
         </p>
         <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:0;">
@@ -1793,10 +1793,10 @@
 
       <div class="card">
         <h3 style="margin-top:0;">Pay schedule</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           How often your pay periods repeat. This controls what "Submit Hours for Payroll" bundles together.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Pay frequency</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Pay frequency</label>
         <select id="pay-frequency-select" style="margin-bottom:10px; width:100%; padding:8px; border-radius:4px; border:1.5px solid var(--line);" onchange="togglePayScheduleFields()">
           <option value="semi_monthly">1st &amp; 15th (semi-monthly)</option>
           <option value="biweekly">Bi-weekly</option>
@@ -1806,96 +1806,96 @@
         </select>
 
         <div id="pay-anchor-field" style="display:none;">
-          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Start date of a pay period</label>
-          <p style="font-size:11px; color:var(--muted); margin: 0 0 4px;">
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Start date of a pay period</label>
+          <p style="font-size:12px; color:var(--muted); margin: 0 0 4px;">
             Pick the first day of any one pay period you already know (e.g. the start of last pay period). Every period is calculated from this date.
           </p>
           <input id="pay-anchor-input" type="date" style="margin-bottom:10px;" />
         </div>
 
         <div id="pay-custom-days-field" style="display:none;">
-          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Days per pay period</label>
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Days per pay period</label>
           <input id="pay-custom-days-input" type="number" min="1" placeholder="e.g. 10" style="margin-bottom:10px;" />
         </div>
 
         <button class="btn-primary" style="width:auto;" onclick="savePaySchedule()">Save</button>
         <div id="pay-schedule-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="pay-schedule-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="pay-schedule-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Change admin email</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           This is the email you sign into this app with. Changing it requires your current password.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">New email</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">New email</label>
         <input id="change-email-new" type="email" placeholder="you@company.com" style="margin-bottom:10px;" />
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Current password</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Current password</label>
         <input id="change-email-password" type="password" style="margin-bottom:10px;" />
         <button class="btn-primary" style="width:auto;" onclick="submitChangeEmail()">Save</button>
         <div id="change-email-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="change-email-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="change-email-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Business timezone</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Where this business is located. Used to send automated emails (like invoice reminders) at a sensible local hour instead of a fixed one.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Timezone</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Timezone</label>
         <select id="company-timezone-select" style="margin-bottom:10px;"></select>
         <button class="btn-primary" style="width:auto;" onclick="saveCompanyTimezone()">Save</button>
         <div id="company-timezone-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="company-timezone-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="company-timezone-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Shop location</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           This is the location employees auto clock-in at when they arrive (and auto clock-out from when they leave). Start typing your shop's address below and pick it from the list -- or paste exact coordinates directly if you already have them.
         </p>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Address</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Address</label>
         <div style="position:relative; margin-bottom:10px;">
           <input id="shop-address-input" placeholder="Start typing an address..." autocomplete="off"
             oninput="onShopAddressInput()" onfocus="onShopAddressInput()"
             onblur="setTimeout(hideShopAddressSuggestions, 150)" />
           <div id="shop-address-suggestions" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:var(--surface); border:1.5px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); z-index:50; max-height:220px; overflow-y:auto;"></div>
         </div>
-        <div id="shop-address-picked" style="display:none; font-size:12px; color:var(--muted); margin:-6px 0 10px;"></div>
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Latitude</label>
+        <div id="shop-address-picked" style="display:none; font-size:13px; color:var(--muted); margin:-6px 0 10px;"></div>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Latitude</label>
         <input id="shop-lat-input" placeholder="e.g. 39.7392" style="margin-bottom:10px;" />
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Longitude</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Longitude</label>
         <input id="shop-lng-input" placeholder="e.g. -104.9903" style="margin-bottom:10px;" />
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Radius (meters)</label>
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Radius (meters)</label>
         <input id="shop-radius-input" placeholder="152" style="margin-bottom:10px;" />
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Auto clock-in time</label>
-        <p style="font-size:11px; color:var(--muted); margin: 0 0 4px;">
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Auto clock-in time</label>
+        <p style="font-size:12px; color:var(--muted); margin: 0 0 4px;">
           Employees won't get auto clocked in on arrival before this time, even if they're at the shop. Leave at 12:00 AM for no restriction.
         </p>
         <input id="clockin-time-input" type="time" style="margin-bottom:10px;" />
-        <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">Auto clock-out time</label>
-        <p style="font-size:11px; color:var(--muted); margin: 0 0 4px;">
+        <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Auto clock-out time</label>
+        <p style="font-size:12px; color:var(--muted); margin: 0 0 4px;">
           Employees still clocked in "In Town" get auto clocked out at this time if they've left the shop. Doesn't apply to "Traveling" shifts.
         </p>
         <input id="clockout-time-input" type="time" style="margin-bottom:10px;" />
         <button class="btn-primary" style="width:auto;" onclick="saveShopLocation()">Save</button>
         <div id="shop-location-error" class="error" style="display:none; margin-top:10px;"></div>
-        <div id="shop-location-success" style="display:none; color: var(--teal); font-size:12px; margin-top:10px;"></div>
+        <div id="shop-location-success" style="display:none; color: var(--teal); font-size:13px; margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">App updates</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Coll Timeclock checks for updates automatically. Use this if you want to check right now.
         </p>
         <button class="btn-secondary" style="width:auto;" onclick="manualCheckForUpdates()">Check for updates</button>
         <button class="btn-secondary" style="width:auto; margin-left:8px;" onclick="window.admin.openUpdateLog()">View update log</button>
-        <div id="update-settings-status" style="font-size:12px; color:var(--muted); margin-top:10px;"></div>
+        <div id="update-settings-status" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
       </div>
 
       <div class="card">
         <h3 style="margin-top:0;">Delete account</h3>
-        <p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+        <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
           Permanently deletes your company's Coll Timeclock account and all its data -- employees,
           time records, customers, invoices, and everything else. This can't be undone.
         </p>
@@ -2312,11 +2312,11 @@ async function loadOverview() {
         currentJob +
         '<div style="display:flex; gap:24px; margin-top:10px;">' +
           '<div>' +
-            '<div style="font-size:11px; color:var(--muted); text-transform:uppercase;">Regular hours</div>' +
+            '<div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Regular hours</div>' +
             '<div class="' + statValueClass + '">' + fmtDurationShort(e.regular_seconds) + '</div>' +
           '</div>' +
           '<div>' +
-            '<div style="font-size:11px; color:var(--muted); text-transform:uppercase;">Travel hours</div>' +
+            '<div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Travel hours</div>' +
             '<div class="' + statValueClass + '">' + fmtDurationShort(e.travel_seconds) + '</div>' +
           '</div>' +
         '</div>' +
@@ -2393,11 +2393,11 @@ async function renderEmployeeDetail(start, end) {
         breaks.map(function(b) {
           return '<div style="display:flex; gap:10px; align-items:end;">' +
             '<div>' +
-              '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:2px;">Break start</label>' +
+              '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:2px;">Break start</label>' +
               '<input type="datetime-local" value="' + (b.break_start ? toLocalDatetimeInputValue(b.break_start) : "") + '" data-break-field="break_start" data-break-id="' + b.id + '" data-id="' + r.time_entry_id + '" disabled style="margin-bottom:0;" />' +
             '</div>' +
             '<div>' +
-              '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:2px;">Break end' + (!b.break_end ? ' <span style="color:#C1502E;">(never ended)</span>' : '') + '</label>' +
+              '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:2px;">Break end' + (!b.break_end ? ' <span style="color:#C1502E;">(never ended)</span>' : '') + '</label>' +
               '<input type="datetime-local" value="' + (b.break_end ? toLocalDatetimeInputValue(b.break_end) : "") + '" data-break-field="break_end" data-break-id="' + b.id + '" data-id="' + r.time_entry_id + '" disabled style="margin-bottom:0;" />' +
             '</div>' +
           '</div>';
@@ -2422,7 +2422,7 @@ async function renderEmployeeDetail(start, end) {
   const contactCardHtml = '<div class="card" style="margin:12px 0 16px; cursor:pointer;" onclick="toggleEmpContactCard()">' +
     '<div style="display:flex; justify-content:space-between; align-items:center;">' +
       '<strong style="font-size:13px;">Contact info</strong>' +
-      '<span id="emp-contact-toggle-label" style="color:var(--muted); font-size:11px;">Tap to view &#9662;</span>' +
+      '<span id="emp-contact-toggle-label" style="color:var(--muted); font-size:12px;">Tap to view &#9662;</span>' +
     '</div>' +
     '<div id="emp-contact-details" style="display:none; margin-top:10px;" onclick="event.stopPropagation();">' +
       (ed.phone
@@ -2444,21 +2444,21 @@ async function renderEmployeeDetail(start, end) {
     contactCardHtml +
     '<div style="display:flex; gap:24px; margin:16px 0;">' +
       '<div>' +
-        '<div style="font-size:11px; color:var(--muted); text-transform:uppercase;">Regular hours</div>' +
+        '<div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Regular hours</div>' +
         '<div class="stat-value" style="font-size:22px;">' + fmtDurationShort(regularSeconds) + '</div>' +
       '</div>' +
       '<div>' +
-        '<div style="font-size:11px; color:var(--muted); text-transform:uppercase;">Travel hours</div>' +
+        '<div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Travel hours</div>' +
         '<div class="stat-value" style="font-size:22px;">' + fmtDurationShort(travelSeconds) + '</div>' +
       '</div>' +
     '</div>' +
     '<div style="display:flex; gap:10px; align-items:end; margin-bottom:12px;">' +
       '<div>' +
-        '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">From</label>' +
+        '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">From</label>' +
         '<input id="emp-detail-start" type="date" value="' + start + '" onchange="onEmployeeDetailRangeChange()" style="margin-bottom:0;" />' +
       '</div>' +
       '<div>' +
-        '<label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px;">To</label>' +
+        '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">To</label>' +
         '<input id="emp-detail-end" type="date" value="' + end + '" onchange="onEmployeeDetailRangeChange()" style="margin-bottom:0;" />' +
       '</div>' +
     '</div>' +
@@ -2472,7 +2472,7 @@ async function renderEmployeeDetail(start, end) {
         ? '<button class="save-btn" style="background:#C1502E; padding:9px 16px; font-size:13px;" onclick="forceClockOutConfirm(\'' + openRow.time_entry_id + '\')">Force clock out now</button>'
         : '') +
     '</div>' +
-    (ed.isClockedIn ? '<p id="ping-status-msg" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>' : '');
+    (ed.isClockedIn ? '<p id="ping-status-msg" style="font-size:13px; color:var(--muted); margin-top:8px;"></p>' : '');
 }
 
 function toggleEmpContactCard() {
@@ -3496,9 +3496,9 @@ function renderCrewSearchDropdown() {
   });
 
   if (allCrews.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No teams yet.</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No teams yet.</div>';
   } else if (matches.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No teams match "' + term + '".</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No teams match "' + term + '".</div>';
   } else {
     dropdown.innerHTML = matches.map(function(c) {
       const memberNames = escapeHtml(c.members.map(function(m) { return m.name; }).join(", ") || "No members yet");
@@ -3506,7 +3506,7 @@ function renderCrewSearchDropdown() {
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectCrewSearchResult(\'' + c.id + '\')">' +
         '<div style="font-weight:600; font-size:13px;">' + escapeHtml(c.name) + '</div>' +
-        '<div style="font-size:11px; color:var(--muted);">' + memberNames + '</div>' +
+        '<div style="font-size:12px; color:var(--muted);">' + memberNames + '</div>' +
       '</div>';
     }).join("");
   }
@@ -3558,7 +3558,7 @@ function renderCrewsList() {
           '<button class="save-btn" style="background: #C1502E;" onclick="deleteCrewConfirm(\'' + c.id + '\')">Delete</button>' +
         '</span>' +
       '</div>' +
-      '<div style="margin-top:6px;">' + (members || '<span style="color:var(--muted); font-size:12px;">No members yet</span>') + '</div>' +
+      '<div style="margin-top:6px;">' + (members || '<span style="color:var(--muted); font-size:13px;">No members yet</span>') + '</div>' +
     '</div>';
   }).join("");
 }
@@ -3575,7 +3575,7 @@ function openCrewModal(crewId) {
   document.getElementById("crew-members-list").innerHTML = employees.map(function(e) {
     const checked = memberIds.indexOf(e.id) !== -1 ? "checked" : "";
     return '<label><input type="checkbox" value="' + e.id + '" ' + checked + ' /> ' + escapeHtml(e.name) + '</label>';
-  }).join("") || '<p style="color:var(--muted); font-size:12px;">Add employees first, then build teams.</p>';
+  }).join("") || '<p style="color:var(--muted); font-size:13px;">Add employees first, then build teams.</p>';
 
   document.getElementById("crew-modal").classList.add("visible");
 }
@@ -3793,20 +3793,20 @@ function renderCustomersList() {
   list.innerHTML = customers.map(function(c) {
     const fullAddress = formatAddress(c);
     const details = (c.phone
-      ? '<div style="font-size:12px;"><a href="' + escapeHtml(telUrl(c.phone)) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.phone) + '</a></div>'
+      ? '<div style="font-size:13px;"><a href="' + escapeHtml(telUrl(c.phone)) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.phone) + '</a></div>'
       : "") + (c.email
-      ? '<div style="font-size:12px;"><a href="mailto:' + escapeHtml(c.email) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.email) + '</a></div>'
+      ? '<div style="font-size:13px;"><a href="mailto:' + escapeHtml(c.email) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(c.email) + '</a></div>'
       : "") + (fullAddress
-      ? '<div style="font-size:12px;"><a href="' + escapeHtml(mapsUrl(fullAddress)) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(fullAddress) + '</a></div>'
+      ? '<div style="font-size:13px;"><a href="' + escapeHtml(mapsUrl(fullAddress)) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(fullAddress) + '</a></div>'
       : "");
     return '<div class="card customer-card">' +
       '<div>' +
         (c.company_name ?
           '<strong>' + escapeHtml(c.company_name) + '</strong>' +
-          '<div style="font-size:12px; color:var(--muted);">' + escapeHtml(c.name) + '</div>'
+          '<div style="font-size:13px; color:var(--muted);">' + escapeHtml(c.name) + '</div>'
           : '<strong>' + escapeHtml(c.name) + '</strong>') +
         details +
-        (c.notes ? '<div style="font-size:12px; color:var(--muted); margin-top:4px;">' + escapeHtml(c.notes) + '</div>' : '') +
+        (c.notes ? '<div style="font-size:13px; color:var(--muted); margin-top:4px;">' + escapeHtml(c.notes) + '</div>' : '') +
       '</div>' +
       '<span style="white-space:nowrap;">' +
         '<button class="save-btn" style="background: var(--charcoal); margin-right:6px;" onclick="openCustomerHistoryModal(\'' + c.id + '\')">History</button>' +
@@ -4011,7 +4011,7 @@ async function openCustomerHistoryModal(id) {
             '<span class="type-badge">' + (EVENT_TYPE_LABELS[ev.event_type] || "Job") + '</span>' +
           '</div>' +
         '</div>' +
-        '<div style="font-size:12px; color:var(--muted); margin-top:4px;">' + dateLabel + '</div>' +
+        '<div style="font-size:13px; color:var(--muted); margin-top:4px;">' + dateLabel + '</div>' +
       '</div>';
     }
     const inv = item.data;
@@ -4023,13 +4023,13 @@ async function openCustomerHistoryModal(id) {
         '</div>' +
         '<div class="stat-value" style="font-size:15px;">' + fmtMoney(inv.total) + '</div>' +
       '</div>' +
-      '<div style="font-size:12px; color:var(--muted); margin-top:4px;">' + dateLabel + '</div>' +
+      '<div style="font-size:13px; color:var(--muted); margin-top:4px;">' + dateLabel + '</div>' +
     '</div>';
   }).join("");
 
   document.getElementById("customer-history-content").innerHTML =
     '<h2 style="margin-top:0; font-size:18px;">' + escapeHtml(customerDisplayName(customer.name, customer.company_name)) + '</h2>' +
-    '<p style="font-size:12px; color:var(--muted); margin-top:-8px;">Appointments and invoices</p>' +
+    '<p style="font-size:13px; color:var(--muted); margin-top:-8px;">Appointments and invoices</p>' +
     (rows || '<p style="color:var(--muted); font-size:13px;">Nothing on file for this customer yet.</p>');
 
   document.getElementById("customer-history-modal").classList.add("visible");
@@ -4169,7 +4169,7 @@ function renderBillingPaymentBreakdown(data) {
   const paymentCount = (data && data.count) || 0;
 
   if (!paymentCount) {
-    container.innerHTML = '<p style="font-size:12px; color:var(--muted); margin:0;">No payments recorded yet.</p>';
+    container.innerHTML = '<p style="font-size:13px; color:var(--muted); margin:0;">No payments recorded yet.</p>';
     return;
   }
 
@@ -4371,7 +4371,7 @@ async function renderTransactionsList() {
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
       '<div>' +
         '<strong>' + escapeHtml(customerDisplayName(p.customer_name, p.customer_company_name)) + '</strong> &middot; Invoice #' + p.invoice_number +
-        '<div style="font-size:12px; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
+        '<div style="font-size:13px; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
           '<span>' + String(p.paid_at).slice(0, 10) + ' &middot; ' + methodLabel + checkNumberSuffix + '</span>' + channelBadge + partialTag +
         '</div>' +
       '</div>' +
@@ -4407,16 +4407,16 @@ function renderInvoicesSearchDropdown() {
   const matches = !term ? allInvoices : allInvoices.filter(function(inv) { return invoiceMatchesTerm(inv, term); });
 
   if (allInvoices.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No invoices yet.</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No invoices yet.</div>';
   } else if (matches.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No invoices match "' + term + '".</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No invoices match "' + term + '".</div>';
   } else {
     dropdown.innerHTML = matches.map(function(inv) {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectInvoicesSearchResult(\'' + inv.id + '\')">' +
         '<div style="font-weight:600; font-size:13px;">Invoice #' + inv.invoice_number + ' &middot; ' + escapeHtml(customerDisplayName(inv.customer_name, inv.customer_company_name)) + '</div>' +
-        '<div style="font-size:11px; color:var(--muted);">' + fmtMoney(inv.total) + '</div>' +
+        '<div style="font-size:12px; color:var(--muted);">' + fmtMoney(inv.total) + '</div>' +
       '</div>';
     }).join("");
   }
@@ -4480,18 +4480,18 @@ function renderInvoicesList() {
     // the full total is shown crossed out above it as context.
     const balanceDue = Number(inv.total) - Number(inv.amount_paid || 0);
     const amountDisplay = inv.status === "partial"
-      ? '<div style="font-size:11px; color:var(--muted); text-decoration:line-through;">' + fmtMoney(inv.total) + '</div>' +
+      ? '<div style="font-size:12px; color:var(--muted); text-decoration:line-through;">' + fmtMoney(inv.total) + '</div>' +
         '<div class="stat-value" style="font-size:18px;">' + fmtMoney(balanceDue) + ' due</div>'
       : '<div class="stat-value" style="font-size:18px;">' + fmtMoney(inv.total) + '</div>';
     return '<div class="card invoice-card">' +
       '<div>' +
         '<strong>Invoice #' + inv.invoice_number + '</strong> ' + invoiceStatusBadge(inv) +
         '<div style="font-size:13px; margin-top:4px;">' + escapeHtml(customerDisplayName(inv.customer_name, inv.customer_company_name)) + '</div>' +
-        '<div style="font-size:12px; color:var(--muted); margin-top:2px;">' +
+        '<div style="font-size:13px; color:var(--muted); margin-top:2px;">' +
           PAYMENT_TERMS_LABELS[inv.payment_terms] + ' &middot; Due ' + inv.due_date.slice(0, 10) +
         '</div>' +
         (inv.reminder_count > 0
-          ? '<div style="font-size:11px; color:var(--muted); margin-top:2px;">Reminders sent: ' + inv.reminder_count + ' of 5</div>'
+          ? '<div style="font-size:12px; color:var(--muted); margin-top:2px;">Reminders sent: ' + inv.reminder_count + ' of 5</div>'
           : '') +
       '</div>' +
       '<div style="text-align:right;">' +
@@ -4582,7 +4582,7 @@ async function openInvoiceModal(invoiceId) {
       is_overdue: invoice.status === "sent" && invoice.due_date.slice(0, 10) < new Date().toISOString().slice(0, 10),
     }));
     if (invoice.reminder_count > 0) {
-      statusHtml += '<div style="font-size:12px; color:var(--muted); margin-top:6px;">' +
+      statusHtml += '<div style="font-size:13px; color:var(--muted); margin-top:6px;">' +
         'Reminders sent: ' + invoice.reminder_count + ' of 5' +
         (invoice.last_reminder_sent_at ? ' &middot; last sent ' + invoice.last_reminder_sent_at.slice(0, 10) : '') +
       '</div>';
@@ -4958,16 +4958,16 @@ function renderQuotesSearchDropdown() {
   const matches = !term ? allQuotes : allQuotes.filter(function(q) { return quoteMatchesTerm(q, term); });
 
   if (allQuotes.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No quotes yet.</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No quotes yet.</div>';
   } else if (matches.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No quotes match "' + term + '".</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No quotes match "' + term + '".</div>';
   } else {
     dropdown.innerHTML = matches.map(function(q) {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectQuotesSearchResult(\'' + q.id + '\')">' +
         '<div style="font-weight:600; font-size:13px;">Quote #' + q.quote_number + ' &middot; ' + escapeHtml(customerDisplayName(q.customer_name, q.customer_company_name)) + '</div>' +
-        '<div style="font-size:11px; color:var(--muted);">' + fmtMoney(q.total) + '</div>' +
+        '<div style="font-size:12px; color:var(--muted);">' + fmtMoney(q.total) + '</div>' +
       '</div>';
     }).join("");
   }
@@ -5039,11 +5039,11 @@ function renderQuotesList() {
       '<div>' +
         '<strong>Quote #' + q.quote_number + '</strong> ' + quoteStatusBadge(q) +
         '<div style="font-size:13px; margin-top:4px;">' + escapeHtml(customerDisplayName(q.customer_name, q.customer_company_name)) + '</div>' +
-        '<div style="font-size:12px; color:var(--muted); margin-top:2px;">' +
+        '<div style="font-size:13px; color:var(--muted); margin-top:2px;">' +
           (q.expiration_date ? 'Valid until ' + q.expiration_date.slice(0, 10) : 'No expiration set') +
         '</div>' +
         (q.converted_job_id || q.converted_invoice_id
-          ? '<div style="font-size:11px; color:var(--muted); margin-top:2px;">' +
+          ? '<div style="font-size:12px; color:var(--muted); margin-top:2px;">' +
               [q.converted_job_id ? 'Scheduled' : null, q.converted_invoice_id ? 'Invoiced' : null].filter(Boolean).join(' &middot; ') +
             '</div>'
           : '') +
@@ -5528,11 +5528,11 @@ function renderReportStatCard(label, value, sub, changeParts, onclick) {
   const clickAttr = onclick ? ' style="cursor:pointer;" onclick="' + onclick + '"' : '';
   return '<div class="report-stat-card"' + clickAttr + '>' +
     '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">' +
-      '<div style="font-size:12px; color:var(--muted);">' + label + '</div>' +
+      '<div style="font-size:13px; color:var(--muted);">' + label + '</div>' +
       changeHtml +
     '</div>' +
     '<div class="stat-value" style="font-size:22px;">' + value + '</div>' +
-    (sub ? '<div style="font-size:11px; color:var(--muted); margin-top:2px;">' + sub + '</div>' : '') +
+    (sub ? '<div style="font-size:12px; color:var(--muted); margin-top:2px;">' + sub + '</div>' : '') +
   '</div>';
 }
 
@@ -5575,7 +5575,7 @@ function missingHourlyRateWarning() {
     return e.hourly_rate === null || e.hourly_rate === undefined;
   });
   if (!missing.length) return "";
-  return '<div style="margin-bottom:12px; padding:10px 12px; background:#FBF3E7; border:1px solid #E8D9BE; border-radius:8px; font-size:12px; color:#7A6A4A;">' +
+  return '<div style="margin-bottom:12px; padding:10px 12px; background:#FBF3E7; border:1px solid #E8D9BE; border-radius:8px; font-size:13px; color:#7A6A4A;">' +
     "Profit numbers don't include labor cost for " + missing.length + (missing.length === 1 ? " employee" : " employees") +
     " without an hourly rate set. Add rates in Employees &rarr; Edit (or the Pay Rate column) for accurate Gross/Net Profit." +
   '</div>';
@@ -5655,7 +5655,7 @@ async function loadReportSummary() {
         renderReportStatCard("Gross Profit", pctValueHtml(profitChangeParts(profits.grossProfit, prevProfits.grossProfit)), "vs. prior period", null, reportBubbleOnclick("gross", rangeStart, rangeEnd)) +
         renderReportStatCard("Net Profit", pctValueHtml(profitChangeParts(profits.netProfit, prevProfits.netProfit)), "vs. prior period", null, reportBubbleOnclick("net", rangeStart, rangeEnd)) +
       '</div>' +
-      '<div style="margin-top:10px; font-size:12px; color:var(--muted);">' + rangeStart + ' – ' + rangeEnd +
+      '<div style="margin-top:10px; font-size:13px; color:var(--muted);">' + rangeStart + ' – ' + rangeEnd +
         ' vs. ' + toDateStr(bounds.prevStart) + ' – ' + toDateStr(bounds.prevEnd) + '</div>';
   } catch (err) {
     content.innerHTML = '<p style="color:var(--muted); font-size:13px;">Couldn\'t load report data.</p>';
@@ -5726,7 +5726,7 @@ function renderMonthlyProfitChart(months) {
   }).join("");
 
   const legend =
-    '<div style="display:flex; gap:16px; justify-content:center; margin-bottom:4px; font-size:12px; color:var(--ink);">' +
+    '<div style="display:flex; gap:16px; justify-content:center; margin-bottom:4px; font-size:13px; color:var(--ink);">' +
       '<span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:#F4B04C; margin-right:5px;"></span>Gross Profit</span>' +
       '<span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:var(--success); margin-right:5px;"></span>Net Profit</span>' +
     '</div>';
@@ -5880,7 +5880,7 @@ function renderGrossProfitBreakdown(summary, breakdown) {
       '<span>Labor cost</span><span>' + fmtMoney(summary.labor_cost) + '</span>' +
     '</div>' +
     (feesTotal > 0
-      ? '<div style="font-size:12px; color:var(--muted); font-weight:600; margin:8px 0 4px;">Minus processing fees:</div>' +
+      ? '<div style="font-size:13px; color:var(--muted); font-weight:600; margin:8px 0 4px;">Minus processing fees:</div>' +
         renderProcessingFeeRows(summary) +
         '<div style="display:flex; justify-content:space-between; font-size:12.5px; padding-top:4px; border-top:1px solid var(--line); margin-top:6px;">' +
           '<span>Processing fees total</span><span>' + fmtMoney(feesTotal) + '</span>' +
@@ -5915,9 +5915,9 @@ function renderNetProfitBreakdown(summary, breakdown, start, end) {
       '<span>Gross Profit</span><span>' + fmtMoney(grossProfit) + '</span>' +
     '</div>' +
     (feesTotal > 0
-      ? '<div style="font-size:11px; color:var(--muted); margin:-2px 0 6px;">(already includes ' + fmtMoney(feesTotal) + ' in processing fees -- see Gross Profit breakdown)</div>'
+      ? '<div style="font-size:12px; color:var(--muted); margin:-2px 0 6px;">(already includes ' + fmtMoney(feesTotal) + ' in processing fees -- see Gross Profit breakdown)</div>'
       : '') +
-    '<div style="font-size:12px; color:var(--muted); font-weight:600; margin:8px 0 4px;">Minus expenses:</div>' +
+    '<div style="font-size:13px; color:var(--muted); font-weight:600; margin:8px 0 4px;">Minus expenses:</div>' +
     expenseRows +
     '<div style="display:flex; justify-content:space-between; font-size:12.5px; padding-top:4px; border-top:1px solid var(--line); margin-top:6px;">' +
       '<span>Expenses total</span><span>' + fmtMoney(expenseTotal) + '</span>' +
@@ -5992,16 +5992,16 @@ function renderCatalogSearchDropdown() {
   });
 
   if (allItems.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No catalog items yet.</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No catalog items yet.</div>';
   } else if (matches.length === 0) {
-    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted);">No items match "' + term + '".</div>';
+    dropdown.innerHTML = '<div style="padding:10px 12px; font-size:13px; color:var(--muted);">No items match "' + term + '".</div>';
   } else {
     dropdown.innerHTML = matches.map(function(i) {
       return '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--line);" ' +
         'onmouseover="this.style.background=\'#F4F2ED\'" onmouseout="this.style.background=\'\'" ' +
         'onclick="selectCatalogSearchResult(\'' + i.id + '\')">' +
         '<div style="font-weight:600; font-size:13px;">' + escapeHtml(i.name) + '</div>' +
-        '<div style="font-size:11px; color:var(--muted);">' + fmtMoney(i.unit_price) + '</div>' +
+        '<div style="font-size:12px; color:var(--muted);">' + fmtMoney(i.unit_price) + '</div>' +
       '</div>';
     }).join("");
   }
@@ -6044,7 +6044,7 @@ function renderCatalogItemsList() {
   }
   list.innerHTML = items.map(function(item) {
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
-      '<div><strong>' + escapeHtml(item.name) + '</strong><div style="font-size:12px; color:var(--muted);">' + fmtMoney(item.unit_price) + '</div></div>' +
+      '<div><strong>' + escapeHtml(item.name) + '</strong><div style="font-size:13px; color:var(--muted);">' + fmtMoney(item.unit_price) + '</div></div>' +
       '<span style="white-space:nowrap;">' +
         '<button class="save-btn" style="background: var(--teal); margin-right:6px;" onclick="openCatalogItemModal(\'' + item.id + '\')">Edit</button>' +
         '<button class="save-btn" style="background: #C1502E;" onclick="deleteCatalogItemConfirm(\'' + item.id + '\')">Delete</button>' +
@@ -6703,9 +6703,9 @@ function renderBarcodeMatchedItem(item) {
   const currentQty = Number(item.quantity_on_hand) || 0;
   resultEl.innerHTML =
     '<p style="font-size:14px;"><strong>' + escapeHtml(item.name) + '</strong></p>' +
-    '<p style="font-size:12px; color:var(--muted); margin-top:-8px;">Currently ' + currentQty + ' on hand' +
+    '<p style="font-size:13px; color:var(--muted); margin-top:-8px;">Currently ' + currentQty + ' on hand' +
       (item.track_inventory ? '' : ' -- inventory tracking is off for this item, turning it on now') + '</p>' +
-    '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Quantity received</label>' +
+    '<label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Quantity received</label>' +
     '<input id="barcode-scan-qty-input" type="number" min="1" step="1" value="1" />' +
     '<div style="display:flex; gap:8px; margin-top:10px;">' +
       '<button class="btn-primary" style="width:auto;" onclick="submitBarcodeRestock(\'' + item.id + '\', ' + currentQty + ')">Add to stock</button>' +
@@ -6735,11 +6735,11 @@ function renderBarcodeNewItemForm(barcode, suggestion) {
     '<p style="font-size:13px; color:var(--muted);">' +
       (suggestedName ? "No catalog item has this barcode yet -- found a possible match online:" : "No catalog item has this barcode yet, and it wasn't found in a public product database.") +
     '</p>' +
-    '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Name / description</label>' +
+    '<label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Name / description</label>' +
     '<input id="barcode-scan-name-input" value="' + escapeHtml(suggestedName) + '" placeholder="Enter a product name" />' +
-    '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Starting quantity on hand</label>' +
+    '<label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Starting quantity on hand</label>' +
     '<input id="barcode-scan-newqty-input" type="number" min="0" step="1" value="1" />' +
-    '<label style="font-size:12px; color:var(--muted); display:block; margin-bottom:4px;">Unit cost (optional)</label>' +
+    '<label style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Unit cost (optional)</label>' +
     '<input id="barcode-scan-cost-input" type="number" min="0" step="0.01" placeholder="0.00" />' +
     '<div style="display:flex; gap:8px; margin-top:10px;">' +
       '<button class="btn-primary" style="width:auto;" onclick="submitBarcodeNewItem(\'' + barcode.replace(/'/g, "\\'") + '\')">Add to catalog</button>' +
@@ -6880,9 +6880,9 @@ function renderItemHoldsList(holds) {
     return '<div class="card" style="margin-bottom:8px; cursor:pointer;" onclick="openItemHoldSource(\'' + h.source_type + '\', \'' + h.id + '\')">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
         '<strong>' + escapeHtml(h.label || "") + '</strong>' +
-        '<span style="font-size:12px; color:var(--muted);">' + h.quantity + ' held</span>' +
+        '<span style="font-size:13px; color:var(--muted);">' + h.quantity + ' held</span>' +
       '</div>' +
-      '<div style="font-size:12px; color:var(--muted);">' + escapeHtml(customerDisplayName(h.customer_name, h.customer_company_name) || "") + '</div>' +
+      '<div style="font-size:13px; color:var(--muted);">' + escapeHtml(customerDisplayName(h.customer_name, h.customer_company_name) || "") + '</div>' +
     '</div>';
   }).join("");
 }
@@ -6941,7 +6941,7 @@ function renderInventorySettingsList() {
             'onblur="saveInventoryField(\'' + item.id + '\', \'unit_cost\', this.value)" /></td>' +
           '<td><input type="number" min="0" step="1" class="inv-grid-input" data-col="threshold" placeholder="Off" value="' + threshold + '" style="width:90px;" ' +
             'onblur="saveInventoryField(\'' + item.id + '\', \'low_stock_threshold\', this.value)" /></td>' +
-          '<td style="white-space:nowrap;"><span class="inv-row-status" id="inv-status-' + item.id + '" style="font-size:11px;"></span>' +
+          '<td style="white-space:nowrap;"><span class="inv-row-status" id="inv-status-' + item.id + '" style="font-size:12px;"></span>' +
             '<button class="save-btn" style="background:#C1502E;" onclick="deleteInventoryItemConfirm(\'' + item.id + '\')">Delete</button></td>' +
         '</tr>';
       }).join("") +
@@ -7151,7 +7151,7 @@ async function openBuildPullSheetModal() {
 
 async function renderPullSheetSourceList() {
   const list = document.getElementById("pull-sheet-source-list");
-  list.innerHTML = '<p style="font-size:12px; color:var(--muted);">Loading...</p>';
+  list.innerHTML = '<p style="font-size:13px; color:var(--muted);">Loading...</p>';
   try {
     const sources = await window.admin.getPullSheetSources();
     const rows = [].concat(
@@ -7159,18 +7159,18 @@ async function renderPullSheetSourceList() {
       sources.invoices.map(function(i) { return { source_type: "invoice", id: i.id, label: "Invoice #" + i.number, customer_name: i.customer_name, customer_company_name: i.customer_company_name }; })
     );
     if (rows.length === 0) {
-      list.innerHTML = '<p style="font-size:12px; color:var(--muted);">No open quotes or invoices have inventory-tracked items left to pull.</p>';
+      list.innerHTML = '<p style="font-size:13px; color:var(--muted);">No open quotes or invoices have inventory-tracked items left to pull.</p>';
       return;
     }
     list.innerHTML = rows.map(function(r) {
       return '<div class="card" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:8px;" ' +
         'onclick="selectPullSheetSource(\'' + r.source_type + '\', \'' + r.id + '\')">' +
-        '<div><strong>' + escapeHtml(r.label) + '</strong><div style="font-size:12px; color:var(--muted);">' + escapeHtml(customerDisplayName(r.customer_name, r.customer_company_name)) + '</div></div>' +
+        '<div><strong>' + escapeHtml(r.label) + '</strong><div style="font-size:13px; color:var(--muted);">' + escapeHtml(customerDisplayName(r.customer_name, r.customer_company_name)) + '</div></div>' +
         '<span style="color:var(--muted);">&rsaquo;</span>' +
       '</div>';
     }).join("");
   } catch (err) {
-    list.innerHTML = '<p style="font-size:12px; color:var(--muted);">Couldn\'t load quotes/invoices.</p>';
+    list.innerHTML = '<p style="font-size:13px; color:var(--muted);">Couldn\'t load quotes/invoices.</p>';
   }
 }
 
@@ -7518,7 +7518,7 @@ function renderExpensesList() {
   }
   list.innerHTML = expenses.map(function(x) {
     return '<div class="card" style="display:flex; justify-content:space-between; align-items:center;">' +
-      '<div><strong>' + fmtMoney(x.amount) + '</strong><div style="font-size:12px; color:var(--muted);">' +
+      '<div><strong>' + fmtMoney(x.amount) + '</strong><div style="font-size:13px; color:var(--muted);">' +
         String(x.expense_date).slice(0, 10) + (x.description ? ' &middot; ' + escapeHtml(x.description) : '') + (x.job_title ? ' &middot; Job: ' + escapeHtml(x.job_title) : '') +
       '</div></div>' +
       '<span style="white-space:nowrap;">' +
@@ -7664,15 +7664,15 @@ function renderPendingJobAttachments() {
   const container = document.getElementById("job-attachments-list");
   if (!container) return;
   if (window.pendingJobAttachments.length === 0) {
-    container.innerHTML = '<p style="font-size:12px; color:var(--muted);">No attachments yet.</p>';
+    container.innerHTML = '<p style="font-size:13px; color:var(--muted);">No attachments yet.</p>';
     return;
   }
   container.innerHTML = window.pendingJobAttachments.map(function(file, idx) {
     return '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line);">' +
       '<span style="font-size:13px;">' + escapeHtml(file.name) + '</span>' +
       '<span style="display:flex; align-items:center; gap:8px; flex-shrink:0;">' +
-        '<span style="font-size:11px; color:var(--muted);">' + formatFileSize(file.size) + '</span>' +
-        '<button class="save-btn" style="width:auto; padding:2px 8px; font-size:11px; color:var(--danger); border-color:var(--danger);" ' +
+        '<span style="font-size:12px; color:var(--muted);">' + formatFileSize(file.size) + '</span>' +
+        '<button class="save-btn" style="width:auto; padding:2px 8px; font-size:12px; color:var(--danger); border-color:var(--danger);" ' +
           'onclick="removePendingJobAttachment(' + idx + ')">Remove</button>' +
       '</span>' +
     '</div>';
@@ -7704,12 +7704,12 @@ async function renderAttachmentsList(containerId, entityType, entityId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   if (!entityId) { container.innerHTML = ""; return; }
-  container.innerHTML = '<p style="font-size:12px; color:var(--muted);">Loading...</p>';
+  container.innerHTML = '<p style="font-size:13px; color:var(--muted);">Loading...</p>';
   try {
     const attachments = await window.admin.listAttachments(entityType, entityId);
     attachments.forEach(function(a) { window.attachmentsCache[a.id] = a; });
     if (attachments.length === 0) {
-      container.innerHTML = '<p style="font-size:12px; color:var(--muted);">No attachments yet.</p>';
+      container.innerHTML = '<p style="font-size:13px; color:var(--muted);">No attachments yet.</p>';
       return;
     }
     container.innerHTML = attachments.map(function(a) {
@@ -7718,14 +7718,14 @@ async function renderAttachmentsList(containerId, entityType, entityId) {
           escapeHtml(a.file_name) +
         '</span>' +
         '<span style="display:flex; align-items:center; gap:8px; flex-shrink:0;">' +
-          '<span style="font-size:11px; color:var(--muted);">' + formatFileSize(a.file_size) + '</span>' +
-          '<button class="save-btn" style="width:auto; padding:2px 8px; font-size:11px; color:var(--danger); border-color:var(--danger);" ' +
+          '<span style="font-size:12px; color:var(--muted);">' + formatFileSize(a.file_size) + '</span>' +
+          '<button class="save-btn" style="width:auto; padding:2px 8px; font-size:12px; color:var(--danger); border-color:var(--danger);" ' +
             'onclick="deleteAttachmentFile(\'' + a.id + '\', \'' + entityType + '\', \'' + entityId + '\', \'' + containerId + '\')">Remove</button>' +
         '</span>' +
       '</div>';
     }).join("");
   } catch (err) {
-    container.innerHTML = '<p style="font-size:12px; color:var(--danger);">Couldn\'t load attachments.</p>';
+    container.innerHTML = '<p style="font-size:13px; color:var(--danger);">Couldn\'t load attachments.</p>';
   }
 }
 
@@ -7829,7 +7829,7 @@ function openJobModal(jobId, prefillDateStr, prefillTimeStr) {
   document.getElementById("job-crews-list").innerHTML = crews.map(function(c) {
     const checked = assignedCrewIds.indexOf(c.id) !== -1 ? "checked" : "";
     return '<label><input type="checkbox" value="' + c.id + '" ' + checked + ' /> ' + escapeHtml(c.name) + '</label>';
-  }).join("") || '<p style="color:var(--muted); font-size:12px;">No teams yet.</p>';
+  }).join("") || '<p style="color:var(--muted); font-size:13px;">No teams yet.</p>';
 
   const employees = (window.allEmployees || []).filter(function(e) { return e.active || assignedIds.indexOf(e.id) !== -1; });
   document.getElementById("job-employees-list").innerHTML = employees.map(function(e) {
@@ -8180,14 +8180,14 @@ function renderDayJobCard(j) {
     '</div>' +
     (j.customer_name ? (function() {
       const jobAddress = formatAddressParts(j.customer_street, j.customer_city, j.customer_state, j.customer_zip);
-      return '<div style="font-size:12px; color:var(--muted); margin-top:6px;">' +
+      return '<div style="font-size:13px; color:var(--muted); margin-top:6px;">' +
         '<strong>' + escapeHtml(customerDisplayName(j.customer_name, j.customer_company_name)) + '</strong>' +
         (j.customer_phone ? ' &middot; <a href="' + escapeHtml(telUrl(j.customer_phone)) + '" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(j.customer_phone) + '</a>' : "") +
         (jobAddress ? ' &middot; <a href="' + escapeHtml(mapsUrl(jobAddress)) + '" target="_blank" style="color:' + JOB_COLORS.rust + ';">' + escapeHtml(jobAddress) + '</a>' : "") +
       '</div>';
     })() : '') +
-    (j.notes ? '<div style="font-size:12px; color:var(--muted); margin-top:6px;">' + escapeHtml(j.notes) + '</div>' : '') +
-    '<div style="margin-top:6px;">' + (assigned || '<span style="color:var(--muted); font-size:12px;">Nobody assigned yet</span>') + '</div>' +
+    (j.notes ? '<div style="font-size:13px; color:var(--muted); margin-top:6px;">' + escapeHtml(j.notes) + '</div>' : '') +
+    '<div style="margin-top:6px;">' + (assigned || '<span style="color:var(--muted); font-size:13px;">Nobody assigned yet</span>') + '</div>' +
   '</div>';
 }
 
@@ -8316,7 +8316,7 @@ function renderTimeOffPending() {
     return;
   }
   wrap.innerHTML = pending.map(function(r) {
-    const note = r.note ? '<div style="font-size:12px; color:#5B5647; margin-top:4px;">' + escapeHtml(r.note) + '</div>' : "";
+    const note = r.note ? '<div style="font-size:13px; color:#5B5647; margin-top:4px;">' + escapeHtml(r.note) + '</div>' : "";
     return '<div class="card" style="margin-top:10px; background:#FFF9E0; border-color:#FFE400; color:#1F2421;">' +
       '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">' +
         '<div>' +
@@ -8344,14 +8344,14 @@ function renderTimeOffHistory() {
   }
   wrap.innerHTML = reviewed.map(function(r) {
     const statusColor = r.status === "approved" ? "var(--success)" : "var(--danger)";
-    const note = r.note ? '<div style="font-size:12px; color:var(--muted); margin-top:2px;">' + escapeHtml(r.note) + '</div>' : "";
+    const note = r.note ? '<div style="font-size:13px; color:var(--muted); margin-top:2px;">' + escapeHtml(r.note) + '</div>' : "";
     return '<div style="padding:8px 0; border-bottom:1px solid var(--line);">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">' +
         '<div>' +
           '<span style="font-weight:600;">' + escapeHtml(r.employee_name) + '</span>' +
           '<span style="font-size:13px; color:var(--ink);"> · ' + escapeHtml(formatTimeOffRange(r)) + '</span>' +
         '</div>' +
-        '<span style="font-size:12px; font-weight:600; color:' + statusColor + ';">' + (r.status === "approved" ? "Approved" : "Denied") + '</span>' +
+        '<span style="font-size:13px; font-weight:600; color:' + statusColor + ';">' + (r.status === "approved" ? "Approved" : "Denied") + '</span>' +
       '</div>' +
       note +
     '</div>';
@@ -8451,7 +8451,7 @@ function renderRouteCandidatesList(candidates) {
     // yet (most often because this customer was added before route-building
     // existed, or the lookup failed the first time). The retry button below
     // fixes this without the admin needing to touch the Customers tab.
-    const note = disabled ? ' <span style="color:var(--danger); font-size:11px;">(address not yet located on the map -- can\'t be routed)</span>' : "";
+    const note = disabled ? ' <span style="color:var(--danger); font-size:12px;">(address not yet located on the map -- can\'t be routed)</span>' : "";
     return '<label style="display:flex; align-items:center; gap:8px; padding:6px 0; font-size:13px; ' +
       (disabled ? 'opacity:0.5;' : '') + '">' +
       '<input type="checkbox" data-idx="' + i + '" class="route-candidate-check" ' + (disabled ? 'disabled' : 'checked') + ' />' +
@@ -8626,7 +8626,7 @@ function routeStopIcon(label, color) {
   return L.divIcon({
     className: "",
     html: '<div style="width:24px; height:24px; border-radius:50%; background:' + color + '; color:#fff; ' +
-      'display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; ' +
+      'display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; ' +
       'box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + label + '</div>',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
@@ -8809,7 +8809,7 @@ function renderChatThreads() {
 
   const list = document.getElementById("chat-threads-list");
   if (chatThreads.length === 0) {
-    list.innerHTML = '<p style="color:var(--muted); font-size:12px;">No chats yet -- conversations show up here once someone is on the clock.</p>';
+    list.innerHTML = '<p style="color:var(--muted); font-size:13px;">No chats yet -- conversations show up here once someone is on the clock.</p>';
     return;
   }
   list.innerHTML = chatThreads.map(function(t) {
@@ -8864,7 +8864,7 @@ async function openChatThread(employeeId) {
       escapeHtml(m.body) +
       '<div class="chat-bubble-time">' + fmtDateTime(m.created_at) + '</div>' +
     '</div>';
-  }).join("") || '<p style="color:var(--muted); font-size:12px;">No messages yet.</p>';
+  }).join("") || '<p style="color:var(--muted); font-size:13px;">No messages yet.</p>';
   document.getElementById("chat-thread-messages").scrollTop = document.getElementById("chat-thread-messages").scrollHeight;
 
   // Messaging isn't gated by clock status -- the composer is always available.
@@ -8938,7 +8938,7 @@ function renderTeamChatThreads() {
 
   const list = document.getElementById("team-chat-threads-list");
   if (teamChatThreads.length === 0) {
-    list.innerHTML = '<p style="color:var(--muted); font-size:12px;">No team chats yet -- tap "+ New chat" to start one.</p>';
+    list.innerHTML = '<p style="color:var(--muted); font-size:13px;">No team chats yet -- tap "+ New chat" to start one.</p>';
     return;
   }
   list.innerHTML = teamChatThreads.map(function(t) {
@@ -8991,7 +8991,7 @@ async function openTeamChatThread(threadId) {
       escapeHtml(m.body) +
       '<div class="chat-bubble-time">' + fmtDateTime(m.created_at) + '</div>' +
     '</div>';
-  }).join("") || '<p style="color:var(--muted); font-size:12px;">No messages yet.</p>';
+  }).join("") || '<p style="color:var(--muted); font-size:13px;">No messages yet.</p>';
   document.getElementById("team-chat-thread-messages").scrollTop = document.getElementById("team-chat-thread-messages").scrollHeight;
   document.getElementById("team-chat-thread-composer").style.display = "flex";
 
@@ -9021,20 +9021,20 @@ async function openNewTeamChatModal() {
   document.getElementById("team-chat-new-group-name-wrap").style.display = "none";
   document.getElementById("team-chat-new-group-name").value = "";
   const list = document.getElementById("team-chat-new-employees");
-  list.innerHTML = '<p style="color:var(--muted); font-size:12px;">Loading...</p>';
+  list.innerHTML = '<p style="color:var(--muted); font-size:13px;">Loading...</p>';
   document.getElementById("team-chat-new-modal").classList.add("visible");
   try {
     const employees = (window.allEmployees && window.allEmployees.length ? window.allEmployees : await window.admin.listEmployees())
       .filter(function(e) { return e.active; });
     if (employees.length === 0) {
-      list.innerHTML = '<p style="color:var(--muted); font-size:12px;">No active employees yet.</p>';
+      list.innerHTML = '<p style="color:var(--muted); font-size:13px;">No active employees yet.</p>';
       return;
     }
     list.innerHTML = employees.map(function(e) {
       return '<label><input type="checkbox" value="' + e.id + '" onchange="onTeamChatNewSelectionChange()" /> ' + escapeHtml(e.name) + '</label>';
     }).join("");
   } catch (err) {
-    list.innerHTML = '<p style="color:var(--muted); font-size:12px;">Couldn\'t load employees.</p>';
+    list.innerHTML = '<p style="color:var(--muted); font-size:13px;">Couldn\'t load employees.</p>';
   }
 }
 
