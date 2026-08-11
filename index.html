@@ -150,12 +150,22 @@
     display: flex; flex-direction: column;
     position: sticky; top: 0; align-self: flex-start; height: 100vh; overflow-y: auto;
   }
-  .sidebar-header { display: flex; align-items: center; gap: 10px; padding: 20px 18px; flex-shrink: 0; }
+  /* Stacked rather than side-by-side -- a wide uploaded company logo (up to
+     150px) left no room next to the "Coll Timeclock — Admin" label at the
+     old size, so it got visibly cut off/wrapped. The label now sits on its
+     own line below, small and muted, more like a subtitle than a heading. */
+  .sidebar-header { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; flex-shrink: 0; }
+  .sidebar-header-top { display: flex; align-items: center; gap: 8px; }
+  .sidebar-header-top .sidebar-collapse-btn { margin-left: auto; }
   .sidebar-header img#header-logo {
     max-height: 32px; max-width: 150px; border-radius: 6px;
     background: var(--surface); padding: 3px; object-fit: contain;
   }
-  .sidebar-header h1 { font-size: 15px; margin: 0; font-weight: 700; line-height: 1.3; }
+  .sidebar-header h1 {
+    font-size: 11px; margin: 0; font-weight: 600; line-height: 1.3;
+    color: rgba(244,242,237,0.55); text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
 
   nav {
     flex: 1;
@@ -1255,11 +1265,13 @@
   <div class="app-shell">
   <div class="sidebar">
     <div class="sidebar-header">
-      <img id="header-logo" src="" style="display:none;" />
+      <div class="sidebar-header-top">
+        <img id="header-logo" src="" style="display:none;" />
+        <button class="sidebar-collapse-btn" onclick="setSidebarCollapsed(true)" aria-label="Hide menu" title="Hide menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       <h1>Coll Timeclock — Admin</h1>
-      <button class="sidebar-collapse-btn" onclick="setSidebarCollapsed(true)" aria-label="Hide menu" title="Hide menu">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
     </div>
     <nav>
       <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">
