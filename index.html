@@ -193,6 +193,29 @@
     padding: 9px 12px; font-size: 12.5px; font-weight: 600;
   }
 
+  /* Collapsible sidebar -- the 232px rail is fixed-width and always visible
+     by default, which leaves noticeably less room for the Chat tab's own
+     split view (a 280px thread list plus the conversation pane, see
+     .chat-split below) than any other tab needs. showTab() auto-collapses
+     the sidebar on entering Chat and restores it on leaving; the collapse
+     button in the header and the floating expand button (shown only while
+     collapsed) let this be overridden manually at any time, on any tab. */
+  .sidebar-collapse-btn {
+    background: transparent; border: none; color: rgba(244,242,237,0.55);
+    cursor: pointer; padding: 6px; margin-left: auto; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; border-radius: 8px;
+  }
+  .sidebar-collapse-btn:hover { color: #fff; background: rgba(244,242,237,0.1); }
+  body.sidebar-collapsed .sidebar { display: none; }
+  .sidebar-expand-btn {
+    display: none;
+    position: fixed; top: 16px; left: 16px; z-index: 60;
+    background: var(--charcoal); color: #fff; border: none; border-radius: 10px;
+    width: 38px; height: 38px; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(31,36,33,0.3); cursor: pointer;
+  }
+  body.sidebar-collapsed .sidebar-expand-btn { display: flex; }
+
   main { flex: 1; min-width: 0; padding: 24px; }
   .tab { display: none; }
   .tab.active { display: block; }
@@ -400,29 +423,29 @@
   .chat-thread-row:hover { background: var(--surface); }
   .chat-thread-row.active { background: var(--charcoal); color: #fff; }
   .chat-thread-row.active .chat-thread-preview { color: rgba(255,255,255,0.7); }
-  .chat-thread-name { font-size: 14.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-  .chat-thread-preview { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-thread-name { font-size: 16.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .chat-thread-preview { font-size: 15px; font-weight: 500; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-on-clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #1E8E5A; flex-shrink: 0; }
   .chat-unread-pill {
     background: var(--rust); color: #fff; font-size: 10.5px; font-weight: 800;
     border-radius: 20px; padding: 1px 7px; margin-left: auto; flex-shrink: 0;
   }
   .chat-thread-col { flex: 1; display: flex; flex-direction: column; padding-left: 20px; min-width: 0; }
-  .chat-thread-header { font-size: 16px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
+  .chat-thread-header { font-size: 18px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
   .chat-thread-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
   .chat-bubble {
-    max-width: 70%; padding: 9px 13px; border-radius: 14px; font-size: 14.5px; font-weight: 500; line-height: 1.45;
+    max-width: 70%; padding: 9px 13px; border-radius: 14px; font-size: 16.5px; font-weight: 500; line-height: 1.45;
   }
   .chat-bubble-admin { align-self: flex-end; background: linear-gradient(135deg, #F9C978, var(--amber)); color: var(--charcoal); border-bottom-right-radius: 4px; }
   .chat-bubble-employee { align-self: flex-start; background: var(--surface); color: var(--ink); border-bottom-left-radius: 4px; }
-  .chat-bubble-time { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+  .chat-bubble-time { font-size: 14px; font-weight: 500; color: var(--muted); margin-top: 2px; }
   .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
   /* Textarea instead of a single-line input so a long message wraps and
      stays fully visible while typing instead of scrolling sideways as one
      long line -- auto-grows with content (see resizeChatComposer()) up to
      this max-height, then scrolls internally. */
   .chat-thread-composer textarea {
-    flex: 1; margin-bottom: 0; font-weight: 500; font-family: inherit;
+    flex: 1; margin-bottom: 0; font-size: 16.5px; font-weight: 500; font-family: inherit;
     resize: none; overflow-y: auto; max-height: 140px; line-height: 1.4;
   }
   .chat-nav-badge {
@@ -1226,11 +1249,17 @@
       <div id="update-progress-bar" style="width:0%; height:100%; background:var(--surface); border-radius:3px; transition: width 0.2s ease;"></div>
     </div>
   </div>
+  <button class="sidebar-expand-btn" onclick="setSidebarCollapsed(false)" aria-label="Show menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
   <div class="app-shell">
   <div class="sidebar">
     <div class="sidebar-header">
       <img id="header-logo" src="" style="display:none;" />
       <h1>Coll Timeclock — Admin</h1>
+      <button class="sidebar-collapse-btn" onclick="setSidebarCollapsed(true)" aria-label="Hide menu" title="Hide menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <nav>
       <button class="tab-btn active" data-tab="overview" onclick="showTab('overview')">
@@ -2234,6 +2263,17 @@ function showTab(name) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
   if (name === "settings") refreshStripeConnectCard();
   if (name === "inventory") { loadInventory(); loadPullSheets(); }
+  // Chat's own split view (thread list + conversation, see .chat-split)
+  // already needs all the width it can get -- the persistent 232px sidebar
+  // rail cuts noticeably into that, so auto-collapse it on the way in and
+  // restore it on the way back out. The collapse/expand buttons still let
+  // this be overridden manually at any time (e.g. to switch tabs without
+  // leaving Chat first).
+  setSidebarCollapsed(name === "chat");
+}
+
+function setSidebarCollapsed(collapsed) {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
 }
 
 function fmtDuration(seconds) {
