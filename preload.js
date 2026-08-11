@@ -264,8 +264,8 @@ contextBridge.exposeInMainWorld("admin", {
   getPullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}`),
   buildPullSheet: (sourceType, sourceId) =>
     apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: sourceType, source_id: sourceId } }),
-  buildManualPullSheet: (items, label) =>
-    apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: "manual", items, label } }),
+  buildManualPullSheet: (items, label, assignedEmployeeId) =>
+    apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: "manual", items, label, assigned_employee_id: assignedEmployeeId || null } }),
   fulfillPullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}/fulfill`, { method: "PATCH" }),
   deletePullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}`, { method: "DELETE" }),
   getPullSheetFormat: () => apiFetch("/api/admin/pull-sheet-format"),
