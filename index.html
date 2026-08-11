@@ -16,6 +16,9 @@
     } catch (e) { /* localStorage unavailable -- just stay on Day mode */ }
   })();
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
     --charcoal: #1F2421;
@@ -433,29 +436,29 @@
   .chat-thread-row:hover { background: var(--surface); }
   .chat-thread-row.active { background: var(--charcoal); color: #fff; }
   .chat-thread-row.active .chat-thread-preview { color: rgba(255,255,255,0.7); }
-  .chat-thread-name { font-size: 18.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-  .chat-thread-preview { font-size: 16.5px; font-weight: 600; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-thread-name { font-family: 'Oswald', sans-serif; font-size: 18.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .chat-thread-preview { font-family: 'Oswald', sans-serif; font-size: 16.5px; font-weight: 500; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-on-clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #1E8E5A; flex-shrink: 0; }
   .chat-unread-pill {
     background: var(--rust); color: #fff; font-size: 10.5px; font-weight: 800;
     border-radius: 20px; padding: 1px 7px; margin-left: auto; flex-shrink: 0;
   }
   .chat-thread-col { flex: 1; display: flex; flex-direction: column; padding-left: 20px; min-width: 0; }
-  .chat-thread-header { font-size: 19px; font-weight: 700; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
+  .chat-thread-header { font-family: 'Oswald', sans-serif; font-size: 19px; font-weight: 600; padding-bottom: 10px; border-bottom: 1.5px solid var(--line); margin-bottom: 12px; }
   .chat-thread-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
   .chat-bubble {
-    max-width: 70%; padding: 9px 13px; border-radius: 14px; font-size: 19px; font-weight: 600; line-height: 1.4;
+    font-family: 'Oswald', sans-serif; max-width: 70%; padding: 9px 13px; border-radius: 14px; font-size: 19px; font-weight: 500; line-height: 1.4;
   }
   .chat-bubble-admin { align-self: flex-end; background: linear-gradient(135deg, #F9C978, var(--amber)); color: var(--charcoal); border-bottom-right-radius: 4px; }
   .chat-bubble-employee { align-self: flex-start; background: var(--surface); color: var(--ink); border-bottom-left-radius: 4px; }
-  .chat-bubble-time { font-size: 15px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+  .chat-bubble-time { font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 500; color: var(--muted); margin-top: 2px; }
   .chat-thread-composer { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
   /* Textarea instead of a single-line input so a long message wraps and
      stays fully visible while typing instead of scrolling sideways as one
      long line -- auto-grows with content (see resizeChatComposer()) up to
      this max-height, then scrolls internally. */
   .chat-thread-composer textarea {
-    flex: 1; margin-bottom: 0; font-size: 19px; font-weight: 600; font-family: inherit;
+    flex: 1; margin-bottom: 0; font-size: 19px; font-weight: 500; font-family: 'Oswald', sans-serif;
     resize: none; overflow-y: auto; max-height: 140px; line-height: 1.4;
   }
   .chat-nav-badge {
