@@ -268,6 +268,8 @@ contextBridge.exposeInMainWorld("admin", {
     apiFetch("/api/admin/pull-sheets", { method: "POST", body: { source_type: "manual", items, label } }),
   fulfillPullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}/fulfill`, { method: "PATCH" }),
   deletePullSheet: (id) => apiFetch(`/api/admin/pull-sheets/${id}`, { method: "DELETE" }),
+  getPullSheetFormat: () => apiFetch("/api/admin/pull-sheet-format"),
+  savePullSheetFormat: (items) => apiFetch("/api/admin/pull-sheet-format", { method: "PUT", body: { items } }),
   // Same temp-file-then-open pattern as viewInvoicePdf/viewQuotePdf.
   viewPullSheetPdf: async (id) => {
     const token = store.get("token");
