@@ -245,6 +245,8 @@ contextBridge.exposeInMainWorld("admin", {
 
   getReportSummary: (start, end) => apiFetch(`/api/admin/reports/summary?start=${start}&end=${end}`),
   getLaborBreakdown: (start, end) => apiFetch(`/api/admin/reports/labor-breakdown?start=${start}&end=${end}`),
+  getLaborBreakdownWeekly: (employeeId, start, end) =>
+    apiFetch(`/api/admin/reports/labor-breakdown/weekly?employee_id=${employeeId}&start=${start}&end=${end}`),
   getMonthlyProfit: (months) => apiFetch(`/api/admin/reports/monthly-profit?months=${months || 6}`),
   getPaymentBreakdown: () => apiFetch("/api/admin/reports/payment-breakdown"),
   getPayments: (start, end) => apiFetch(`/api/admin/reports/payments?start=${start}&end=${end}`),
@@ -299,6 +301,7 @@ contextBridge.exposeInMainWorld("admin", {
   getChatMessages: (employeeId) => apiFetch(`/api/admin/chat/${employeeId}/messages`),
   sendChatMessage: (employeeId, body) =>
     apiFetch(`/api/admin/chat/${employeeId}/messages`, { method: "POST", body: { body } }),
+  deleteChatThread: (employeeId) => apiFetch(`/api/admin/chat/${employeeId}`, { method: "DELETE" }),
 
   listTeamChatThreads: () => apiFetch("/api/admin/team-chat/threads"),
   getTeamChatUnreadCount: () => apiFetch("/api/admin/team-chat/unread-count"),
@@ -307,6 +310,7 @@ contextBridge.exposeInMainWorld("admin", {
   getTeamChatMessages: (threadId) => apiFetch(`/api/admin/team-chat/threads/${threadId}/messages`),
   sendTeamChatMessage: (threadId, body) =>
     apiFetch(`/api/admin/team-chat/threads/${threadId}/messages`, { method: "POST", body: { body } }),
+  deleteTeamChatThread: (threadId) => apiFetch(`/api/admin/team-chat/threads/${threadId}`, { method: "DELETE" }),
 
   // Stripe Connect: lets this company link its own Stripe account so its
   // customers' invoice payments land in their own bank account instead of
